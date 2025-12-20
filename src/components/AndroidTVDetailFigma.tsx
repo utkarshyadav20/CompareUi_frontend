@@ -1,7 +1,5 @@
 import { useState } from "react";
 import {
-  ChevronLeft,
-  Bell,
   Search,
   Grid2X2,
   List,
@@ -14,7 +12,6 @@ import {
   Trash2,
   ChevronDown,
 } from "lucide-react";
-import imgFrame21 from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
 import svgPaths from "../imports/svg-yp1cueaie8";
 import { ResultTab } from "./ResultTab";
 import { DetailedResult } from "./DetailedResult";
@@ -25,6 +22,9 @@ import { SupportTab } from "./SupportTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
 import { ControlBar } from "./ui/ControlBar";
+
+import { ProjectHeader } from "./ProjectHeader";
+import { Project, Theme } from "../types";
 
 interface AndroidTVDetailFigmaProps {
   projectId: string;
@@ -56,6 +56,9 @@ export function AndroidTVDetailFigma({
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<string>("testingpanel");
   const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [theme, setTheme] = useState<Theme>("dark");
 
   const buildVersions = [
     "v1.0.235.1",
@@ -64,6 +67,37 @@ export function AndroidTVDetailFigma({
     "v1.0.232.1",
   ];
   const thresholdOptions = ["1x", "2x", "3x", "4x", "5x"];
+
+  const project: Project = {
+    id: projectId,
+    platform: projectName,
+    platformType: platformType,
+    status: "running", // specific status not passed, defaulting
+    iconBg: "bg-transparent", // Custom styling used before
+    type: "Android TV",
+    timestamp: "",
+    icon: (
+      <svg
+        className="block size-full"
+        fill="none"
+        preserveAspectRatio="none"
+        viewBox="0 0 37 37"
+      >
+        <rect fill="rgba(46, 255, 46, 0.4)" height="37" rx="8" width="37" />
+        <path d={svgPaths.p824ec00} fill="white" />
+      </svg>
+    ),
+  };
+
+  const navigationItems = [
+    { label: "Testing Panel", active: activeTab === "testingpanel" },
+    { label: "Activity", active: activeTab === "activity" },
+    { label: "Result", active: activeTab === "result" },
+    { label: "DB connection", active: activeTab === "dbconnection" },
+    { label: "Integration", active: activeTab === "integration" },
+    { label: "Support", active: activeTab === "support" },
+    { label: "Settings", active: activeTab === "settings" },
+  ];
 
   // Helper handling for file inputs to reset value after selection allowing same file to be selected again
   const handleFileChange = (
@@ -233,103 +267,19 @@ export function AndroidTVDetailFigma({
 
   return (
     <div className="bg-black flex flex-col gap-[2px] min-h-screen w-full">
-      {/* Header */}
-      <div className="w-full">
-        <div className="flex items-center justify-between px-[32px] py-[16px]">
-          {/* Left side - Back button and project info */}
-          <div className="flex items-center gap-[20px]">
-            <button
-              onClick={onBack}
-              className="text-white/50 hover:text-white/70 transition-colors"
-            >
-              <ChevronLeft className="w-[22px] h-[22px]" />
-            </button>
-
-            <div className="flex items-center gap-[10px]">
-              {/* Android Icon */}
-              <div className="relative size-[37px]">
-                <svg
-                  className="block size-full"
-                  fill="none"
-                  preserveAspectRatio="none"
-                  viewBox="0 0 37 37"
-                >
-                  <rect
-                    fill="rgba(46, 255, 46, 0.4)"
-                    height="37"
-                    rx="8"
-                    width="37"
-                  />
-                  <path d={svgPaths.p824ec00} fill="white" />
-                </svg>
-              </div>
-
-              {/* Project Name and Type */}
-              <div className="flex flex-col">
-                <p className="font-bold text-[16px] text-white">
-                  {projectName}
-                </p>
-                <p className="text-[12px] text-white/70">{platformType}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right side - Notification and Profile */}
-          <div className="flex items-center gap-[18px]">
-            {/* Bell Icon */}
-            <button className="bg-white/10 border border-white/10 rounded-full w-[46px] h-[46px] flex items-center justify-center hover:bg-white/20 transition-colors">
-              <Bell className="w-[18px] h-[18px] text-white" />
-            </button>
-
-            {/* Profile */}
-            <div className="flex items-center gap-[7px]">
-              <div className="flex flex-col items-end">
-                <p className="font-bold text-[16px] text-white">
-                  Abhijeet Punia
-                </p>
-                <p className="text-[10px] text-white/50">Qucikplay</p>
-              </div>
-              <div className="rounded-full size-[47px] overflow-hidden">
-                <img
-                  src={imgFrame21}
-                  alt="Profile"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Navigation Tabs */}
-      <div className="w-full border-b border-white/40">
-        <div className="flex items-center gap-[4px] px-[32px]">
-          {[
-            { label: "Testing Panel", key: "testingpanel" },
-            { label: "Activity", key: "activity" },
-            { label: "Result", key: "result" },
-            { label: "DB connection", key: "dbconnection" },
-            { label: "Integration", key: "integration" },
-            { label: "Support", key: "support" },
-            { label: "Settings", key: "settings" },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`relative px-[20px] py-[10px] ${
-                activeTab === tab.key
-                  ? "text-white font-semibold"
-                  : "text-white/50 font-normal hover:text-white/70"
-              }`}
-            >
-              {tab.label}
-              {activeTab === tab.key && (
-                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-white" />
-              )}
-            </button>
-          ))}
-        </div>
-      </div>
+      <ProjectHeader
+        project={project}
+        onBack={onBack || (() => {})}
+        theme={theme}
+        onThemeChange={setTheme}
+        isNotificationOpen={isNotificationOpen}
+        onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
+        isProfileMenuOpen={isProfileMenuOpen}
+        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+        activeTab={activeTab}
+        onTabChange={(tab) => setActiveTab(tab)}
+        navigationItems={navigationItems}
+      />
 
       {/* Conditional Content based on activeTab */}
       {activeTab === "result" ? (
