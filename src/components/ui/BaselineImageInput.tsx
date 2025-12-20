@@ -61,7 +61,7 @@ export function BaselineImageInput({
   };
 
   return (
-    <div className="w-full h-full flex flex-col gap-5">
+    <div className="w-full h-full flex flex-col gap-5 p-4">
       {/* Header with title and action buttons */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b border-black/10 dark:border-white/10">
         <h3 className="text-black dark:text-white text-[20px]">
@@ -77,7 +77,7 @@ export function BaselineImageInput({
               <RefreshCw className="w-[18px] h-[18px] text-black dark:text-white" />
             </button>
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/refresh:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/refresh:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[999]">
               Refresh All
             </div>
           </div>
@@ -91,7 +91,7 @@ export function BaselineImageInput({
               <Trash2 className="w-[18px] h-[18px] text-[#EF4444]" />
             </button>
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/remove:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-50">
+            <div className="absolute top-full right-0 mt-2 px-2 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/remove:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[999]">
               Remove All
             </div>
           </div>

@@ -46,6 +46,7 @@ import { AndroidTVDetail } from "./components/AndroidTVDetail";
 import { AndroidTVDetailFigma } from "./components/AndroidTVDetailFigma";
 import { TestComparisonToast } from "./components/TestComparisonToast";
 import { BaselineImageInput } from "./components/ui/BaselineImageInput";
+import { ControlBar } from "./components/ui/ControlBar";
 
 // Types
 type ViewMode = "grid" | "list";
@@ -814,90 +815,17 @@ function ProjectDetail({
 
       {/* Controls Bar - Show only on overview/testingpanel tab */}
       {(activeTab === "overview" || activeTab === "testingpanel") && (
-        <div className="px-4 md:px-8 py-3 bg-white dark:bg-black border-b border-black/10 dark:border-white/10 overflow-x-auto">
-          <div className="flex items-center gap-3 md:gap-6 min-w-max">
-            <div className="w-full md:w-[380px] max-w-[380px] border border-black/50 dark:border-white/50 rounded-lg px-3 md:px-5 py-2.5 flex items-center gap-2.5 text-black/50 dark:text-white/50">
-              <Search className="w-[18px] h-[18px]" />
-              <input
-                type="text"
-                placeholder="Search Baseline images"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50"
-              />
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <span className="text-black dark:text-white text-sm font-semibold">
-                Method :
-              </span>
-              <div className="flex gap-1">
-                {(["Pixelmatch", "Noise"] as const).map((method) => (
-                  <button
-                    key={method}
-                    onClick={() => setSelectedMethod(method)}
-                    className={`px-2.5 py-2 rounded text-sm font-mono transition-colors ${
-                      selectedMethod === method
-                        ? "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
-                        : "border border-green-500/30 text-green-400"
-                    }`}
-                  >
-                    {method}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <span className="text-black dark:text-white text-sm font-semibold">
-                AI agent :
-              </span>
-              <div className="flex gap-1">
-                {(["Yes", "No"] as const).map((option) => (
-                  <button
-                    key={option}
-                    onClick={() => setAiAgent(option)}
-                    className={`px-2.5 py-2 rounded text-sm font-mono transition-colors ${
-                      aiAgent === option
-                        ? "border border-green-500/30 text-green-400"
-                        : "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
-                    }`}
-                  >
-                    {option}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2.5">
-              <span className="text-black dark:text-white text-sm font-semibold">
-                Threshold :
-              </span>
-              <div className="flex gap-1">
-                {["1x", "2x", "3x", "4x", "5x"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => setThreshold(t)}
-                    className={`px-2.5 py-2 rounded text-sm w-[38px] font-mono transition-colors ${
-                      threshold === t
-                        ? "border border-green-500/30 text-green-400"
-                        : "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
-                    }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() => setShowComparisonToast(true)}
-              className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors text-sm font-semibold"
-            >
-              Start Comparing UI
-            </button>
-          </div>
-        </div>
+        <ControlBar
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedMethod={selectedMethod}
+          onMethodChange={setSelectedMethod}
+          threshold={threshold}
+          onThresholdChange={setThreshold}
+          aiAgent={aiAgent}
+          onAiAgentChange={setAiAgent}
+          onStartComparison={() => setShowComparisonToast(true)}
+        />
       )}
 
       {/* Main Content - Conditional rendering based on activeTab */}
@@ -905,9 +833,7 @@ function ProjectDetail({
       project.type === "Smart Image" ? (
         <SmartImageDetail projectId={project.id} />
       ) : (activeTab === "overview" || activeTab === "testingpanel") &&
-        (project.type === "Android TV" ||
-          project.type === "Mobile" ||
-          project.type === "Roku TV") ? (
+        (project.type === "Mobile" || project.type === "Roku TV") ? (
         <AndroidTVDetail
           projectId={project.id}
           platformType={project.platformType}

@@ -24,6 +24,7 @@ import { IntegrationTab } from "./IntegrationTab";
 import { SupportTab } from "./SupportTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
+import { ControlBar } from "./ui/ControlBar";
 
 interface AndroidTVDetailFigmaProps {
   projectId: string;
@@ -342,159 +343,23 @@ export function AndroidTVDetailFigma({
       ) : activeTab === "testingpanel" ? (
         <>
           {/* Controls Bar */}
-          <div className="w-full">
-            <div className="flex items-center justify-end px-[32px] py-[11px]">
-              {/* Right side - Method, Threshold, Build, Start Button */}
-              <div className="flex items-center gap-[20px]">
-                {/* Method Dropdown */}
-                <div className="flex items-center gap-[10px]">
-                  <p className="font-semibold text-[14px] text-white">
-                    Method :
-                  </p>
-                  <div className="relative">
-                    <button
-                      onClick={() =>
-                        setIsMethodDropdownOpen(!isMethodDropdownOpen)
-                      }
-                      className="px-[10px] py-[10px] rounded-[4px] border bg-white/10 border-white/10 text-white text-[14px] font-mono flex items-center gap-[8px] hover:bg-white/15 transition-colors"
-                    >
-                      <span>{selectedMethod}</span>
-                      <ChevronDown className="w-[14px] h-[14px] text-white/50" />
-                    </button>
-                    {isMethodDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-20"
-                          onClick={() => setIsMethodDropdownOpen(false)}
-                        />
-                        <div className="absolute right-0 top-[45px] w-[130px] bg-[#2A2A2A] rounded-[8px] shadow-lg z-30 border border-white/10 overflow-hidden">
-                          <button
-                            onClick={() => {
-                              setSelectedMethod("Pixelmatch");
-                              setIsMethodDropdownOpen(false);
-                            }}
-                            className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left"
-                          >
-                            <span className="text-white text-[14px] font-mono">
-                              Pixelmatch
-                            </span>
-                          </button>
-                          <button
-                            onClick={() => {
-                              setSelectedMethod("Noise");
-                              setIsMethodDropdownOpen(false);
-                            }}
-                            className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left"
-                          >
-                            <span className="text-white text-[14px] font-mono">
-                              Noise
-                            </span>
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
+          <div className="dark">
+            <ControlBar
+              searchQuery={searchQuery} // Figma view has filtering but maybe not exposed in UI previously? Ah wait, it didn't have search input visible in the screenshot code analysis, let me double check. Actually the screenshot analysis on line 41 shows `const [searchQuery, setSearchQuery] = useState("");` and line 197 uses it. BUT the inline JSX I'm replacing (lines 345-498) DOES NOT have a search input. It seems AndroidTVDetailFigma only had the right side controls. I will pass NO search props if it wasn't there, OR add it if requested.
+              // Wait, looking at the previous analysis of AndroidTVDetailFigma lines 345-498...
+              // It STARTS with `<div className="w-full"> <div className="flex items-center justify-end..."`.
+              // "justify-end" implies no left content.
+              // So for this file, I will NOT pass searchQuery props (or pass null/undefined), effectively hiding the search bar on the left, matching previous UI.
 
-                {/* Threshold Dropdown */}
-                <div className="flex items-center gap-[10px]">
-                  <p className="font-semibold text-[14px] text-white">
-                    Threshold :
-                  </p>
-                  <div className="relative">
-                    <button
-                      onClick={() =>
-                        setIsThresholdDropdownOpen(!isThresholdDropdownOpen)
-                      }
-                      className="w-[60px] px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center justify-between hover:bg-[#6bdf95]/10 transition-colors"
-                    >
-                      <span>{threshold}</span>
-                      <ChevronDown className="w-[14px] h-[14px]" />
-                    </button>
-                    {isThresholdDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-20"
-                          onClick={() => setIsThresholdDropdownOpen(false)}
-                        />
-                        <div className="absolute right-0 top-[45px] w-[60px] bg-[#2A2A2A] rounded-[8px] shadow-lg z-30 border border-white/10 overflow-hidden">
-                          {thresholdOptions.map((t) => (
-                            <button
-                              key={t}
-                              onClick={() => {
-                                setThreshold(t);
-                                setIsThresholdDropdownOpen(false);
-                              }}
-                              className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors"
-                            >
-                              <span className="text-white text-[14px] font-mono">
-                                {t}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Build Dropdown */}
-                <div className="flex items-center gap-[10px]">
-                  <p className="font-semibold text-[14px] text-white">
-                    Build :
-                  </p>
-                  <div className="relative">
-                    <button
-                      onClick={() =>
-                        setIsBuildDropdownOpen(!isBuildDropdownOpen)
-                      }
-                      className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
-                    >
-                      <span>{selectedBuild}</span>
-                      <ChevronDown className="w-[14px] h-[14px]" />
-                    </button>
-                    {isBuildDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-20"
-                          onClick={() => setIsBuildDropdownOpen(false)}
-                        />
-                        <div className="absolute right-0 top-[45px] w-[130px] bg-[#2A2A2A] rounded-[8px] shadow-lg z-30 border border-white/10 overflow-hidden">
-                          {buildVersions.map((version) => (
-                            <button
-                              key={version}
-                              onClick={() => {
-                                setSelectedBuild(version);
-                                setIsBuildDropdownOpen(false);
-                              }}
-                              className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${
-                                version === selectedBuild ? "bg-white/5" : ""
-                              }`}
-                            >
-                              <span className="text-white text-[14px] font-mono">
-                                {version === "v1.0.234.1" ? (
-                                  <span className="text-[#6bdf95]">
-                                    {version}
-                                  </span>
-                                ) : (
-                                  version
-                                )}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Start Button */}
-                <button className="bg-white text-black px-[16px] py-[11.798px] rounded-[7.26px] flex items-center gap-[9.075px] text-[14px] font-semibold hover:bg-white/90 transition-colors">
-                  <span>✦</span>
-                  <span>Start Comparing UI</span>
-                </button>
-              </div>
-            </div>
+              selectedMethod={selectedMethod}
+              onMethodChange={setSelectedMethod}
+              threshold={threshold}
+              onThresholdChange={setThreshold}
+              onStartComparison={() => console.log("Start Comparison")}
+              selectedBuild={selectedBuild}
+              onBuildChange={setSelectedBuild}
+              buildVersions={buildVersions}
+            />
           </div>
 
           {/* Main Content - Two Panels */}
