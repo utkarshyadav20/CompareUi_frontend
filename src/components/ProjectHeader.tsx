@@ -13,11 +13,13 @@ import {
   LogOut,
   ArrowRight,
 } from "lucide-react";
-import imgProfile from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
+const imgProfile =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
 import { Theme, Project } from "../types";
 
 interface ProjectHeaderProps {
-  project: Project;
+  project?: Project;
+  title?: string;
   onBack: () => void;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
@@ -25,13 +27,15 @@ interface ProjectHeaderProps {
   onNotificationToggle: () => void;
   isProfileMenuOpen: boolean;
   onProfileMenuToggle: () => void;
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-  navigationItems: { label: string; active: boolean }[];
+  activeTab?: string;
+  onTabChange?: (tab: string) => void;
+  navigationItems?: { label: string; active: boolean }[];
+  hideNavigation?: boolean;
 }
 
 export function ProjectHeader({
   project,
+  title,
   onBack,
   theme,
   onThemeChange,
@@ -42,6 +46,7 @@ export function ProjectHeader({
   activeTab,
   onTabChange,
   navigationItems,
+  hideNavigation = false,
 }: ProjectHeaderProps) {
   return (
     <header className="relative z-50 bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
@@ -53,21 +58,28 @@ export function ProjectHeader({
           >
             <ChevronLeft className="w-6 h-6" />
           </button>
-          <div className="flex items-center gap-3">
-            <div
-              className={`w-[37px] h-[37px] rounded-lg ${project.iconBg} flex items-center justify-center`}
-            >
-              {project.icon}
-            </div>
-            <div>
-              <div className="text-black dark:text-white">
-                {project.platform}
+
+          {title ? (
+            <h1 className="text-black dark:text-white text-[20px] font-bold">
+              {title}
+            </h1>
+          ) : project ? (
+            <div className="flex items-center gap-3">
+              <div
+                className={`w-[37px] h-[37px] rounded-lg ${project.iconBg} flex items-center justify-center`}
+              >
+                {project.icon}
               </div>
-              <div className="text-black/70 dark:text-white/70 text-xs">
-                {project.platformType}
+              <div>
+                <div className="text-black dark:text-white">
+                  {project.platform}
+                </div>
+                <div className="text-black/70 dark:text-white/70 text-xs">
+                  {project.platformType}
+                </div>
               </div>
             </div>
-          </div>
+          ) : null}
         </div>
 
         <div className="flex items-center gap-5">
@@ -215,26 +227,28 @@ export function ProjectHeader({
         </div>
       </div>
 
-      <nav className="px-8 border-b border-black/20 dark:border-white/20 flex items-center gap-1 overflow-x-auto">
-        {navigationItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() =>
-              onTabChange(item.label.toLowerCase().replace(" ", ""))
-            }
-            className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${
-              activeTab === item.label.toLowerCase().replace(" ", "")
-                ? "text-black dark:text-white"
-                : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
-            }`}
-          >
-            {item.label}
-            {activeTab === item.label.toLowerCase().replace(" ", "") && (
-              <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black dark:bg-white" />
-            )}
-          </button>
-        ))}
-      </nav>
+      {!hideNavigation && navigationItems && (
+        <nav className="px-8 border-b border-black/20 dark:border-white/20 flex items-center gap-1 overflow-x-auto">
+          {navigationItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() =>
+                onTabChange?.(item.label.toLowerCase().replace(" ", ""))
+              }
+              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${
+                activeTab === item.label.toLowerCase().replace(" ", "")
+                  ? "text-black dark:text-white"
+                  : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
+              }`}
+            >
+              {item.label}
+              {activeTab === item.label.toLowerCase().replace(" ", "") && (
+                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black dark:bg-white" />
+              )}
+            </button>
+          ))}
+        </nav>
+      )}
     </header>
   );
 }

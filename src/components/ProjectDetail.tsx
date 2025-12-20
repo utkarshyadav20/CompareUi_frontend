@@ -172,6 +172,12 @@ export function ProjectDetail({
         testName={testCase?.name || "Detail Screen"}
         onBack={handleBackToResults}
         buildVersion="v12.224"
+        theme={theme}
+        onThemeChange={onThemeChange}
+        isNotificationOpen={isNotificationOpen}
+        onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
+        isProfileMenuOpen={isProfileMenuOpen}
+        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
       />
     );
   }
