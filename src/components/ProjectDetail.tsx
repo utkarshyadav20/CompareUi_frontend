@@ -4,15 +4,21 @@ import { Project, Theme } from "../types";
 import { ProjectHeader } from "./ProjectHeader";
 import { PROJECT_NAVIGATION_ITEMS } from "../constants";
 import { NotificationPanel } from "./NotificationPanel";
-import { SettingsPage } from "./SettingsPage";
-import { SupportPage } from "./SupportPage";
-import { IntegrationPage } from "./IntegrationPage";
 import { SmartImageDetail } from "./SmartImageDetail";
 import { AndroidTVDetail } from "./AndroidTVDetail";
 import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
 import { TestComparisonToast } from "./TestComparisonToast";
 import { BaselineImageInput } from "./ui/BaselineImageInput";
 import { ControlBar } from "./ui/ControlBar";
+
+// Tabs
+import { ActivityTab } from "./ActivityTab";
+import { ResultTab } from "./ResultTab";
+import { DBConnectionTab } from "./DBConnectionTab";
+import { IntegrationTab } from "./IntegrationTab";
+import { SupportTab } from "./SupportTab";
+import { SettingsTab } from "./SettingsTab";
+import { DetailedResult } from "./DetailedResult";
 
 interface ProjectDetailProps {
   project: Project;
@@ -57,6 +63,16 @@ export function ProjectDetail({
   >("Chrome");
   const [isBrowserDropdownOpen, setIsBrowserDropdownOpen] = useState(false);
   const [showComparisonToast, setShowComparisonToast] = useState(false);
+
+  // Result Tab State
+  const [selectedBuild, setSelectedBuild] = useState("v1.0.234.1");
+  const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
+  const buildVersions = [
+    "v1.0.235.1",
+    "v1.0.234.1",
+    "v1.0.233.1",
+    "v1.0.232.1",
+  ];
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -127,6 +143,38 @@ export function ProjectDetail({
   const filteredImages = uploadedImages.filter((image) =>
     image.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleViewTest = (testId: string) => {
+    setSelectedTestId(testId);
+  };
+
+  const handleBackToResults = () => {
+    setSelectedTestId(null);
+  };
+
+  // If viewing detailed result, show DetailedResult component
+  if (selectedTestId) {
+    const testCases = [
+      { id: "1", name: "HomeScreen" },
+      { id: "2", name: "ProfilePage" },
+      { id: "3", name: "Settings" },
+      { id: "4", name: "Notifications" },
+      { id: "5", name: "Messages" },
+      { id: "6", name: "Dashboard" },
+      { id: "7", name: "HelpCenter" },
+      { id: "8", name: "AboutUs" },
+    ];
+    const testCase = testCases.find((t) => t.id === selectedTestId);
+
+    return (
+      <DetailedResult
+        testId={selectedTestId}
+        testName={testCase?.name || "Detail Screen"}
+        onBack={handleBackToResults}
+        buildVersion="v12.224"
+      />
+    );
+  }
 
   // Use Figma design for Android TV projects
   if (project.type === "Android TV") {
@@ -397,27 +445,19 @@ export function ProjectDetail({
         </div>
       ) : null}
 
-      {activeTab === "settings" && (
-        <SettingsPage
-          projectName={project.platform}
-          projectType={project.platformType}
+      {activeTab === "settings" && <SettingsTab />}
+      {activeTab === "support" && <SupportTab />}
+      {activeTab === "integration" && <IntegrationTab />}
+      {activeTab === "activity" && <ActivityTab />}
+      {activeTab === "dbconnection" && <DBConnectionTab />}
+      {activeTab === "result" && (
+        <ResultTab
+          buildVersion={selectedBuild}
+          selectedBuild={selectedBuild}
+          buildVersions={buildVersions}
+          onBuildChange={setSelectedBuild}
+          onViewTest={handleViewTest}
         />
-      )}
-      {activeTab === "support" && <SupportPage />}
-      {activeTab === "integration" && <IntegrationPage />}
-      {(activeTab === "activity" ||
-        activeTab === "result" ||
-        activeTab === "dbconnection") && (
-        <div className="px-4 md:px-8 py-8">
-          <div className="max-w-4xl mx-auto text-center py-20">
-            <h2 className="text-black dark:text-white text-2xl mb-4">
-              Coming Soon
-            </h2>
-            <p className="text-black/50 dark:text-white/50">
-              This feature is currently under development.
-            </p>
-          </div>
-        </div>
       )}
 
       {/* Notification Panel */}
@@ -434,6 +474,8 @@ export function ProjectDetail({
             console.log("View full report clicked");
             setShowComparisonToast(false);
             // Navigate to results tab or open results modal
+            // You might want to switch activeTab to 'result' here if needed
+            setActiveTab("result");
           }}
         />
       )}
