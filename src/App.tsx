@@ -45,6 +45,7 @@ import {
   ViewMode,
 } from "./types";
 import svgPaths from "./imports/svg-kgk8e7ds24";
+import { PROJECT_NAVIGATION_ITEMS } from "./constants";
 import imgProfile from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
 import { NotificationPanel } from "./components/NotificationPanel";
 import { SettingsPage } from "./components/SettingsPage";
@@ -557,29 +558,11 @@ function ProjectDetail({
     }
   };
 
-  // Dynamic navigation based on project type
-  const navigationItems =
-    project.type === "Smart Image"
-      ? [
-          { label: "Testing Panel", active: true },
-          { label: "Activity", active: false },
-          { label: "Result", active: false },
-          { label: "DB connection", active: false },
-          { label: "Integration", active: false },
-          { label: "Support", active: false },
-          { label: "Settings", active: false },
-        ]
-      : [
-          { label: "Overview", active: true },
-          { label: "Deployments", active: false },
-          { label: "Activity", active: false },
-          { label: "Usage", active: false },
-          { label: "DB connection", active: false },
-          { label: "AI Gateways", active: false },
-          { label: "Integration", active: false },
-          { label: "Support", active: false },
-          { label: "Settings", active: false },
-        ];
+  // Standardized navigation items
+  const navigationItems = PROJECT_NAVIGATION_ITEMS.map((item) => ({
+    ...item,
+    active: activeTab === item.label.toLowerCase().replace(" ", ""),
+  }));
 
   // Filter images based on search query
   const filteredImages = uploadedImages.filter((image) =>
@@ -911,7 +894,7 @@ export default function App() {
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [theme, setTheme] = useState<Theme>("dark");
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>("overview");
+  const [activeTab, setActiveTab] = useState<string>("testingpanel");
 
   useEffect(() => {
     // Apply theme to document

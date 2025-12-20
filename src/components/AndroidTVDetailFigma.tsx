@@ -25,6 +25,7 @@ import { ControlBar } from "./ui/ControlBar";
 
 import { ProjectHeader } from "./ProjectHeader";
 import { Project, Theme } from "../types";
+import { PROJECT_NAVIGATION_ITEMS } from "../constants";
 
 interface AndroidTVDetailFigmaProps {
   projectId: string;
@@ -89,15 +90,10 @@ export function AndroidTVDetailFigma({
     ),
   };
 
-  const navigationItems = [
-    { label: "Testing Panel", active: activeTab === "testingpanel" },
-    { label: "Activity", active: activeTab === "activity" },
-    { label: "Result", active: activeTab === "result" },
-    { label: "DB connection", active: activeTab === "dbconnection" },
-    { label: "Integration", active: activeTab === "integration" },
-    { label: "Support", active: activeTab === "support" },
-    { label: "Settings", active: activeTab === "settings" },
-  ];
+  const navigationItems = PROJECT_NAVIGATION_ITEMS.map((item) => ({
+    ...item,
+    active: activeTab === item.label.toLowerCase().replace(" ", ""),
+  }));
 
   // Helper handling for file inputs to reset value after selection allowing same file to be selected again
   const handleFileChange = (
