@@ -1,0 +1,17 @@
+.gitignore
+.npmignore
+api.ts
+base.ts
+common.ts
+configuration.ts
+docs/AppApi.md
+docs/CompareApi.md
+docs/CompareBodyDto.md
+docs/CompareScreenshotDto.md
+docs/CreateBuildDto.md
+docs/FigmaApi.md
+docs/ProjectApi.md
+docs/ResultApi.md
+docs/ScreenshotApi.md
+git_push.sh
+index.ts
