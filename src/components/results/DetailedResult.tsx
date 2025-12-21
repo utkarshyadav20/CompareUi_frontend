@@ -12,6 +12,13 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "../project/ProjectHeader";
 import { Theme } from "../../types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
 
 const imgFrame21 =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
@@ -58,7 +65,7 @@ export function DetailedResult({
   );
 
   // Build Dropdown State
-  const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
+
   const [selectedBuild, setSelectedBuild] = useState(buildVersion);
 
   const buildVersions = ["v12.224", "v12.223", "v12.222", "v12.221", "v12.220"];
@@ -159,7 +166,7 @@ export function DetailedResult({
 
       {/* Screen Info Bar */}
       <div className="w-full border-b border-white/10 bg-[#0A0A0A]">
-        <div className="flex items-center justify-between px-[24px] py-[12px]">
+        <div className="flex items-center justify-between px-4 py-4">
           <div>
             <p className="text-white/50 text-[12px] mb-[2px]">ScreenName :</p>
             <div className="flex items-center gap-4">
@@ -182,43 +189,28 @@ export function DetailedResult({
               <p className="font-semibold text-[14px] text-black dark:text-white">
                 Build :
               </p>
-              <div className="relative">
-                <button
-                  onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-                  className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
-                >
-                  <span>{selectedBuild}</span>
-                  <ChevronDown className="w-[14px] h-[14px]" />
-                </button>
-                {isBuildDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[40]"
-                      onClick={() => setIsBuildDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
-                      {buildVersions.map((version) => (
-                        <button
-                          key={version}
-                          onClick={() => {
-                            onBuildChange(version);
-                            setIsBuildDropdownOpen(false);
-                          }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${
-                            version === selectedBuild
-                              ? "bg-black/5 dark:bg-white/5"
-                              : ""
-                          }`}
-                        >
-                          <span className="text-black dark:text-white text-[14px] font-mono">
-                            {version}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+              <Select value={selectedBuild} onValueChange={onBuildChange}>
+                <SelectTrigger className="h-auto w-auto gap-[8px] rounded-[4px] border border-[#6bdf95]/30 !bg-black px-[10px] py-[10px] font-mono text-[14px] text-[#6bdf95] hover:bg-[#6bdf95]/10 focus:ring-0 focus:ring-offset-0 data-[state=open]:border-[#6bdf95] data-[state=open]:ring-0">
+                  <SelectValue placeholder="Select build">
+                    {selectedBuild}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent className="w-[130px] border border-white/10 !bg-[#1f1f1f] text-white shadow-xl">
+                  {buildVersions.map((version) => (
+                    <SelectItem
+                      key={version}
+                      value={version}
+                      className={`font-mono text-[14px] cursor-pointer transition-colors focus:bg-white/10 focus:text-white ${
+                        version === selectedBuild
+                          ? "bg-white/10 text-[#6bdf95] focus:text-[#6bdf95]"
+                          : "text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {version}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <button
@@ -226,7 +218,7 @@ export function DetailedResult({
               disabled={isDownloading}
               className="px-[10px] py-[10px] rounded-[4px] border border-[#3b82f6]/30 text-[#3b82f6] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#3b82f6]/10 transition-colors disabled:opacity-50"
             >
-              <Download className="w-[14px] h-[14px]" />
+              <Download className="w-4 h-4" />
               <span>Download Report</span>
             </button>
 
@@ -282,13 +274,13 @@ export function DetailedResult({
             {/* Zoom Controls */}
             <div className="flex items-center bg-[#1A1A1A] rounded-[4px] border border-white/10 p-[2px]">
               <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
-                <Minus className="w-[14px] h-[14px]" />
+                <Minus className="w-4 h-4" />
               </button>
               <div className="w-[40px] text-center text-[12px] text-white font-mono">
                 100
               </div>
               <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
-                <Plus className="w-[14px] h-[14px]" />
+                <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
@@ -323,22 +315,18 @@ export function DetailedResult({
         </div>
 
         {/* Right Panel - Stats & Issues */}
-        <div className="w-[450px] bg-[#111] flex flex-col border-l border-white/10">
+        <div className="w-[450px] flex flex-col border-l border-white/10 p-4">
           {/* Stats Header */}
           <div className="p-[24px] border-b border-white/10">
             <div className="flex justify-between items-start mb-[24px]">
               <div>
-                <p className="text-white/50 text-[13px] mb-[4px]">
-                  Different Percentage
-                </p>
+                <p className="text-white/50">Different Percentage</p>
                 <p className="text-white text-[32px] font-light leading-none">
                   {differentPercentage}%
                 </p>
               </div>
               <div>
-                <p className="text-white/50 text-[13px] mb-[8px]">
-                  Final Verdict
-                </p>
+                <p className="text-white/50 mb-[8px]">Final Verdict</p>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleApprove}
@@ -348,8 +336,8 @@ export function DetailedResult({
                         : "bg-transparent text-white border-transparent hover:bg-white/5"
                     }`}
                   >
-                    <Check className="w-[14px] h-[14px]" />
-                    <span className="text-[13px] font-medium">Approve</span>
+                    <Check className="w-4 h-4" />
+                    <span className="font-medium">Approve</span>
                   </button>
                   <button
                     onClick={handleReject}
@@ -359,17 +347,15 @@ export function DetailedResult({
                         : "bg-transparent text-white border-transparent hover:bg-white/5"
                     }`}
                   >
-                    <XIcon className="w-[14px] h-[14px]" />
-                    <span className="text-[13px] font-medium">Reject</span>
+                    <XIcon className="w-4 h-4" />
+                    <span className="font-medium">Reject</span>
                   </button>
                 </div>
               </div>
             </div>
 
             <div>
-              <p className="text-white/50 text-[13px] mb-[4px]">
-                Detected Issues
-              </p>
+              <p className="text-white/50">Detected Issues</p>
               <p className="text-white text-[32px] font-light leading-none">
                 {detectedIssues}
               </p>
@@ -377,8 +363,8 @@ export function DetailedResult({
 
             {/* Warning Info */}
             <div className="mt-[20px] bg-[#1A1A1A] border border-white/5 rounded-[4px] p-[10px] flex items-start gap-2">
-              <AlertTriangle className="w-[14px] h-[14px] text-white/30 mt-[2px] shrink-0" />
-              <p className="text-white/50 text-[11px] leading-relaxed">
+              <AlertTriangle className="w-4 h-4 text-white/30 mt-[2px] shrink-0" />
+              <p className="text-white/50 leading-relaxed">
                 This action is final. Once submitted, the verdict cannot be
                 changed.
               </p>
@@ -399,19 +385,19 @@ export function DetailedResult({
             {/* Severity Cards */}
             <div className="grid grid-cols-3 gap-[10px] mb-[24px]">
               <div className="bg-[#1f1111] border border-red-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#ff5555] text-[13px] mb-[2px]">Major</p>
+                <p className="text-[#ff5555]">Major</p>
                 <p className="text-[#ff5555] text-[20px] font-bold">
                   {severityCounts.Major}
                 </p>
               </div>
               <div className="bg-[#1f1c11] border border-yellow-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#fbbf24] text-[13px] mb-[2px]">Medium</p>
+                <p className="text-[#fbbf24]">Medium</p>
                 <p className="text-[#fbbf24] text-[20px] font-bold">
                   {severityCounts.Medium}
                 </p>
               </div>
               <div className="bg-[#0f141f] border border-blue-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#3b82f6] text-[13px] mb-[2px]">Low</p>
+                <p className="text-[#3b82f6]">Low</p>
                 <p className="text-[#3b82f6] text-[20px] font-bold">
                   {severityCounts.Low}
                 </p>
