@@ -7,7 +7,10 @@ import {
   MoreVertical,
   Upload,
 } from "lucide-react";
-import { BaselineImage, BaselineImageInput } from "../ui/BaselineImageInput";
+import {
+  BaselineImage,
+  BaselineImageInput,
+} from "../common/BaselineImageInput";
 
 interface AndroidTVDetailProps {
   projectId: string;

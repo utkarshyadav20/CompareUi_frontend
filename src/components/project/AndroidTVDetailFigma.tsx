@@ -20,8 +20,11 @@ import { DBConnectionTab } from "../settings/DBConnectionTab";
 import { IntegrationTab } from "../settings/IntegrationTab";
 import { SupportTab } from "../support/SupportTab";
 import { SettingsTab } from "../settings/SettingsTab";
-import { BaselineImage, BaselineImageInput } from "../ui/BaselineImageInput";
-import { ControlBar } from "../ui/ControlBar";
+import {
+  BaselineImage,
+  BaselineImageInput,
+} from "../common/BaselineImageInput";
+import { ControlBar } from "../common/ControlBar";
 
 import { ProjectHeader } from "./ProjectHeader";
 import { Project, Theme } from "../../types";

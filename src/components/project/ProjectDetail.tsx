@@ -8,8 +8,8 @@ import { SmartImageDetail } from "./SmartImageDetail";
 import { AndroidTVDetail } from "./AndroidTVDetail";
 import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
 import { TestComparisonToast } from "../results/TestComparisonToast";
-import { BaselineImageInput } from "../ui/BaselineImageInput";
-import { ControlBar } from "../ui/ControlBar";
+import { BaselineImageInput } from "../common/BaselineImageInput";
+import { ControlBar } from "../common/ControlBar";
 
 // Tabs
 import { ActivityTab } from "../settings/ActivityTab";
