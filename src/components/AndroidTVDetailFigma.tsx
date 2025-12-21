@@ -593,6 +593,7 @@ export function AndroidTVDetailFigma({
   );
 
   const handleViewTest = (testId: string) => {
+    console.log("Setting selectedTestId:", testId);
     setSelectedTestId(testId);
   };
 
@@ -617,9 +618,11 @@ export function AndroidTVDetailFigma({
     return (
       <DetailedResult
         testId={selectedTestId}
-        testName={testCase?.name || "Detail Screen"}
+        testName={testCase?.name || selectedTestId || "Detail Screen"}
+        projectId={projectId}
+        platformType={getApiProjectType(platformType)}
         onBack={handleBackToResults}
-        buildVersion="v12.224"
+        buildVersion={typeof selectedBuild === 'string' ? selectedBuild : selectedBuild?.buildId || "v12.224"}
         theme={theme}
         onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}

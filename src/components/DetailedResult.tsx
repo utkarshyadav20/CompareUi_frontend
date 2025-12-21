@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import apiClient from "../api/client";
 import {
   ChevronLeft,
   Bell,
@@ -27,6 +28,8 @@ interface Issue {
 interface DetailedResultProps {
   testId: string;
   testName: string;
+  projectId: string;
+  platformType: string;
   onBack: () => void;
   buildVersion: string;
   theme: Theme;
@@ -40,6 +43,8 @@ interface DetailedResultProps {
 export function DetailedResult({
   testId,
   testName,
+  projectId,
+  platformType,
   onBack,
   buildVersion = "v12.224",
   theme,
@@ -57,6 +62,39 @@ export function DetailedResult({
     null
   );
 
+  console.log("DetailedResult mounted with testId:", testId);
+
+  const [loading, setLoading] = useState(false);
+  const [resultData, setResultData] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchDetails = async () => {
+      setLoading(true);
+      try {
+        // Assume buildVersion passed is the ID, if it's strictly a version string we might need ID.
+        // But in previous steps we saw buildId being passed around as selectedBuild.
+        const res = await apiClient.get('/result/details', {
+          params: {
+            projectId,
+            buildId: buildVersion,
+            screenName: testName, // testName is mapped to screenName/imageName
+            projectType: platformType
+          }
+        });
+        setResultData(res.data);
+      } catch (err) {
+        console.error("Failed to fetch detailed result:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (projectId && buildVersion && testName) {
+      fetchDetails();
+    }
+  }, [projectId, buildVersion, testName, platformType]);
+
+
   // Build Dropdown State
   const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
   const [selectedBuild, setSelectedBuild] = useState(buildVersion);
@@ -68,16 +106,16 @@ export function DetailedResult({
   };
 
   // Mock data for the detailed result
-  const testStatus = "FAILED";
-  const differentPercentage = 80.24;
-  const detectedIssues = 6;
+  // Mock data fallbacks if not yet loaded
+  const testStatus = resultData?.resultStatus === 0 ? "FAILED" : "PASSED"; // 0 is usually success? Wait, established incorrectly in mocked data above?
+  // In ResultTab, 0 was FAIL (red). So 0 is FAIL.
 
-  const baselineImageUrl =
-    "https://images.unsplash.com/photo-1574267432644-f74bc7c02d60?w=800&h=450&fit=crop";
-  const liveImageUrl =
-    "https://images.unsplash.com/photo-1626814026160-2237a95fc5a0?w=800&h=450&fit=crop";
-  const differenceImageUrl =
-    "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=800&h=450&fit=crop";
+  const differentPercentage = resultData?.diffPercent ?? 0;
+  const detectedIssues = 0; // Backend doesn't return issues yet?
+
+  const baselineImageUrl = resultData?.baselineImageUrl || "https://placehold.co/800x450?text=No+Baseline";
+  const liveImageUrl = resultData?.actualImageUrl || "https://placehold.co/800x450?text=No+Actual";
+  const differenceImageUrl = resultData?.diffImageUrl || "https://placehold.co/800x450?text=No+Diff";
 
   const issues: Issue[] = [
     {
@@ -159,24 +197,24 @@ export function DetailedResult({
 
       {/* Screen Info Bar */}
       <div className="w-full border-b border-white/10 bg-[#0A0A0A]">
-        <div className="flex items-center justify-between px-[24px] py-[12px]">
+        <div className="flex items-center justify-between px-[32px] py-[12px]">
           <div>
             <p className="text-white/50 text-[12px] mb-[2px]">ScreenName :</p>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-8">
               <p className="text-white text-[20px] font-bold">{testName}</p>
-              <div className="flex items-center gap-[8px]">
+              <div className="flex items-center gap-[12px]">
                 <span className="text-white/50 text-[14px]">Status :</span>
-                <div className="bg-[#450a0a] border border-red-900/50 px-[8px] py-[2px] rounded-[4px] flex items-center gap-[6px]">
-                  <div className="w-2 h-2 rounded-full bg-red-600"></div>
-                  <span className="text-red-500 text-[12px] font-bold tracking-wide">
-                    FAILED
+                <div className={`border px-[10px] py-[3px] rounded-[4px] flex items-center gap-[6px] ${testStatus === "FAILED" ? "bg-[#450a0a] border-red-900/50" : "bg-green-900/20 border-green-900/50"}`}>
+                  <div className={`w-2 h-2 rounded-full ${testStatus === "FAILED" ? "bg-red-600" : "bg-green-500"}`}></div>
+                  <span className={`${testStatus === "FAILED" ? "text-red-500" : "text-green-500"} text-[12px] font-bold tracking-wide`}>
+                    {loading ? "LOADING..." : testStatus}
                   </span>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="flex items-center gap-[12px]">
+          <div className="flex items-center gap-[16px]">
             {/* Build version dropdown */}
             <div className="flex items-center gap-[10px]">
               <p className="font-semibold text-[14px] text-black dark:text-white">
@@ -204,11 +242,10 @@ export function DetailedResult({
                             onBuildChange(version);
                             setIsBuildDropdownOpen(false);
                           }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${
-                            version === selectedBuild
-                              ? "bg-black/5 dark:bg-white/5"
-                              : ""
-                          }`}
+                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${version === selectedBuild
+                            ? "bg-black/5 dark:bg-white/5"
+                            : ""
+                            }`}
                         >
                           <span className="text-black dark:text-white text-[14px] font-mono">
                             {version}
@@ -224,7 +261,7 @@ export function DetailedResult({
             <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="px-[10px] py-[10px] rounded-[4px] border border-[#3b82f6]/30 text-[#3b82f6] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#3b82f6]/10 transition-colors disabled:opacity-50"
+              className="px-[12px] py-[10px] rounded-[4px] bg-white text-black border border-white text-[14px] font-mono font-bold flex items-center gap-[8px] hover:bg-white/90 transition-colors disabled:opacity-50 shadow-sm"
             >
               <Download className="w-[14px] h-[14px]" />
               <span>Download Report</span>
@@ -232,7 +269,7 @@ export function DetailedResult({
 
             <button
               onClick={handleRaiseIssue}
-              className="px-[10px] py-[10px] rounded-[4px] bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-[14px] font-mono font-bold hover:bg-[#ef4444]/20 transition-colors shadow-sm"
+              className="px-[12px] py-[10px] rounded-[4px] bg-white text-black border border-white text-[14px] font-mono font-bold hover:bg-white/90 transition-colors shadow-sm"
             >
               Raise Issue
             </button>
@@ -246,76 +283,61 @@ export function DetailedResult({
         <div className="flex-1 bg-[#050505] p-[20px] flex flex-col border-r border-white/10">
           {/* Controls Row */}
           <div className="flex items-center justify-between mb-[16px]">
-            <div className="flex items-center bg-transparent gap-4">
-              <button
-                onClick={() => setActiveTab("baseline")}
-                className={`text-[14px] font-mono font-medium ${
-                  activeTab === "baseline"
-                    ? "text-white"
-                    : "text-white/50 hover:text-white"
-                }`}
-              >
-                Baseline Image
-              </button>
-              <button
-                onClick={() => setActiveTab("live")}
-                className={`px-3 py-1 rounded-[4px] text-[14px] font-mono font-medium ${
-                  activeTab === "live"
-                    ? "bg-[#1A1A1A] text-white border border-white/10"
-                    : "text-white/50 hover:text-white"
-                }`}
-              >
-                Live image
-              </button>
-              <button
-                onClick={() => setActiveTab("difference")}
-                className={`text-[14px] font-mono font-medium ${
-                  activeTab === "difference"
-                    ? "text-white"
-                    : "text-white/50 hover:text-white"
-                }`}
-              >
-                Image Difference
-              </button>
+            <div className="flex items-center bg-[#1A1A1A] p-1 rounded-[6px] border border-white/5">
+              {[
+                { id: "baseline", label: "Baseline Image" },
+                { id: "live", label: "Live Image" },
+                { id: "difference", label: "Image Difference" },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  className={`px-4 py-1.5 rounded-[4px] text-[13px] font-medium transition-all ${activeTab === tab.id
+                    ? "bg-[#2A2A2A] text-white shadow-sm"
+                    : "text-white/50 hover:text-white/80"
+                    }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
             {/* Zoom Controls */}
-            <div className="flex items-center bg-[#1A1A1A] rounded-[4px] border border-white/10 p-[2px]">
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
+            <div className="flex items-center bg-[#1A1A1A] rounded-[6px] border border-white/10 p-[2px]">
+              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
                 <Minus className="w-[14px] h-[14px]" />
               </button>
               <div className="w-[40px] text-center text-[12px] text-white font-mono">
-                100
+                100%
               </div>
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
+              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
                 <Plus className="w-[14px] h-[14px]" />
               </button>
             </div>
           </div>
 
           {/* Image Frame */}
-          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center overflow-hidden relative">
-            <div className="relative shadow-2xl">
-              {/* Mock browser frame/header if needed? The image just shows the content. */}
+          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center overflow-hidden relative group">
+            <div className="relative shadow-2xl transition-transform duration-200">
               {activeTab === "baseline" && (
                 <img
                   src={baselineImageUrl}
                   alt="Baseline"
-                  className="max-w-full max-h-[70vh] rounded-[4px]"
+                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
                 />
               )}
               {activeTab === "live" && (
                 <img
                   src={liveImageUrl}
                   alt="Live"
-                  className="max-w-full max-h-[70vh] rounded-[4px]"
+                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
                 />
               )}
               {activeTab === "difference" && (
                 <img
                   src={differenceImageUrl}
                   alt="Difference"
-                  className="max-w-full max-h-[70vh] rounded-[4px]"
+                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
                 />
               )}
             </div>
@@ -323,61 +345,59 @@ export function DetailedResult({
         </div>
 
         {/* Right Panel - Stats & Issues */}
-        <div className="w-[450px] bg-[#111] flex flex-col border-l border-white/10">
+        <div className="w-[400px] bg-[#0A0A0A] flex flex-col border-l border-white/10">
           {/* Stats Header */}
-          <div className="p-[24px] border-b border-white/10">
-            <div className="flex justify-between items-start mb-[24px]">
+          <div className="p-[24px] border-b border-white/10 bg-[#0A0A0A]">
+            <div className="grid grid-cols-2 gap-6 mb-[24px]">
               <div>
-                <p className="text-white/50 text-[13px] mb-[4px]">
-                  Different Percentage
+                <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[4px]">
+                  Diff Percentage
                 </p>
-                <p className="text-white text-[32px] font-light leading-none">
+                <p className="text-white text-[36px] font-light leading-none tracking-tight">
                   {differentPercentage}%
                 </p>
               </div>
               <div>
-                <p className="text-white/50 text-[13px] mb-[8px]">
+                <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[8px]">
                   Final Verdict
                 </p>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <button
                     onClick={handleApprove}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors ${
-                      finalVerdict === "approve"
-                        ? "bg-white text-black border-white"
-                        : "bg-transparent text-white border-transparent hover:bg-white/5"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-all text-[12px] font-medium ${finalVerdict === "approve"
+                      ? "bg-white text-black border-white"
+                      : "bg-transparent text-white/70 border-white/20 hover:border-white/50 hover:text-white"
+                      }`}
                   >
-                    <Check className="w-[14px] h-[14px]" />
-                    <span className="text-[13px] font-medium">Approve</span>
+                    <Check className="w-[12px] h-[12px]" />
+                    Approve
                   </button>
                   <button
                     onClick={handleReject}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors ${
-                      finalVerdict === "reject"
-                        ? "bg-white text-black border-white"
-                        : "bg-transparent text-white border-transparent hover:bg-white/5"
-                    }`}
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-all text-[12px] font-medium ${finalVerdict === "reject"
+                      ? "bg-white text-black border-white"
+                      : "bg-transparent text-white/70 border-white/20 hover:border-white/50 hover:text-white"
+                      }`}
                   >
-                    <XIcon className="w-[14px] h-[14px]" />
-                    <span className="text-[13px] font-medium">Reject</span>
+                    <XIcon className="w-[12px] h-[12px]" />
+                    Reject
                   </button>
                 </div>
               </div>
             </div>
 
             <div>
-              <p className="text-white/50 text-[13px] mb-[4px]">
+              <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[4px]">
                 Detected Issues
               </p>
-              <p className="text-white text-[32px] font-light leading-none">
+              <p className="text-white text-[36px] font-light leading-none tracking-tight">
                 {detectedIssues}
               </p>
             </div>
 
             {/* Warning Info */}
-            <div className="mt-[20px] bg-[#1A1A1A] border border-white/5 rounded-[4px] p-[10px] flex items-start gap-2">
-              <AlertTriangle className="w-[14px] h-[14px] text-white/30 mt-[2px] shrink-0" />
+            <div className="mt-[20px] bg-[#151515] border border-white/5 rounded-[6px] p-[12px] flex items-start gap-3">
+              <AlertTriangle className="w-[14px] h-[14px] text-amber-500/70 mt-[2px] shrink-0" />
               <p className="text-white/50 text-[11px] leading-relaxed">
                 This action is final. Once submitted, the verdict cannot be
                 changed.
@@ -387,76 +407,75 @@ export function DetailedResult({
 
           {/* Issues Content */}
           <div className="flex-1 overflow-y-auto p-[24px]">
-            <h3 className="text-white text-[18px] font-bold mb-[8px]">
+            <h3 className="text-white text-[16px] font-semibold mb-[8px]">
               Issue Overview
             </h3>
-            <p className="text-white/60 text-[13px] leading-relaxed mb-[24px]">
+            <p className="text-white/50 text-[13px] leading-relaxed mb-[24px]">
               When the user is traveling, an error pop-up should appear with the
-              message "Are you traveling?" instead of that , we are getting
-              "Oops! Something went wrong." message in the current UI
+              message "Are you traveling?" instead of that, we are getting
+              "Oops! Something went wrong."
             </p>
 
             {/* Severity Cards */}
-            <div className="grid grid-cols-3 gap-[10px] mb-[24px]">
-              <div className="bg-[#1f1111] border border-red-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#ff5555] text-[13px] mb-[2px]">Major</p>
-                <p className="text-[#ff5555] text-[20px] font-bold">
+            <div className="grid grid-cols-3 gap-[8px] mb-[24px]">
+              <div className="bg-[#1A0A0A] border border-red-500/20 rounded-[6px] p-[10px]">
+                <p className="text-red-400 text-[11px] font-medium mb-[2px]">Major</p>
+                <p className="text-red-500 text-[20px] font-bold">
                   {severityCounts.Major}
                 </p>
               </div>
-              <div className="bg-[#1f1c11] border border-yellow-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#fbbf24] text-[13px] mb-[2px]">Medium</p>
-                <p className="text-[#fbbf24] text-[20px] font-bold">
+              <div className="bg-[#1A150A] border border-amber-500/20 rounded-[6px] p-[10px]">
+                <p className="text-amber-400 text-[11px] font-medium mb-[2px]">Medium</p>
+                <p className="text-amber-500 text-[20px] font-bold">
                   {severityCounts.Medium}
                 </p>
               </div>
-              <div className="bg-[#0f141f] border border-blue-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#3b82f6] text-[13px] mb-[2px]">Low</p>
-                <p className="text-[#3b82f6] text-[20px] font-bold">
+              <div className="bg-[#0A101A] border border-blue-500/20 rounded-[6px] p-[10px]">
+                <p className="text-blue-400 text-[11px] font-medium mb-[2px]">Low</p>
+                <p className="text-blue-500 text-[20px] font-bold">
                   {severityCounts.Low}
                 </p>
               </div>
             </div>
 
             {/* Issue List */}
-            <div className="space-y-[8px]">
+            <div className="space-y-[10px]">
               {issues.map((issue) => {
                 const isMajor = issue.severity === "Major";
                 const isMedium = issue.severity === "Medium";
-                // const isLow = issue.severity === 'Low';
 
                 const borderColor = isMajor
-                  ? "border-red-900/30"
+                  ? "border-red-900/40 hover:border-red-500/50"
                   : isMedium
-                  ? "border-yellow-900/30"
-                  : "border-blue-900/30";
+                    ? "border-amber-900/40 hover:border-amber-500/50"
+                    : "border-blue-900/40 hover:border-blue-500/50";
                 const bgBase = isMajor
-                  ? "bg-[#1f1111]"
+                  ? "bg-[#1A0A0A]"
                   : isMedium
-                  ? "bg-[#1f1c11]"
-                  : "bg-[#0f141f]";
+                    ? "bg-[#1A150A]"
+                    : "bg-[#0A101A]";
                 const textColor = isMajor
-                  ? "text-[#ff5555]"
+                  ? "text-red-400"
                   : isMedium
-                  ? "text-[#fbbf24]"
-                  : "text-[#3b82f6]";
+                    ? "text-amber-400"
+                    : "text-blue-400";
 
                 return (
                   <div
                     key={issue.id}
-                    className={`${bgBase} border ${borderColor} rounded-[4px] p-[12px]`}
+                    className={`${bgBase} border ${borderColor} rounded-[6px] p-[12px] transition-colors cursor-pointer group`}
                   >
-                    <div className="flex items-center gap-2 mb-[4px]">
+                    <div className="flex items-center gap-2 mb-[6px]">
                       <AlertTriangle
                         className={`w-[12px] h-[12px] ${textColor}`}
                       />
                       <span
-                        className={`${textColor} text-[12px] font-semibold uppercase`}
+                        className={`${textColor} text-[11px] font-bold uppercase tracking-wide`}
                       >
                         {issue.severity}
                       </span>
                     </div>
-                    <p className="text-gray-300 text-[13px] font-medium mb-[4px]">
+                    <p className="text-gray-200 text-[13px] font-medium mb-[4px] group-hover:text-white transition-colors">
                       {issue.title}
                     </p>
                     <p className="text-white/30 text-[11px] font-mono">

@@ -39,5 +39,4 @@ package-lock.json
 
 # Optional: ignore MAC trash
 .Trashes
-
-api
+generated/

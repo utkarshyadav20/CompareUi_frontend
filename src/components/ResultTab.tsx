@@ -56,7 +56,7 @@ export function ResultTab({
         const response = await apiClient.get('/result/get-results', {
           params: { projectId, buildId }
         });
-        setTests(response.data);
+        setTests(response.data.map((r: any) => ({ ...r, id: r.imageName })));
       } catch (error) {
         console.error('Failed to fetch results:', error);
       } finally {
@@ -291,7 +291,7 @@ export function ResultTab({
                   <p className="text-white/50 text-[16px] font-semibold truncate" title={test.imageName}>{test.imageName}</p>
                 </div>
                 <div className="w-[247px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">{formatDate(test.createdAt)}</p>
+                  <p className="text-white/50 text-[16px] font-mono">{test.createdAt ? formatDate(test.createdAt) : '--:--'}</p>
                 </div>
                 <div className="w-[207px] shrink-0 px-[10px] py-[10px]">
                   {test.resultStatus === 1 && (
@@ -315,7 +315,10 @@ export function ResultTab({
                 </div>
                 <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[20px]">
                   <button
-                    onClick={() => onViewTest(test.id)}
+                    onClick={() => {
+                      console.log("View test clicked:", test.id);
+                      onViewTest(test.id);
+                    }}
                     className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors"
                   >
                     <Eye className="w-[16px] h-[16px] text-white/50" />
