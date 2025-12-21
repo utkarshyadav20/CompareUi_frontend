@@ -61,7 +61,7 @@
       "scripts": {
             "generate:api": "node scripts/generate-api.js",
             "dev": "npm run generate:api && vite",
-            "build": "npm run generate:api && vite build",
+            "build": "vite build",
             "lint": "eslint .",
             "preview": "vite preview"
       }
