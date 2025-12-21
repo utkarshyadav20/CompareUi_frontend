@@ -20,4 +20,5 @@ export interface Project {
   failed?: number;
   timestamp: string;
   type: ProjectType;
+  buildName?: string;
 }

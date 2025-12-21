@@ -5,6 +5,7 @@ import {
   RefreshCw,
   Trash2,
   Upload,
+  Loader2,
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -31,6 +32,7 @@ interface BaselineImageInputProps {
   onRemoveImage: (id: string) => void;
   onRefreshImage?: (id: string) => void;
   onReplaceImage?: (id: string) => void;
+  loadingActivity?: string | null;
 }
 
 export function BaselineImageInput({
@@ -48,6 +50,7 @@ export function BaselineImageInput({
   onRemoveImage,
   onRefreshImage,
   onReplaceImage,
+  loadingActivity = null,
 }: BaselineImageInputProps) {
   const [openImageMenuId, setOpenImageMenuId] = useState<string | null>(null);
 
@@ -117,31 +120,41 @@ export function BaselineImageInput({
                   className="flex-1 bg-white dark:bg-white/5 border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none text-sm"
                 />
                 <button
-                  className="bg-black dark:bg-white text-white dark:text-black p-3 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 shrink-0"
+                  className="bg-black dark:bg-white text-white dark:text-black p-3 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 shrink-0 flex items-center justify-center min-w-[44px]"
                   onClick={onUrlSubmit}
+                  disabled={loadingActivity === "url"}
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  {loadingActivity === "url" ? <Loader2 className="w-5 h-5 animate-spin" /> : <ArrowRight className="w-5 h-5" />}
                 </button>
               </div>
             </div>
 
             <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg p-8 md:p-16 flex flex-col items-center gap-3 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-              <Upload className="w-5 h-5 text-black dark:text-white" />
+              {loadingActivity === "csv" ? (
+                <Loader2 className="w-5 h-5 text-black dark:text-white animate-spin" />
+              ) : (
+                <Upload className="w-5 h-5 text-black dark:text-white" />
+              )}
               <p className="text-black dark:text-white text-sm text-center">
-                Click here to upload CSV File with multiple screen link
+                {loadingActivity === "csv" ? "Uploading..." : "Click here to upload CSV File with multiple screen link"}
               </p>
               <input
                 type="file"
                 accept=".csv"
                 onChange={(e) => handleFileChange(e, onCsvUpload)}
                 className="absolute inset-0 opacity-0 cursor-pointer"
+                disabled={loadingActivity === "csv"}
               />
             </div>
 
             <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg p-8 flex flex-col items-center gap-3 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-              <Upload className="w-5 h-5 text-black dark:text-white" />
+              {loadingActivity === "image" ? (
+                <Loader2 className="w-5 h-5 text-black dark:text-white animate-spin" />
+              ) : (
+                <Upload className="w-5 h-5 text-black dark:text-white" />
+              )}
               <p className="text-black dark:text-white text-sm text-center">
-                Upload image
+                {loadingActivity === "image" ? "Uploading..." : "Upload image"}
               </p>
               <input
                 type="file"
@@ -149,6 +162,7 @@ export function BaselineImageInput({
                 multiple
                 onChange={(e) => handleFileChange(e, onFileUpload)}
                 className="absolute inset-0 opacity-0 cursor-pointer"
+                disabled={loadingActivity === "image"}
               />
             </div>
           </div>
@@ -163,10 +177,11 @@ export function BaselineImageInput({
                 className="flex-1 bg-[#1e1e1e] dark:bg-[#1e1e1e] border border-white/10 rounded-md px-3 py-2 text-white text-sm placeholder:text-white/40 outline-none focus:border-white/30"
               />
               <button
-                className="bg-white text-black px-4 py-2 rounded-md hover:bg-white/90 shrink-0"
+                className="bg-white text-black px-4 py-2 rounded-md hover:bg-white/90 shrink-0 flex items-center justify-center min-w-[32px]"
                 onClick={onUrlSubmit}
+                disabled={loadingActivity === "url"}
               >
-                <ArrowRight className="w-4 h-4" />
+                {loadingActivity === "url" ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               </button>
             </div>
 
@@ -175,11 +190,10 @@ export function BaselineImageInput({
                 <div
                   key={image.id}
                   onClick={() => onSelectImage(image.id)}
-                  className={`group rounded-[8px] shrink-0 relative border-[0.5px] cursor-pointer transition-all ${
-                    selectedImageId === image.id
-                      ? "bg-white/15 border-white/50"
-                      : "bg-white/5 border-white/20 hover:bg-white/10"
-                  }`}
+                  className={`group rounded-[8px] shrink-0 relative border-[0.5px] cursor-pointer transition-all ${selectedImageId === image.id
+                    ? "bg-white/15 border-white/50"
+                    : "bg-white/5 border-white/20 hover:bg-white/10"
+                    }`}
                 >
                   <div className="flex flex-col gap-1 p-[6px]">
                     {/* Header with filename, resolution, and 3-dot menu */}
@@ -269,7 +283,7 @@ export function BaselineImageInput({
               <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg p-5 flex flex-col items-center gap-2 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
                 <Upload className="w-5 h-5 text-black dark:text-white" />
                 <p className="text-black dark:text-white text-sm text-center">
-                  Upload image from Device
+                  {loadingActivity === "image" ? "Uploading..." : "Upload image from Device"}
                 </p>
                 <input
                   type="file"
@@ -277,6 +291,7 @@ export function BaselineImageInput({
                   multiple
                   onChange={(e) => handleFileChange(e, onFileUpload)}
                   className="absolute inset-0 opacity-0 cursor-pointer"
+                  disabled={loadingActivity === "image"}
                 />
               </div>
             </div>

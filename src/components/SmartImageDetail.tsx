@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { Image } from "lucide-react";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
+import { ImageCard } from "./common/ImageCard";
+import { EmptyState } from "./common/EmptyState";
+import { ImageGridPanel } from "./common/ImageGridPanel";
 
 interface SmartImageDetailProps {
   projectId: string;
@@ -111,51 +114,29 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
 
       {/* Actual Build Images Panel */}
       <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip">
-        <div className="p-5 flex flex-col gap-5 h-full">
-          {/* Header */}
-          <h3 className="text-black dark:text-white text-[20px]">
-            Actual Build images
-          </h3>
-
-          {/* Content */}
-          {actualImage ? (
-            <div className="bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 rounded-lg p-1.5 w-full">
-              <div className="flex flex-col gap-0.5">
-                {/* Image Info */}
-                <div className="flex items-center justify-between text-xs px-1">
-                  <p className="text-black dark:text-white overflow-ellipsis overflow-hidden max-w-[190px]">
-                    {actualImage.name}
-                  </p>
-                  <p className="text-black/20 dark:text-white/20">
-                    {actualImage.width}x{actualImage.height}
-                  </p>
-                </div>
-                {/* Image */}
-                <div className="rounded overflow-hidden">
-                  <img
-                    src={actualImage.url}
-                    alt={actualImage.name}
-                    className="w-full h-auto"
-                  />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg flex-1 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-              <div className="flex flex-col items-center justify-center h-full gap-2.5 p-2.5">
-                <Image className="w-5 h-5 text-black dark:text-white" />
-                <p className="font-mono text-[14px] text-black dark:text-white text-center">
-                  Upload/paste Screenshot
-                </p>
-              </div>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => handleFileUpload(e, "actual")}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+        <div className="p-5 h-full">
+          <ImageGridPanel title="Actual Build images">
+            {actualImage ? (
+              <ImageCard
+                id={actualImage.id}
+                name={actualImage.name}
+                url={actualImage.url}
+                width={actualImage.width}
+                height={actualImage.height}
+                className="w-full h-auto cursor-default hover:bg-white/5 border-white/20"
               />
-            </div>
-          )}
+            ) : (
+              <EmptyState
+                icon={Image}
+                description="Upload/paste Screenshot"
+                variant="dashed"
+                fileInputProps={{
+                  accept: "image/*",
+                  onChange: (e) => handleFileUpload(e, "actual"),
+                }}
+              />
+            )}
+          </ImageGridPanel>
         </div>
       </div>
     </div>

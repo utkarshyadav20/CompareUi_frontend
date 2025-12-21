@@ -4,25 +4,13 @@ import { Theme, Project } from "./types";
 import svgPaths from "./imports/svg-kgk8e7ds24";
 import { HomePage } from "./pages/HomePage";
 import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
+import { ProjectApi } from "./api/generated";
+import apiClient from "./api/client";
+import { mapBackendProjectToFrontend, BackendProjectDto } from "./utils/projectUtils";
 
 export default function App() {
   const [theme, setTheme] = useState<Theme>("dark");
-  const [projects, setProjects] = useState<Project[]>([
-    {
-      id: "1",
-      platform: "Project Name",
-      platformType: "Android TV Emulator",
-      status: "running",
-      iconBg: "bg-green-500/40",
-      icon: (
-        <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
-          <path d={svgPaths.p824ec00} fill="white" />
-        </svg>
-      ),
-      timestamp: "28 min ago",
-      type: "Android TV",
-    },
-  ]);
+  const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
     // Apply theme to document
@@ -44,15 +32,60 @@ export default function App() {
     }
   }, [theme]);
 
-  const handleCreateProject = (
+  // Fetch projects from backend on mount
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const projectApi = new ProjectApi(undefined, undefined, apiClient);
+        const response = await projectApi.projectControllerFindAll();
+        // The API returns void/unknown in the generated code because of missing response types in Swagger?
+        // But typically axios response.data contains the body. 
+        // Let's assume response.data is the array of ProjectDto.
+        // We might need to cast or inspect response if generation was imperfect.
+        const backendProjects = response.data as unknown as BackendProjectDto[];
+
+        if (Array.isArray(backendProjects)) {
+          const mappedProjects = backendProjects.map(mapBackendProjectToFrontend);
+          setProjects(mappedProjects);
+        }
+      } catch (error) {
+        console.error("Failed to fetch projects:", error);
+      }
+    };
+
+    fetchProjects();
+  }, []);
+
+  const handleCreateProject = async (
     newProject: Omit<Project, "id" | "timestamp">
   ) => {
+    const projectId = Date.now().toString();
+    const timestamp = "Just now";
+
+    // Optimistic update
     const project: Project = {
       ...newProject,
-      id: Date.now().toString(),
-      timestamp: "Just now",
+      id: projectId,
+      timestamp,
     };
     setProjects([project, ...projects]);
+
+    try {
+      const projectApi = new ProjectApi(undefined, undefined, apiClient);
+      await projectApi.projectControllerCreate({
+        projectId: projectId,
+        projectName: newProject.platform,
+        projectType: newProject.type.toLowerCase(),
+        buildName: newProject.buildName,
+      });
+
+      console.log("Project created successfully on backend");
+    } catch (error) {
+      console.error("Error creating project:", error);
+      // Revert optimistic update on failure
+      setProjects((prev) => prev.filter((p) => p.id !== projectId));
+      alert("Failed to create project on backend. Please try again.");
+    }
   };
 
   const projectWrapperProps = {

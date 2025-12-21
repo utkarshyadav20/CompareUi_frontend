@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   CircleDashed,
   CircleCheckBig,
@@ -5,6 +6,7 @@ import {
   MoreVertical,
 } from "lucide-react";
 import { Project, ViewMode } from "../types";
+import { NewBuildForm } from "./NewBuildForm";
 
 export interface ProjectCardProps extends Project {
   onClick: () => void;
@@ -12,6 +14,7 @@ export interface ProjectCardProps extends Project {
 }
 
 export function ProjectCard({
+  id,
   platform,
   platformType,
   status,
@@ -23,6 +26,31 @@ export function ProjectCard({
   onClick,
   viewMode,
 }: ProjectCardProps) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNewBuildOpen, setIsNewBuildOpen] = useState(false);
+
+  // Common Menu Component
+  const MenuDropdown = () => (
+    <>
+      <div className="fixed inset-0 z-10" onClick={(e) => {
+        e.stopPropagation();
+        setIsMenuOpen(false);
+      }} />
+      <div className="absolute right-0 top-full mt-2 min-w-[200px] bg-white dark:bg-[#191919] border border-black/10 dark:border-white/10 rounded-lg shadow-xl z-20 overflow-hidden py-1">
+        <button
+          className="w-full px-4 py-2.5 text-left text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(false);
+            setIsNewBuildOpen(true);
+          }}
+        >
+          Create New Build
+        </button>
+      </div>
+    </>
+  );
+
   if (viewMode === "list") {
     return (
       <div
@@ -78,13 +106,25 @@ export function ProjectCard({
             {timestamp}
           </div>
 
-          <button
-            className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <MoreVertical className="w-4 h-4 text-black dark:text-white" />
-          </button>
+          <div className="relative">
+            <button
+              className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
+            >
+              <MoreVertical className="w-4 h-4 text-black dark:text-white" />
+            </button>
+            {isMenuOpen && <MenuDropdown />}
+          </div>
         </div>
+        <NewBuildForm
+          isOpen={isNewBuildOpen}
+          onClose={() => setIsNewBuildOpen(false)}
+          projectId={id}
+          onBuildCreated={() => setIsNewBuildOpen(false)}
+        />
       </div>
     );
   }
@@ -108,12 +148,18 @@ export function ProjectCard({
             </div>
           </div>
         </div>
-        <button
-          className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-          onClick={(e) => e.stopPropagation()}
-        >
-          <MoreVertical className="w-4 h-4 text-black dark:text-white" />
-        </button>
+        <div className="relative">
+          <button
+            className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMenuOpen(!isMenuOpen);
+            }}
+          >
+            <MoreVertical className="w-4 h-4 text-black dark:text-white" />
+          </button>
+          {isMenuOpen && <MenuDropdown />}
+        </div>
       </div>
 
       <div>
@@ -161,6 +207,12 @@ export function ProjectCard({
       <div className="text-black/50 dark:text-white/50 text-xs">
         {timestamp}
       </div>
+      <NewBuildForm
+        isOpen={isNewBuildOpen}
+        onClose={() => setIsNewBuildOpen(false)}
+        projectId={id}
+        onBuildCreated={() => setIsNewBuildOpen(false)}
+      />
     </div>
   );
 }

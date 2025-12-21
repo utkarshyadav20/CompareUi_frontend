@@ -1,6 +1,9 @@
 import { useState } from "react";
-import { Image, RefreshCw, Trash2, Folder, MoreVertical } from "lucide-react";
+import { Image, RefreshCw, Trash2, Folder, MoreVertical, Upload } from "lucide-react";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
+import { ImageCard } from "./common/ImageCard";
+import { EmptyState } from "./common/EmptyState";
+import { ImageGridPanel, ImageGrid } from "./common/ImageGridPanel";
 
 interface AndroidTVDetailProps {
   projectId: string;
@@ -219,192 +222,148 @@ export function AndroidTVDetail({
 
       {/* Actual Build Images Panel */}
       <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip">
-        <div className="p-5 flex flex-col gap-5 h-full">
-          {/* Header with icons */}
-          <div className="flex items-center justify-between w-full">
-            <h3 className="text-black dark:text-white text-[20px]">
-              Actual Build images
-            </h3>
-            <div className="flex items-center gap-0">
-              <button
-                onClick={() => handleRefresh("actual")}
-                className="w-4 h-4 flex items-center justify-center hover:opacity-70 transition-opacity"
-                title="Refresh images"
-              >
-                <RefreshCw className="w-4 h-4 text-black/60 dark:text-white/60" />
-              </button>
-              <button
-                onClick={() => handleClearAll("actual")}
-                className="w-4 h-4 flex items-center justify-center hover:opacity-70 transition-opacity ml-1"
-                title="Clear all images"
-              >
-                <Trash2 className="w-4 h-4 text-red-500/50" />
-              </button>
-            </div>
-          </div>
-
-          {/* Content */}
-          {actualImages.length > 0 ? (
-            <div className="flex flex-col gap-5 h-full overflow-hidden">
-              {/* Folder path input - Only for Physical Device */}
-              {isPhysicalDevice && (
-                <div className="flex gap-2.5 w-full">
-                  <input
-                    type="text"
-                    value={folderPath}
-                    onChange={(e) => setFolderPath(e.target.value)}
-                    placeholder="C:\Users\abhijeetp.QUICKPLAY\Downloads\OTT final logos\OTT 3x1"
-                    className="flex-1 bg-transparent border border-black/50 dark:border-white/50 rounded-lg px-5 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none text-[16px]"
-                  />
-                  <button
-                    onClick={handleBrowseFolder}
-                    className="bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors shrink-0 flex items-center gap-2 text-sm font-semibold"
-                  >
-                    <Folder className="w-[14px] h-[14px]" />
-                    Browse Folder
-                  </button>
-                </div>
-              )}
-
-              {/* Image grid */}
-              <div className="flex-1 overflow-y-auto scrollbar-custom">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {actualImages.map((image) => {
-                    const hasBaseline = hasMatchingBaseline(image.name);
-                    const showWarning = comparisonStarted && !hasBaseline;
-
-                    return (
-                      <div
-                        key={image.id}
-                        onClick={() => setSelectedActualId(image.id)}
-                        className={`bg-white/5 border rounded-lg p-1.5 cursor-pointer hover:bg-white/10 transition-colors relative ${
-                          selectedActualId === image.id
-                            ? "border-white/50"
-                            : showWarning
-                            ? "border-red-500"
-                            : "border-white/20"
-                        }`}
-                      >
-                        <div className="flex flex-col gap-0.5">
-                          {/* Image Info */}
-                          <div className="flex items-center justify-between text-xs px-1 group">
-                            <p className="text-black dark:text-white overflow-ellipsis overflow-hidden max-w-[190px] font-bold">
-                              {image.name}
-                            </p>
-                            <div className="flex items-center gap-1">
-                              <p className="text-black/20 dark:text-white/20 group-hover:hidden">
-                                {image.width}x{image.height}
-                              </p>
-                              {/* 3-dot menu */}
-                              <div className="relative hidden group-hover:block">
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setOpenImageMenuId(
-                                      openImageMenuId === image.id
-                                        ? null
-                                        : image.id
-                                    );
-                                  }}
-                                  className="w-4 h-4 flex items-center justify-center text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded"
-                                >
-                                  <MoreVertical className="w-3 h-3" />
-                                </button>
-                                {openImageMenuId === image.id && (
-                                  <>
-                                    <div
-                                      className="fixed inset-0 z-30"
-                                      onClick={() => setOpenImageMenuId(null)}
-                                    />
-                                    <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
-                                      <div className="p-1">
-                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
-                                          <RefreshCw className="w-3.5 h-3.5" />
-                                          <span>Refresh image</span>
-                                        </button>
-                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
-                                          <Upload className="w-3.5 h-3.5" />
-                                          <span>Replace image</span>
-                                        </button>
-                                        <button
-                                          onClick={() =>
-                                            handleRemoveImage(
-                                              image.id,
-                                              "actual"
-                                            )
-                                          }
-                                          className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
-                                        >
-                                          <Trash2 className="w-3.5 h-3.5" />
-                                          <span>Remove screen</span>
-                                        </button>
-                                      </div>
-                                    </div>
-                                  </>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Image with overlay warning */}
-                          <div className="rounded overflow-hidden relative">
-                            <img
-                              src={image.url}
-                              alt={image.name}
-                              className="w-full h-auto"
-                            />
-
-                            {/* No baseline image found overlay */}
-                            {showWarning && (
-                              <div className="absolute inset-0 bg-black/70 flex items-center justify-center">
-                                <p className="text-red-500 text-sm font-semibold text-center px-4">
-                                  No baseline image found
-                                </p>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+        <div className="p-5 h-full">
+          <ImageGridPanel
+            title="Actual Build images"
+            headerActions={
+              <div className="flex items-center gap-0">
+                <button
+                  onClick={() => handleRefresh("actual")}
+                  className="w-4 h-4 flex items-center justify-center hover:opacity-70 transition-opacity"
+                  title="Refresh images"
+                >
+                  <RefreshCw className="w-4 h-4 text-black/60 dark:text-white/60" />
+                </button>
+                <button
+                  onClick={() => handleClearAll("actual")}
+                  className="w-4 h-4 flex items-center justify-center hover:opacity-70 transition-opacity ml-1"
+                  title="Clear all images"
+                >
+                  <Trash2 className="w-4 h-4 text-red-500/50" />
+                </button>
               </div>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-5 h-full">
-              {/* Empty state - Clean UI for Physical Device */}
-              {isPhysicalDevice ? (
-                <div className="flex-1 flex flex-col">
-                  {/* Browse Folder button in top-right */}
-                  <div className="flex justify-end mb-auto">
+            }
+          >
+            {actualImages.length > 0 ? (
+              <div className="flex flex-col gap-5 h-full overflow-hidden">
+                {/* Folder path input - Only for Physical Device */}
+                {isPhysicalDevice && (
+                  <div className="flex gap-2.5 w-full">
+                    <input
+                      type="text"
+                      value={folderPath}
+                      onChange={(e) => setFolderPath(e.target.value)}
+                      placeholder="C:\Users\abhijeetp.QUICKPLAY\Downloads\OTT final logos\OTT 3x1"
+                      className="flex-1 bg-transparent border border-black/50 dark:border-white/50 rounded-lg px-5 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none text-[16px]"
+                    />
                     <button
                       onClick={handleBrowseFolder}
-                      className="bg-black dark:bg-white text-white dark:text-black px-4 py-2.5 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors flex items-center gap-2 text-sm font-semibold"
+                      className="bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors shrink-0 flex items-center gap-2 text-sm font-semibold"
                     >
                       <Folder className="w-[14px] h-[14px]" />
                       Browse Folder
                     </button>
                   </div>
-                </div>
-              ) : (
-                <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg flex-1 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
-                  <div className="flex flex-col items-center justify-center h-full gap-2.5 p-2.5">
-                    <Image className="w-5 h-5 text-black dark:text-white" />
-                    <p className="font-mono text-[14px] text-black dark:text-white text-center">
-                      Upload/paste Screenshot
-                    </p>
+                )}
+
+                {/* Image grid */}
+                <ImageGrid>
+                  {actualImages.map((image) => {
+                    const hasBaseline = hasMatchingBaseline(image.name);
+                    const showWarning = comparisonStarted && !hasBaseline;
+
+                    return (
+                      <ImageCard
+                        key={image.id}
+                        id={image.id}
+                        name={image.name}
+                        url={image.url}
+                        width={image.width}
+                        height={image.height}
+                        isSelected={selectedActualId === image.id}
+                        warning={
+                          showWarning ? "No baseline image found" : undefined
+                        }
+                        onSelect={setSelectedActualId}
+                        actions={
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setOpenImageMenuId(
+                                  openImageMenuId === image.id ? null : image.id
+                                );
+                              }}
+                              className="w-4 h-4 flex items-center justify-center text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded"
+                            >
+                              <MoreVertical className="w-3 h-3" />
+                            </button>
+                            {openImageMenuId === image.id && (
+                              <>
+                                <div
+                                  className="fixed inset-0 z-30"
+                                  onClick={() => setOpenImageMenuId(null)}
+                                />
+                                <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
+                                  <div className="p-1">
+                                    <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
+                                      <RefreshCw className="w-3.5 h-3.5" />
+                                      <span>Refresh image</span>
+                                    </button>
+                                    <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
+                                      <Upload className="w-3.5 h-3.5" />
+                                      <span>Replace image</span>
+                                    </button>
+                                    <button
+                                      onClick={() =>
+                                        handleRemoveImage(image.id, "actual")
+                                      }
+                                      className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                      <span>Remove screen</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
+                            )}
+                          </>
+                        }
+                      />
+                    );
+                  })}
+                </ImageGrid>
+              </div>
+            ) : (
+              <div className="flex-1 flex flex-col h-full">
+                {/* Empty state - Clean UI for Physical Device */}
+                {isPhysicalDevice ? (
+                  <div className="flex-1 flex flex-col">
+                    <div className="flex justify-end mb-auto">
+                      <button
+                        onClick={handleBrowseFolder}
+                        className="bg-black dark:bg-white text-white dark:text-black px-4 py-2.5 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors flex items-center gap-2 text-sm font-semibold"
+                      >
+                        <Folder className="w-[14px] h-[14px]" />
+                        Browse Folder
+                      </button>
+                    </div>
                   </div>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    onChange={(e) => handleFileUpload(e, "actual")}
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                ) : (
+                  <EmptyState
+                    icon={Image}
+                    description="Upload/paste Screenshot"
+                    variant="dashed"
+                    fileInputProps={{
+                      accept: "image/*",
+                      multiple: true,
+                      onChange: (e) => handleFileUpload(e, "actual"),
+                    }}
                   />
-                </div>
-              )}
-            </div>
-          )}
+                )}
+              </div>
+            )}
+          </ImageGridPanel>
         </div>
       </div>
     </div>

@@ -5,8 +5,8 @@ export interface ControlBarProps {
   // Shared Props
   selectedMethod: "Pixelmatch" | "Noise";
   onMethodChange: (method: "Pixelmatch" | "Noise") => void;
-  threshold: string;
-  onThresholdChange: (threshold: string) => void;
+  sensitivity: string;
+  onSensitivityChange: (sensitivity: string) => void;
   onStartComparison: () => void;
 
   // Search Props (Optional)
@@ -18,16 +18,19 @@ export interface ControlBarProps {
   onAiAgentChange?: (agent: "Yes" | "No") => void;
 
   // Build Props (Optional)
-  selectedBuild?: string;
-  onBuildChange?: (build: string) => void;
-  buildVersions?: string[];
+  selectedBuild?: any;
+  onBuildChange?: (build: any) => void;
+  buildVersions?: any[];
+
+  // Loading State
+  isLoading?: boolean;
 }
 
 export function ControlBar({
   selectedMethod,
   onMethodChange,
-  threshold,
-  onThresholdChange,
+  sensitivity,
+  onSensitivityChange,
   onStartComparison,
   searchQuery,
   onSearchChange,
@@ -36,16 +39,22 @@ export function ControlBar({
   selectedBuild,
   onBuildChange,
   buildVersions,
+  isLoading = false,
 }: ControlBarProps) {
   const [isMethodDropdownOpen, setIsMethodDropdownOpen] = useState(false);
-  const [isThresholdDropdownOpen, setIsThresholdDropdownOpen] = useState(false);
+  const [isSensitivityDropdownOpen, setIsSensitivityDropdownOpen] = useState(false);
   const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
 
-  // Helper for threshold options
-  const thresholdOptions = ["1x", "2x", "3x", "4x", "5x"];
+  // Helper for sensitivity options
+  const sensitivityOptions = ["1x", "2x", "3x", "4x", "5x"];
 
   return (
-    <div className="w-full">
+    /* 
+       FIX 1: Added 'relative' and 'z-50'. 
+       This ensures the entire ControlBar creates a high stacking context 
+       so its children (dropdowns) can float over the page content below.
+    */
+    <div className="w-full relative z-50">
       <div className="flex items-center justify-between px-[32px] py-[11px] bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
         {/* Left Side: Search (if provided) */}
         <div className="flex items-center">
@@ -63,7 +72,7 @@ export function ControlBar({
           )}
         </div>
 
-        {/* Right side - Method, Threshold, Build, Start Button */}
+        {/* Right side - Method, Sensitivity, Build, Start Button */}
         <div className="flex items-center gap-[20px]">
           {/* Method Dropdown */}
           <div className="flex items-center gap-[10px]">
@@ -73,11 +82,10 @@ export function ControlBar({
             <div className="relative">
               <button
                 onClick={() => setIsMethodDropdownOpen(!isMethodDropdownOpen)}
-                className={`px-[10px] py-[10px] rounded-[4px] border ${
-                  selectedMethod
-                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
-                    : "border-green-500/30 text-green-400"
-                } text-[14px] font-mono flex items-center gap-[8px] hover:bg-black/15 dark:hover:bg-white/15 transition-colors`}
+                className={`px-[10px] py-[10px] rounded-[4px] border ${selectedMethod
+                  ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                  : "border-green-500/30 text-green-400"
+                  } text-[14px] font-mono flex items-center gap-[8px] hover:bg-black/15 dark:hover:bg-white/15 transition-colors`}
               >
                 <span>{selectedMethod}</span>
                 <ChevronDown className="w-[14px] h-[14px] text-black/50 dark:text-white/50" />
@@ -120,11 +128,10 @@ export function ControlBar({
                   <button
                     key={option}
                     onClick={() => onAiAgentChange(option)}
-                    className={`px-2.5 py-2 rounded text-sm font-mono transition-colors ${
-                      aiAgent === option
-                        ? "border border-green-500/30 text-green-400"
-                        : "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
-                    }`}
+                    className={`px-2.5 py-2 rounded text-sm font-mono transition-colors ${aiAgent === option
+                      ? "border border-green-500/30 text-green-400"
+                      : "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
+                      }`}
                   >
                     {option}
                   </button>
@@ -133,42 +140,41 @@ export function ControlBar({
             </div>
           )}
 
-          {/* Threshold Dropdown */}
+          {/* Sensitivity Dropdown */}
           <div className="flex items-center gap-[10px]">
             <p className="font-semibold text-[14px] text-black dark:text-white">
-              Threshold :
+              Sensitivity :
             </p>
             <div className="relative">
               <button
                 onClick={() =>
-                  setIsThresholdDropdownOpen(!isThresholdDropdownOpen)
+                  setIsSensitivityDropdownOpen(!isSensitivityDropdownOpen)
                 }
-                className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${
-                  threshold
-                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
-                    : "border border-[#6bdf95]/30 text-[#6bdf95]"
-                } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
+                className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${sensitivity
+                  ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                  : "border border-[#6bdf95]/30 text-[#6bdf95]"
+                  } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
               >
-                <span>{threshold}</span>
+                <span>{sensitivity}</span>
                 <ChevronDown className="w-[14px] h-[14px]" />
               </button>
-              {isThresholdDropdownOpen && (
+              {isSensitivityDropdownOpen && (
                 <>
                   <div
                     className="fixed inset-0 z-[40]"
-                    onClick={() => setIsThresholdDropdownOpen(false)}
+                    onClick={() => setIsSensitivityDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-[45px] w-[60px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
-                    {thresholdOptions.map((t) => (
+                  <div className="absolute right-0 top-[45px] w-[60px] bg-[#1e1e1e] rounded-[8px] shadow-lg z-[50] border border-white/20 overflow-hidden">
+                    {sensitivityOptions.map((t) => (
                       <button
                         key={t}
                         onClick={() => {
-                          onThresholdChange(t);
-                          setIsThresholdDropdownOpen(false);
+                          onSensitivityChange(t);
+                          setIsSensitivityDropdownOpen(false);
                         }}
-                        className="w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                        className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors"
                       >
-                        <span className="text-black dark:text-white text-[14px] font-mono">
+                        <span className="text-white text-[14px] font-mono">
                           {t}
                         </span>
                       </button>
@@ -179,45 +185,68 @@ export function ControlBar({
             </div>
           </div>
 
-          {/* Build Dropdown (If Provided) */}
+          {/* Build Dropdown */}
           {buildVersions && onBuildChange && (
             <div className="flex items-center gap-[10px]">
               <p className="font-semibold text-[14px] text-black dark:text-white">
                 Build :
               </p>
-              <div className="relative">
+              {/* 
+                  FIX 2: Added z-index logic here. 
+                  When open, this container jumps to z-50 to ensure it sits 
+                  above the 'Start Comparing' button to its right.
+              */}
+              <div className={`relative ${isBuildDropdownOpen ? "z-50" : ""}`}>
                 <button
                   onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
                   className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
                 >
-                  <span>{selectedBuild}</span>
+                  <span>
+                    {typeof selectedBuild === 'string'
+                      ? selectedBuild
+                      : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
+                    }
+                  </span>
                   <ChevronDown className="w-[14px] h-[14px]" />
                 </button>
                 {isBuildDropdownOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-[40]"
+                      className="fixed inset-0 z-[9995]"
                       onClick={() => setIsBuildDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
-                      {buildVersions.map((version) => (
-                        <button
-                          key={version}
-                          onClick={() => {
-                            onBuildChange(version);
-                            setIsBuildDropdownOpen(false);
-                          }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${
-                            version === selectedBuild
-                              ? "bg-black/5 dark:bg-white/5"
-                              : ""
-                          }`}
-                        >
-                          <span className="text-black dark:text-white text-[14px] font-mono">
-                            {version}
-                          </span>
-                        </button>
-                      ))}
+                    <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[9999] border border-white/20 overflow-hidden">
+                      {buildVersions.length > 0 ? (
+                        buildVersions.map((build) => {
+                          const buildId = typeof build === 'string' ? build : build.buildId;
+                          const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
+                          const isSelected = typeof selectedBuild === 'string'
+                            ? selectedBuild === build
+                            : selectedBuild?.buildId === build.buildId;
+
+                          return (
+                            <button
+                              key={buildId}
+                              onClick={() => {
+                                onBuildChange(build);
+                                setIsBuildDropdownOpen(false);
+                              }}
+                              className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
+                                ? "bg-white/5"
+                                : ""
+                                }`}
+                            >
+                              <span className="text-white text-[14px] font-mono">
+                                {buildName}
+                              </span>
+                            </button>
+                          );
+                        })
+                      ) : (
+                        <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
+                          No builds found
+                        </div>
+                      )}
                     </div>
                   </>
                 )}
@@ -228,10 +257,15 @@ export function ControlBar({
           {/* Start Button */}
           <button
             onClick={onStartComparison}
-            className="bg-black dark:bg-white text-white dark:text-black px-[16px] py-[11.798px] rounded-[7.26px] flex items-center gap-[9.075px] text-[14px] font-semibold hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+            disabled={isLoading}
+            className={`bg-black dark:bg-white text-white dark:text-black px-[16px] py-[11.798px] rounded-[7.26px] flex items-center gap-[9.075px] text-[14px] font-semibold hover:bg-black/90 dark:hover:bg-white/90 transition-colors ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
-            <span>✦</span>
-            <span>Start Comparing UI</span>
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : (
+              <span>✦</span>
+            )}
+            <span>{isLoading ? 'Comparing...' : 'Start Comparing UI'}</span>
           </button>
         </div>
       </div>

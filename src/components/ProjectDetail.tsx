@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { RefreshCw, ChevronDown, Globe } from "lucide-react";
+import { useState, useEffect } from "react";
+import { RefreshCw } from "lucide-react";
 import { Project, Theme } from "../types";
 import { ProjectHeader } from "./ProjectHeader";
 import { PROJECT_NAVIGATION_ITEMS } from "../constants";
@@ -10,6 +10,9 @@ import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
 import { TestComparisonToast } from "./TestComparisonToast";
 import { BaselineImageInput } from "./ui/BaselineImageInput";
 import { ControlBar } from "./ui/ControlBar";
+import { BrowserPreview } from "./common/BrowserPreview";
+import { EmptyState } from "./common/EmptyState";
+import apiClient from '../api/client';
 
 // Tabs
 import { ActivityTab } from "./ActivityTab";
@@ -56,23 +59,38 @@ export function ProjectDetail({
       height: number;
     }>
   >([]);
+
   const [websiteUrl, setWebsiteUrl] = useState("");
-  const [websiteUrlError, setWebsiteUrlError] = useState(false);
-  const [selectedBrowser, setSelectedBrowser] = useState<
-    "Chrome" | "Safari" | "Microsoft Edge" | "Firefox"
-  >("Chrome");
-  const [isBrowserDropdownOpen, setIsBrowserDropdownOpen] = useState(false);
+  /* Removed duplicate websiteUrl declaration */
   const [showComparisonToast, setShowComparisonToast] = useState(false);
 
+  // Build State
+  const [builds, setBuilds] = useState<any[]>([]);
+  const [selectedBuild, setSelectedBuild] = useState<any | null>(null);
+
+  useEffect(() => {
+    const fetchBuilds = async () => {
+      try {
+        const response = await apiClient.get('/project/builds', {
+          params: { projectId: project.id }
+        });
+        console.log('Fetched builds:', response.data);
+        setBuilds(response.data);
+        if (response.data.length > 0) {
+          // Default to the first build
+          setSelectedBuild(response.data[0]);
+        } else {
+          console.log('No builds found for project:', project.id);
+        }
+      } catch (error) {
+        console.error('Failed to fetch builds:', error);
+      }
+    };
+    fetchBuilds();
+  }, [project.id]);
+
   // Result Tab State
-  const [selectedBuild, setSelectedBuild] = useState("v1.0.234.1");
   const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
-  const buildVersions = [
-    "v1.0.235.1",
-    "v1.0.234.1",
-    "v1.0.233.1",
-    "v1.0.232.1",
-  ];
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
@@ -123,15 +141,7 @@ export function ProjectDetail({
     setBaselineUrl("");
   };
 
-  const handleWebsiteUrlChange = (url: string) => {
-    setWebsiteUrl(url);
-    // Validate URL
-    if (url && !url.match(/^https?:\/\/.+/)) {
-      setWebsiteUrlError(true);
-    } else {
-      setWebsiteUrlError(false);
-    }
-  };
+
 
   // Standardized navigation items
   const navigationItems = PROJECT_NAVIGATION_ITEMS.map((item) => ({
@@ -190,6 +200,9 @@ export function ProjectDetail({
         projectName={project.platform}
         platformType={project.platformType}
         onBack={onBack}
+        buildVersions={builds}
+        selectedBuild={selectedBuild}
+        onBuildChange={setSelectedBuild}
       />
     );
   }
@@ -223,12 +236,15 @@ export function ProjectDetail({
           aiAgent={aiAgent}
           onAiAgentChange={setAiAgent}
           onStartComparison={() => setShowComparisonToast(true)}
+          buildVersions={builds}
+          selectedBuild={selectedBuild}
+          onBuildChange={setSelectedBuild}
         />
       )}
 
       {/* Main Content - Conditional rendering based on activeTab */}
       {(activeTab === "overview" || activeTab === "testingpanel") &&
-      project.type === "Smart Image" ? (
+        project.type === "Smart Image" ? (
         <SmartImageDetail projectId={project.id} />
       ) : (activeTab === "overview" || activeTab === "testingpanel") &&
         (project.type === "Mobile" || project.type === "Roku TV") ? (
@@ -269,184 +285,29 @@ export function ProjectDetail({
 
           {/* Right Panel - Website Preview or Actual Build Images */}
           {project.type === "Website" ? (
-            <div className="flex-1 bg-black/5 dark:bg-white/10 rounded-lg p-5 pb-3 flex flex-col gap-5 border border-black/10 dark:border-white/10">
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-5">
-                  <h3 className="text-black dark:text-white text-[20px]">
-                    Live Website Preview
-                  </h3>
-                  <div className="bg-[rgba(3,46,21,0.5)] flex items-center gap-2 px-2 py-1.5 rounded">
-                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                    <span className="text-green-400 text-sm font-mono">
-                      Sim Connected
-                    </span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-5">
-                  <div className="flex items-center gap-2">
-                    <span className="text-black dark:text-white text-sm">
-                      Resolution :
-                    </span>
-                    <button className="bg-black/10 dark:bg-white/10 flex items-center gap-2 px-2.5 py-2 rounded border border-black/10 dark:border-white/10 hover:bg-black/15 dark:hover:bg-white/15 transition-colors">
-                      <RefreshCw className="w-3.5 h-3.5 text-black dark:text-white" />
-                      <span className="text-black dark:text-white text-sm font-mono">
-                        Fetch
-                      </span>
-                    </button>
-                  </div>
-
-                  <div className="flex items-center gap-2 relative">
-                    <span className="text-black dark:text-white text-sm">
-                      Browser :
-                    </span>
-                    <button
-                      onClick={() =>
-                        setIsBrowserDropdownOpen(!isBrowserDropdownOpen)
-                      }
-                      className="flex items-center gap-2 px-2.5 py-2 rounded border border-green-500/30 hover:bg-green-500/10 transition-colors"
-                    >
-                      <span className="text-green-400 text-sm font-mono">
-                        {selectedBrowser}
-                      </span>
-                      <ChevronDown className="w-3.5 h-3.5 text-green-400" />
-                    </button>
-
-                    {/* Browser Dropdown Menu */}
-                    {isBrowserDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-30"
-                          onClick={() => setIsBrowserDropdownOpen(false)}
-                        />
-                        <div className="absolute top-full right-0 mt-2 w-[180px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
-                          <div className="p-1">
-                            {(
-                              [
-                                "Chrome",
-                                "Safari",
-                                "Microsoft Edge",
-                                "Firefox",
-                              ] as const
-                            ).map((browser) => (
-                              <button
-                                key={browser}
-                                onClick={() => {
-                                  setSelectedBrowser(browser);
-                                  setIsBrowserDropdownOpen(false);
-                                }}
-                                className={`w-full px-3 py-2 flex items-center gap-2 text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded ${
-                                  selectedBrowser === browser
-                                    ? "bg-black/5 dark:bg-white/5 text-green-400"
-                                    : "text-black dark:text-white"
-                                }`}
-                              >
-                                <span className="font-mono">{browser}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Browser Mockup */}
-              <div className="flex-1 bg-[#09090b] rounded-[10px] p-4 pb-2 flex flex-col gap-3 border border-[#27272a]">
-                {/* Browser Address Bar */}
-                <div className="flex items-center gap-2 h-8">
-                  {/* Traffic Lights */}
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                  </div>
-
-                  {/* URL Input */}
-                  <div className="flex-1 bg-white/5 rounded border border-white/50 flex items-center gap-2 px-2.5 py-2">
-                    <Globe className="w-4 h-4 text-white/50" />
-                    <input
-                      type="text"
-                      value={websiteUrl}
-                      onChange={(e) => handleWebsiteUrlChange(e.target.value)}
-                      placeholder="Enter your live url here ..."
-                      className="flex-1 bg-transparent text-black dark:text-white text-sm outline-none placeholder:text-black/50 dark:placeholder:text-white/50"
-                    />
-                  </div>
-
-                  {/* Refresh Button */}
-                  <button
-                    onClick={() => {
-                      // Force iframe reload by updating the key
-                      if (websiteUrl && !websiteUrlError) {
-                        const iframe = document.querySelector(
-                          'iframe[title="Website Preview"]'
-                        ) as HTMLIFrameElement;
-                        if (iframe) {
-                          iframe.src = iframe.src;
-                        }
-                      }
-                    }}
-                    className="bg-[#27272a] p-2 rounded hover:bg-[#3a3a3d] transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-[#9f9fa9]" />
-                  </button>
-                </div>
-
-                {/* Browser Content Area */}
-                <div className="flex-1 bg-[rgba(24,24,27,0.5)] rounded border border-[#3f3f46] flex items-center justify-center min-h-[400px] overflow-hidden relative">
-                  {websiteUrlError ? (
-                    <div className="text-center">
-                      <Globe className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                      <p className="text-yellow-500 text-lg font-mono mb-2">
-                        Invalid URL
-                      </p>
-                      <p className="text-[#71717b] text-sm font-mono">
-                        Please enter a valid URL starting with http:// or
-                        <br />
-                        https://
-                      </p>
-                    </div>
-                  ) : websiteUrl ? (
-                    <iframe
-                      key={websiteUrl}
-                      src={websiteUrl}
-                      className="w-full h-full border-0"
-                      title="Website Preview"
-                      sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                    />
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-black dark:text-white text-lg font-mono mb-2">
-                        Waiting
-                      </p>
-                      <p className="text-black/50 dark:text-[#71717b] text-sm font-mono">
-                        Enter website URL to preview
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+            <BrowserPreview
+              url={websiteUrl}
+              onUrlChange={setWebsiteUrl}
+              status="connected"
+            />
           ) : (
-            <div className="flex-1 bg-black/5 dark:bg-white/10 rounded-lg p-5 flex flex-col items-center justify-center gap-10 border border-black/10 dark:border-white/10 min-h-[400px]">
-              <div className="text-center">
-                <p className="text-black dark:text-white text-lg mb-3 font-mono">
-                  Receiving....
-                </p>
-                <p className="text-black/50 dark:text-white/50 font-mono">
+            <EmptyState
+              icon={RefreshCw}
+              title="Receiving..."
+              description={
+                <>
                   Waiting for image to receive
                   <br />
                   from Android build
-                </p>
-              </div>
-              <button className="flex items-center gap-2 text-black dark:text-white hover:opacity-80 transition-opacity">
-                <RefreshCw className="w-4 h-4" />
-                <span className="underline">Refresh</span>
-              </button>
-            </div>
+                </>
+              }
+              action={
+                <button className="flex items-center gap-2 text-black dark:text-white hover:opacity-80 transition-opacity underline">
+                  Refresh
+                </button>
+              }
+              className="bg-black/5 dark:bg-white/10 rounded-lg border border-black/10 dark:border-white/10 min-h-[400px]"
+            />
           )}
         </div>
       ) : null}
@@ -458,9 +319,9 @@ export function ProjectDetail({
       {activeTab === "dbconnection" && <DBConnectionTab />}
       {activeTab === "result" && (
         <ResultTab
-          buildVersion={selectedBuild}
+          buildVersion={selectedBuild?.buildName || ""}
           selectedBuild={selectedBuild}
-          buildVersions={buildVersions}
+          buildVersions={builds}
           onBuildChange={setSelectedBuild}
           onViewTest={handleViewTest}
         />

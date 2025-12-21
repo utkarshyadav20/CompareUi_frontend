@@ -24,6 +24,7 @@ export function NewProjectForm({
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15)
   );
+  const [buildName, setBuildName] = useState("");
 
   const handleCreate = () => {
     if (!projectName.trim()) return;
@@ -82,9 +83,11 @@ export function NewProjectForm({
       iconBg: iconBgMap[selectedType],
       icon: getIcon(),
       type: selectedType,
+      buildName: buildName.trim() || undefined,
     });
 
     setProjectName("");
+    setBuildName("");
     onClose();
   };
 
@@ -135,6 +138,19 @@ export function NewProjectForm({
             />
           </div>
 
+          {/* Build Name */}
+          <div>
+            <label className="text-black dark:text-white block mb-2">
+              Build Name
+            </label>
+            <input
+              type="text"
+              value={buildName}
+              onChange={(e) => setBuildName(e.target.value)}
+              placeholder="Enter Build Name"
+              className="w-full bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none focus:border-black/80 dark:focus:border-white/80"
+            />
+          </div>
           {/* Project Type */}
           <div>
             <label className="text-black dark:text-white block mb-2">
