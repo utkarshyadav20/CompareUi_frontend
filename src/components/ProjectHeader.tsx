@@ -14,7 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 const imgProfile =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
+  "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmcfUSvCfgqxhSfkkuwlpo-O6Cxnmd9GNikA&s";
 import { Theme, Project } from "../types";
 
 interface ProjectHeaderProps {
@@ -49,7 +49,7 @@ export function ProjectHeader({
   hideNavigation = false,
 }: ProjectHeaderProps) {
   return (
-    <header className="relative z-50 bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
+    <header className="relative z-[100] bg-white dark:bg-black border-b border-black/10 dark:border-white/10" style={{ zIndex: 1001 }}>
       <div className="px-4 md:px-8 py-4 flex items-center justify-between">
         <div className="flex items-center gap-5">
           <button
@@ -167,31 +167,28 @@ export function ProjectHeader({
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => onThemeChange("system")}
-                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                            theme === "system"
-                              ? "bg-black/10 dark:bg-white/10"
-                              : ""
-                          }`}
+                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "system"
+                            ? "bg-black/10 dark:bg-white/10"
+                            : ""
+                            }`}
                         >
                           <Monitor className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => onThemeChange("light")}
-                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                            theme === "light"
-                              ? "bg-black/10 dark:bg-white/10"
-                              : ""
-                          }`}
+                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "light"
+                            ? "bg-black/10 dark:bg-white/10"
+                            : ""
+                            }`}
                         >
                           <Sun className="w-3 h-3" />
                         </button>
                         <button
                           onClick={() => onThemeChange("dark")}
-                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                            theme === "dark"
-                              ? "bg-black/10 dark:bg-white/10"
-                              : ""
-                          }`}
+                          className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "dark"
+                            ? "bg-black/10 dark:bg-white/10"
+                            : ""
+                            }`}
                         >
                           <Moon className="w-3 h-3" />
                         </button>
@@ -235,11 +232,10 @@ export function ProjectHeader({
               onClick={() =>
                 onTabChange?.(item.label.toLowerCase().replace(" ", ""))
               }
-              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${
-                activeTab === item.label.toLowerCase().replace(" ", "")
-                  ? "text-black dark:text-white"
-                  : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
-              }`}
+              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${activeTab === item.label.toLowerCase().replace(" ", "")
+                ? "text-black dark:text-white"
+                : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
+                }`}
             >
               {item.label}
               {activeTab === item.label.toLowerCase().replace(" ", "") && (

@@ -54,7 +54,7 @@ export function ControlBar({
        This ensures the entire ControlBar creates a high stacking context 
        so its children (dropdowns) can float over the page content below.
     */
-    <div className="w-full relative z-50">
+    <div className="w-full relative z-40">
       <div className="flex items-center justify-between px-[32px] py-[11px] bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
         {/* Left Side: Search (if provided) */}
         <div className="flex items-center">

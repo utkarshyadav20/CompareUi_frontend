@@ -623,6 +623,8 @@ export function AndroidTVDetailFigma({
         platformType={getApiProjectType(platformType)}
         onBack={handleBackToResults}
         buildVersion={typeof selectedBuild === 'string' ? selectedBuild : selectedBuild?.buildId || "v12.224"}
+        buildVersions={buildVersions}
+        onBuildChange={onBuildChange}
         theme={theme}
         onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}
@@ -816,13 +818,6 @@ export function AndroidTVDetailFigma({
                       className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
                     >
                       <Folder className="w-[18px] h-[18px]" />
-                      <div className="rounded-full size-[47px] overflow-hidden">
-                        <img
-                          src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=80"
-                          alt="Profile"
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
                     </button>
                   }
                 />

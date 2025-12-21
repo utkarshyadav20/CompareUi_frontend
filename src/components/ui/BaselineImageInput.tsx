@@ -168,7 +168,7 @@ export function BaselineImageInput({
           </div>
         ) : (
           <div className="space-y-4">
-            <div className="flex gap-2">
+            {/* <div className="flex gap-2">
               <input
                 type="text"
                 value={baselineUrl}
@@ -183,7 +183,7 @@ export function BaselineImageInput({
               >
                 {loadingActivity === "url" ? <Loader2 className="w-3 h-3 animate-spin" /> : <ArrowRight className="w-4 h-4" />}
               </button>
-            </div>
+            </div> */}
 
             <div className="space-y-3 pr-2">
               {images.map((image) => (
@@ -203,9 +203,9 @@ export function BaselineImageInput({
                       </p>
 
                       {/* Resolution - Hidden on hover */}
-                      <p className="text-black/20 dark:text-white/20 text-[12px] ml-2 shrink-0 group-hover:hidden">
+                      {/* <p className="text-black/20 dark:text-white/20 text-[12px] ml-2 shrink-0 group-hover:hidden">
                         {image.width}x{image.height}
-                      </p>
+                      </p> */}
 
                       {/* 3-Dot Menu - Shown on hover */}
                       <div className="relative hidden group-hover:block ml-2">

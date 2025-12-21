@@ -8,15 +8,12 @@ import {
   X as XIcon,
   Download,
   AlertTriangle,
+  AlertCircle,
   Plus,
   Minus,
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
-
-const imgFrame21 =
-  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
-
 interface Issue {
   id: string;
   severity: "Major" | "Medium" | "Low";
@@ -32,6 +29,8 @@ interface DetailedResultProps {
   platformType: string;
   onBack: () => void;
   buildVersion: string;
+  buildVersions?: any[]; // Added optional prop
+  onBuildChange?: (build: any) => void;
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
   isNotificationOpen: boolean;
@@ -47,6 +46,8 @@ export function DetailedResult({
   platformType,
   onBack,
   buildVersion = "v12.224",
+  buildVersions = [],
+  onBuildChange,
   theme,
   onThemeChange,
   isNotificationOpen,
@@ -97,21 +98,10 @@ export function DetailedResult({
 
   // Build Dropdown State
   const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
-  const [selectedBuild, setSelectedBuild] = useState(buildVersion);
 
-  const buildVersions = ["v12.224", "v12.223", "v12.222", "v12.221", "v12.220"];
-
-  const onBuildChange = (version: string) => {
-    setSelectedBuild(version);
-  };
-
-  // Mock data for the detailed result
-  // Mock data fallbacks if not yet loaded
-  const testStatus = resultData?.resultStatus === 0 ? "FAILED" : "PASSED"; // 0 is usually success? Wait, established incorrectly in mocked data above?
-  // In ResultTab, 0 was FAIL (red). So 0 is FAIL.
-
+  const testStatus = resultData?.resultStatus === 0 ? "FAILED" : "PASSED";
   const differentPercentage = resultData?.diffPercent ?? 0;
-  const detectedIssues = 0; // Backend doesn't return issues yet?
+  const detectedIssues = 0;
 
   const baselineImageUrl = resultData?.baselineImageUrl || "https://placehold.co/800x450?text=No+Baseline";
   const liveImageUrl = resultData?.actualImageUrl || "https://placehold.co/800x450?text=No+Actual";
@@ -194,39 +184,48 @@ export function DetailedResult({
         onProfileMenuToggle={onProfileMenuToggle}
         hideNavigation={true}
       />
-
       {/* Screen Info Bar */}
-      <div className="w-full border-b border-white/10 bg-[#0A0A0A]">
-        <div className="flex items-center justify-between px-[32px] py-[12px]">
+      <div className="w-full border-b border-zinc-800 bg-zinc-900 relative">
+        <div className="flex items-center justify-between px-6 py-4">
+          {/* Left: Screen Name */}
           <div>
-            <p className="text-white/50 text-[12px] mb-[2px]">ScreenName :</p>
-            <div className="flex items-center gap-8">
-              <p className="text-white text-[20px] font-bold">{testName}</p>
-              <div className="flex items-center gap-[12px]">
-                <span className="text-white/50 text-[14px]">Status :</span>
-                <div className={`border px-[10px] py-[3px] rounded-[4px] flex items-center gap-[6px] ${testStatus === "FAILED" ? "bg-[#450a0a] border-red-900/50" : "bg-green-900/20 border-green-900/50"}`}>
-                  <div className={`w-2 h-2 rounded-full ${testStatus === "FAILED" ? "bg-red-600" : "bg-green-500"}`}></div>
-                  <span className={`${testStatus === "FAILED" ? "text-red-500" : "text-green-500"} text-[12px] font-bold tracking-wide`}>
-                    {loading ? "LOADING..." : testStatus}
-                  </span>
-                </div>
-              </div>
+            <p className="font-mono text-zinc-400 text-xs mb-1">ScreenName</p>
+            <p className="font-mono text-zinc-100 text-xl font-bold">{testName}</p>
+          </div>
+
+          {/* Center: Status */}
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center gap-3">
+            <span className="font-mono text-zinc-400 text-sm">Status</span>
+            <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${testStatus === "FAILED" ? "bg-red-950/30 border-red-900/50" : "bg-green-950/30 border-green-900/50"}`}>
+              <div className={`w-2 h-2 rounded-full ${testStatus === "FAILED" ? "bg-red-500" : "bg-green-500"}`}></div>
+              <span className={`font-mono text-xs font-bold ${testStatus === "FAILED" ? "text-red-400" : "text-green-400"}`}>
+                {loading ? "LOADING..." : testStatus}
+              </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-[16px]">
+          {/* Right: Controls */}
+          <div className="flex items-center gap-4">
             {/* Build version dropdown */}
-            <div className="flex items-center gap-[10px]">
-              <p className="font-semibold text-[14px] text-black dark:text-white">
-                Build :
+            <div className="flex items-center gap-3">
+              <p className="font-mono text-zinc-400 text-sm">
+                Build
               </p>
               <div className="relative">
                 <button
                   onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-                  className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
+                  className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors"
                 >
-                  <span>{selectedBuild}</span>
-                  <ChevronDown className="w-[14px] h-[14px]" />
+                  <p className="font-mono text-[14px] text-[#6bdf95]">
+                    {(() => {
+                      if (!buildVersion) return 'Select Build';
+                      // buildVersion is typically a string ID here based on usage in AndroidTVDetailFigma
+                      const found = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
+                      if (found && typeof found !== 'string') return found.buildName || found.buildId;
+                      return buildVersion;
+                    })()}
+                  </p>
+                  <ChevronDown className="w-[14px] h-[14px] text-[#6bdf95]" />
                 </button>
                 {isBuildDropdownOpen && (
                   <>
@@ -234,24 +233,32 @@ export function DetailedResult({
                       className="fixed inset-0 z-[40]"
                       onClick={() => setIsBuildDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
-                      {buildVersions.map((version) => (
-                        <button
-                          key={version}
-                          onClick={() => {
-                            onBuildChange(version);
-                            setIsBuildDropdownOpen(false);
-                          }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${version === selectedBuild
-                            ? "bg-black/5 dark:bg-white/5"
-                            : ""
-                            }`}
-                        >
-                          <span className="text-black dark:text-white text-[14px] font-mono">
-                            {version}
-                          </span>
-                        </button>
-                      ))}
+                    <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[50] border border-white/20 overflow-hidden">
+                      {buildVersions.map((version) => {
+                        const buildId = typeof version === 'string' ? version : version.buildId;
+                        const buildName = typeof version === 'string' ? version : (version.buildName || `Build ${version.buildId}`);
+                        const isSelected = buildVersion === buildId;
+
+                        return (
+                          <button
+                            key={buildId}
+                            onClick={() => {
+                              if (onBuildChange) {
+                                onBuildChange(version);
+                              }
+                              setIsBuildDropdownOpen(false);
+                            }}
+                            className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
+                              ? "bg-white/5"
+                              : ""
+                              }`}
+                          >
+                            <span className="text-white text-[14px] font-mono">
+                              {buildName}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   </>
                 )}
@@ -261,15 +268,15 @@ export function DetailedResult({
             <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="px-[12px] py-[10px] rounded-[4px] bg-white text-black border border-white text-[14px] font-mono font-bold flex items-center gap-[8px] hover:bg-white/90 transition-colors disabled:opacity-50 shadow-sm"
+              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold flex items-center gap-2 hover:bg-zinc-200 transition-colors disabled:opacity-50 shadow-sm"
             >
-              <Download className="w-[14px] h-[14px]" />
+              <Download className="w-4 h-4" />
               <span>Download Report</span>
             </button>
 
             <button
               onClick={handleRaiseIssue}
-              className="px-[12px] py-[10px] rounded-[4px] bg-white text-black border border-white text-[14px] font-mono font-bold hover:bg-white/90 transition-colors shadow-sm"
+              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold hover:bg-zinc-200 transition-colors shadow-sm"
             >
               Raise Issue
             </button>
@@ -280,7 +287,7 @@ export function DetailedResult({
       {/* Main Content */}
       <div className="flex h-[calc(100vh-140px)]">
         {/* Left Panel - Image Viewer */}
-        <div className="flex-1 bg-[#050505] p-[20px] flex flex-col border-r border-white/10">
+        <div className="w-[65%] bg-[#050505] p-[20px] flex flex-col border-r border-white/10">
           {/* Controls Row */}
           <div className="flex items-center justify-between mb-[16px]">
             <div className="flex items-center bg-[#1A1A1A] p-1 rounded-[6px] border border-white/5">
@@ -303,7 +310,7 @@ export function DetailedResult({
             </div>
 
             {/* Zoom Controls */}
-            <div className="flex items-center bg-[#1A1A1A] rounded-[6px] border border-white/10 p-[2px]">
+            {/* <div className="flex items-center bg-[#1A1A1A] rounded-[6px] border border-white/10 p-[2px]">
               <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
                 <Minus className="w-[14px] h-[14px]" />
               </button>
@@ -313,31 +320,31 @@ export function DetailedResult({
               <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
                 <Plus className="w-[14px] h-[14px]" />
               </button>
-            </div>
+            </div> */}
           </div>
 
           {/* Image Frame */}
           <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center overflow-hidden relative group">
-            <div className="relative shadow-2xl transition-transform duration-200">
+            <div className="relative w-full h-full flex items-center justify-center">
               {activeTab === "baseline" && (
                 <img
                   src={baselineImageUrl}
                   alt="Baseline"
-                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
+                  className="max-w-full max-h-full object-contain rounded-[4px] shadow-2xl"
                 />
               )}
               {activeTab === "live" && (
                 <img
                   src={liveImageUrl}
                   alt="Live"
-                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
+                  className="max-w-full max-h-full object-contain rounded-[4px] shadow-2xl"
                 />
               )}
               {activeTab === "difference" && (
                 <img
                   src={differenceImageUrl}
                   alt="Difference"
-                  className="max-w-full max-h-[70vh] rounded-[4px] object-contain"
+                  className="max-w-full max-h-full object-contain rounded-[4px] shadow-2xl"
                 />
               )}
             </div>
@@ -345,142 +352,155 @@ export function DetailedResult({
         </div>
 
         {/* Right Panel - Stats & Issues */}
-        <div className="w-[400px] bg-[#0A0A0A] flex flex-col border-l border-white/10">
-          {/* Stats Header */}
-          <div className="p-[24px] border-b border-white/10 bg-[#0A0A0A]">
-            <div className="grid grid-cols-2 gap-6 mb-[24px]">
+        {/* RIGHT PANEL */}
+        <div className="w-[35%] bg-gradient-to-b from-black to-[#050505] flex flex-col border-l border-white/10">
+          {/* STATS */}
+          <div className="p-6 border-b border-white/10 bg-black/40 backdrop-blur-xl">
+            <div className="grid grid-cols-2 gap-10">
               <div>
-                <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[4px]">
-                  Diff Percentage
+                <p className="text-zinc-400 text-sm font-medium mb-1 uppercase tracking-wide" style={{ fontWeight: 600 }}>
+                  Different Percentage
                 </p>
-                <p className="text-white text-[36px] font-light leading-none tracking-tight">
+                <p
+                  className="text-white tracking-tight drop-shadow-lg"
+                  style={{ fontSize: 'xx-large', fontWeight: 800 }}
+                >
                   {differentPercentage}%
                 </p>
-              </div>
-              <div>
-                <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[8px]">
-                  Final Verdict
+
+                <p className="text-zinc-500 mt-6 text-sm font-medium mb-1 uppercase tracking-wide">Detected Issues</p>
+                <p
+                  className="text-white tracking-tight"
+                  style={{ fontSize: 'xx-large', fontWeight: 800 }}
+                >
+                  {detectedIssues}
                 </p>
-                <div className="flex items-center gap-2">
+              </div>
+
+              <div>
+                <p className="text-zinc-400 text-sm mb-3">Final Verdict</p>
+                <div className="flex gap-3">
                   <button
                     onClick={handleApprove}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-all text-[12px] font-medium ${finalVerdict === "approve"
-                      ? "bg-white text-black border-white"
-                      : "bg-transparent text-white/70 border-white/20 hover:border-white/50 hover:text-white"
+                    className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "approve"
+                      ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                      : "border-white/20 text-white/70 hover:border-white hover:text-white"
                       }`}
                   >
-                    <Check className="w-[12px] h-[12px]" />
-                    Approve
+                    <Check size={16} /> Approve
                   </button>
                   <button
                     onClick={handleReject}
-                    className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-all text-[12px] font-medium ${finalVerdict === "reject"
-                      ? "bg-white text-black border-white"
-                      : "bg-transparent text-white/70 border-white/20 hover:border-white/50 hover:text-white"
+                    className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "reject"
+                      ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                      : "border-white/20 text-white/70 hover:border-white hover:text-white"
                       }`}
                   >
-                    <XIcon className="w-[12px] h-[12px]" />
-                    Reject
+                    <XIcon size={16} /> Reject
                   </button>
+                </div>
+
+                <div className="mt-6 bg-black/60 border border-white/10 rounded-md p-3 flex gap-2">
+                  <AlertTriangle className="text-yellow-500 shrink-0" size={16} />
+                  <p className="text-xs text-zinc-400 leading-relaxed">
+                    This action is final. Once submitted, the verdict cannot be
+                    changed.
+                  </p>
                 </div>
               </div>
             </div>
-
-            <div>
-              <p className="text-white/40 text-[12px] uppercase tracking-wider mb-[4px]">
-                Detected Issues
-              </p>
-              <p className="text-white text-[36px] font-light leading-none tracking-tight">
-                {detectedIssues}
-              </p>
-            </div>
-
-            {/* Warning Info */}
-            <div className="mt-[20px] bg-[#151515] border border-white/5 rounded-[6px] p-[12px] flex items-start gap-3">
-              <AlertTriangle className="w-[14px] h-[14px] text-amber-500/70 mt-[2px] shrink-0" />
-              <p className="text-white/50 text-[11px] leading-relaxed">
-                This action is final. Once submitted, the verdict cannot be
-                changed.
-              </p>
-            </div>
           </div>
 
-          {/* Issues Content */}
-          <div className="flex-1 overflow-y-auto p-[24px]">
-            <h3 className="text-white text-[16px] font-semibold mb-[8px]">
-              Issue Overview
-            </h3>
-            <p className="text-white/50 text-[13px] leading-relaxed mb-[24px]">
+          {/* ISSUES */}
+          <div className="flex-1 overflow-y-auto p-6">
+            <h3 className="text-xl font-semibold mb-2 text-white">Issue Overview</h3>
+            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
               When the user is traveling, an error pop-up should appear with the
               message "Are you traveling?" instead of that, we are getting
               "Oops! Something went wrong."
             </p>
 
-            {/* Severity Cards */}
-            <div className="grid grid-cols-3 gap-[8px] mb-[24px]">
-              <div className="bg-[#1A0A0A] border border-red-500/20 rounded-[6px] p-[10px]">
-                <p className="text-red-400 text-[11px] font-medium mb-[2px]">Major</p>
-                <p className="text-red-500 text-[20px] font-bold">
-                  {severityCounts.Major}
-                </p>
+            {/* SEVERITY CARDS */}
+            <div className="flex gap-[10px] mb-8 overflow-x-auto pb-2">
+              <div className="bg-[rgba(255,0,0,0.1)] content-stretch flex flex-col gap-[10px] items-start min-w-[80px] p-[12px] relative rounded-[8px] shrink-0 w-[160px]">
+                <div aria-hidden="true" className="absolute border-[rgba(255,255,255,0.1)] border-[0.5px] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+                <p className="font-sans font-normal leading-[normal] relative shrink-0 text-[16px] w-full" style={{ color: 'rgb(255, 100, 103)' }}>Major</p>
+                <div className="content-stretch flex items-end relative shrink-0 w-full">
+                  <p className="font-bold leading-[normal] relative shrink-0 text-[24px] text-nowrap" style={{ color: 'red' }}>
+                    {severityCounts.Major}
+                  </p>
+                </div>
               </div>
-              <div className="bg-[#1A150A] border border-amber-500/20 rounded-[6px] p-[10px]">
-                <p className="text-amber-400 text-[11px] font-medium mb-[2px]">Medium</p>
-                <p className="text-amber-500 text-[20px] font-bold">
-                  {severityCounts.Medium}
-                </p>
+
+              <div className="bg-[rgba(119,119,0,0.1)] content-stretch flex flex-col gap-[10px] items-start min-w-[80px] p-[12px] relative rounded-[8px] shrink-0 w-[160px]">
+                <div aria-hidden="true" className="absolute border-[rgba(255,255,255,0.1)] border-[0.5px] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+                <p className="font-sans font-normal leading-[normal] relative shrink-0 text-[16px] w-full" style={{ color: 'rgb(253, 199, 0)' }}>Medium</p>
+                <div className="content-stretch flex items-end relative shrink-0 w-full">
+                  <p className="font-bold leading-[normal] relative shrink-0 text-[24px] text-nowrap" style={{ color: 'rgb(208, 135, 0)' }}>
+                    {severityCounts.Medium}
+                  </p>
+                </div>
               </div>
-              <div className="bg-[#0A101A] border border-blue-500/20 rounded-[6px] p-[10px]">
-                <p className="text-blue-400 text-[11px] font-medium mb-[2px]">Low</p>
-                <p className="text-blue-500 text-[20px] font-bold">
-                  {severityCounts.Low}
-                </p>
+
+              <div className="bg-[rgba(0,0,211,0.1)] content-stretch flex flex-col gap-[10px] items-start min-w-[80px] p-[12px] relative rounded-[8px] shrink-0 w-[160px]">
+                <div aria-hidden="true" className="absolute border-[rgba(255,255,255,0.1)] border-[0.5px] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
+                <p className="font-sans font-normal leading-[normal] relative shrink-0 text-[16px] w-full" style={{ color: 'rgb(21, 93, 252)' }}>Low</p>
+                <div className="content-stretch flex items-end relative shrink-0 w-full">
+                  <p className="font-bold leading-[normal] relative shrink-0 text-[24px] text-nowrap" style={{ color: 'rgb(21, 93, 252)' }}>
+                    {severityCounts.Low}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Issue List */}
-            <div className="space-y-[10px]">
+            {/* ISSUE LIST */}
+            <div className="flex flex-col gap-0 w-full">
               {issues.map((issue) => {
                 const isMajor = issue.severity === "Major";
                 const isMedium = issue.severity === "Medium";
 
-                const borderColor = isMajor
-                  ? "border-red-900/40 hover:border-red-500/50"
+                // Title Color
+                const titleColor = isMajor
+                  ? 'rgb(255, 100, 103)'
                   : isMedium
-                    ? "border-amber-900/40 hover:border-amber-500/50"
-                    : "border-blue-900/40 hover:border-blue-500/50";
-                const bgBase = isMajor
-                  ? "bg-[#1A0A0A]"
+                    ? 'rgb(253, 199, 0)'
+                    : 'rgb(21, 93, 252)';
+
+                // Icon Color
+                const iconColor = isMajor
+                  ? 'rgb(255, 0, 0)'
                   : isMedium
-                    ? "bg-[#1A150A]"
-                    : "bg-[#0A101A]";
-                const textColor = isMajor
-                  ? "text-red-400"
-                  : isMedium
-                    ? "text-amber-400"
-                    : "text-blue-400";
+                    ? 'rgb(253, 199, 0)'
+                    : 'rgb(21, 93, 252)';
 
                 return (
-                  <div
-                    key={issue.id}
-                    className={`${bgBase} border ${borderColor} rounded-[6px] p-[12px] transition-colors cursor-pointer group`}
-                  >
-                    <div className="flex items-center gap-2 mb-[6px]">
-                      <AlertTriangle
-                        className={`w-[12px] h-[12px] ${textColor}`}
-                      />
-                      <span
-                        className={`${textColor} text-[11px] font-bold uppercase tracking-wide`}
-                      >
-                        {issue.severity}
-                      </span>
+                  <div key={issue.id} className="content-stretch flex items-center justify-center px-[14px] py-[10px] relative w-full border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer">
+                    <div className="content-stretch flex gap-[10px] items-start relative shrink-0 w-full">
+                      <div className="content-stretch flex gap-[8px] items-center not-italic px-0 py-[2px] relative shrink-0 text-nowrap">
+                        {isMajor ? (
+                          <AlertCircle size={12} style={{ color: iconColor }} />
+                        ) : (
+                          <AlertTriangle size={12} style={{ color: iconColor }} />
+                        )}
+                        <div className="flex flex-col justify-center leading-[0] relative shrink-0 text-[16px]">
+                          <p className="leading-[normal] text-nowrap" style={{ color: titleColor }}>{issue.severity}</p>
+                        </div>
+                      </div>
+                      <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
+                        <div className="relative shrink-0">
+                          <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-nowrap font-mono" style={{ color: titleColor }}>
+                            {issue.title}
+                          </p>
+                        </div>
+                        <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
+                          <div className="relative shrink-0">
+                            <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-[#52525c] text-nowrap font-mono">
+                              {issue.coordinates}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-gray-200 text-[13px] font-medium mb-[4px] group-hover:text-white transition-colors">
-                      {issue.title}
-                    </p>
-                    <p className="text-white/30 text-[11px] font-mono">
-                      {issue.coordinates}
-                    </p>
                   </div>
                 );
               })}
