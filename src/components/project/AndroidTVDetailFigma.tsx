@@ -12,20 +12,20 @@ import {
   Trash2,
   ChevronDown,
 } from "lucide-react";
-import svgPaths from "../imports/svg-yp1cueaie8";
-import { ResultTab } from "./ResultTab";
-import { DetailedResult } from "./DetailedResult";
-import { ActivityTab } from "./ActivityTab";
-import { DBConnectionTab } from "./DBConnectionTab";
-import { IntegrationTab } from "./IntegrationTab";
-import { SupportTab } from "./SupportTab";
-import { SettingsTab } from "./SettingsTab";
-import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
-import { ControlBar } from "./ui/ControlBar";
+import svgPaths from "../../imports/svg-yp1cueaie8";
+import { ResultTab } from "../results/ResultTab";
+import { DetailedResult } from "../results/DetailedResult";
+import { ActivityTab } from "../settings/ActivityTab";
+import { DBConnectionTab } from "../settings/DBConnectionTab";
+import { IntegrationTab } from "../settings/IntegrationTab";
+import { SupportTab } from "../support/SupportTab";
+import { SettingsTab } from "../settings/SettingsTab";
+import { BaselineImage, BaselineImageInput } from "../ui/BaselineImageInput";
+import { ControlBar } from "../ui/ControlBar";
 
 import { ProjectHeader } from "./ProjectHeader";
-import { Project, Theme } from "../types";
-import { PROJECT_NAVIGATION_ITEMS } from "../constants";
+import { Project, Theme } from "../../types";
+import { PROJECT_NAVIGATION_ITEMS } from "../../constants";
 
 interface AndroidTVDetailFigmaProps {
   projectId: string;
@@ -257,6 +257,12 @@ export function AndroidTVDetailFigma({
         testName={testCase?.name || "Detail Screen"}
         onBack={handleBackToResults}
         buildVersion="v12.224"
+        theme={theme}
+        onThemeChange={setTheme}
+        isNotificationOpen={isNotificationOpen}
+        onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
+        isProfileMenuOpen={isProfileMenuOpen}
+        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
       />
     );
   }

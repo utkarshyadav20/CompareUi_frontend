@@ -1,24 +1,24 @@
 import { useState } from "react";
 import { RefreshCw, ChevronDown, Globe } from "lucide-react";
-import { Project, Theme } from "../types";
+import { Project, Theme } from "../../types";
 import { ProjectHeader } from "./ProjectHeader";
-import { PROJECT_NAVIGATION_ITEMS } from "../constants";
-import { NotificationPanel } from "./NotificationPanel";
+import { PROJECT_NAVIGATION_ITEMS } from "../../constants";
+import { NotificationPanel } from "../common/NotificationPanel";
 import { SmartImageDetail } from "./SmartImageDetail";
 import { AndroidTVDetail } from "./AndroidTVDetail";
 import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
-import { TestComparisonToast } from "./TestComparisonToast";
-import { BaselineImageInput } from "./ui/BaselineImageInput";
-import { ControlBar } from "./ui/ControlBar";
+import { TestComparisonToast } from "../results/TestComparisonToast";
+import { BaselineImageInput } from "../ui/BaselineImageInput";
+import { ControlBar } from "../ui/ControlBar";
 
 // Tabs
-import { ActivityTab } from "./ActivityTab";
-import { ResultTab } from "./ResultTab";
-import { DBConnectionTab } from "./DBConnectionTab";
-import { IntegrationTab } from "./IntegrationTab";
-import { SupportTab } from "./SupportTab";
-import { SettingsTab } from "./SettingsTab";
-import { DetailedResult } from "./DetailedResult";
+import { ActivityTab } from "../settings/ActivityTab";
+import { ResultTab } from "../results/ResultTab";
+import { DBConnectionTab } from "../settings/DBConnectionTab";
+import { IntegrationTab } from "../settings/IntegrationTab";
+import { SupportTab } from "../support/SupportTab";
+import { SettingsTab } from "../settings/SettingsTab";
+import { DetailedResult } from "../results/DetailedResult";
 
 interface ProjectDetailProps {
   project: Project;

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Image } from "lucide-react";
-import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
+import { BaselineImage, BaselineImageInput } from "../ui/BaselineImageInput";
 
 interface SmartImageDetailProps {
   projectId: string;

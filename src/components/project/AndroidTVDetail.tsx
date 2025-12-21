@@ -1,6 +1,13 @@
 import { useState } from "react";
-import { Image, RefreshCw, Trash2, Folder, MoreVertical } from "lucide-react";
-import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
+import {
+  Image,
+  RefreshCw,
+  Trash2,
+  Folder,
+  MoreVertical,
+  Upload,
+} from "lucide-react";
+import { BaselineImage, BaselineImageInput } from "../ui/BaselineImageInput";
 
 interface AndroidTVDetailProps {
   projectId: string;

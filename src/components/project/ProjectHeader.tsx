@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 const imgProfile =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
-import { Theme, Project } from "../types";
+import { Theme, Project } from "../../types";
 
 interface ProjectHeaderProps {
   project?: Project;

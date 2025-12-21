@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Project, Theme } from "../types";
-import { ProjectDetail } from "../components/ProjectDetail";
+import { ProjectDetail } from "../components/project/ProjectDetail";
 
 interface ProjectDetailWrapperProps {
   projects: Project[];

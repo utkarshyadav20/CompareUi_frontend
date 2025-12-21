@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, Copy, ChevronDown, Smartphone } from "lucide-react";
-import { ProjectType, EnvironmentType, Project } from "../types";
-import svgPaths from "../imports/svg-kgk8e7ds24";
+import { ProjectType, EnvironmentType, Project } from "../../types";
+import svgPaths from "../../imports/svg-kgk8e7ds24";
 
 interface NewProjectFormProps {
   isOpen: boolean;

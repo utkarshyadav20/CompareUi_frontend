@@ -4,7 +4,7 @@ import {
   CircleX,
   MoreVertical,
 } from "lucide-react";
-import { Project, ViewMode } from "../types";
+import { Project, ViewMode } from "../../types";
 
 export interface ProjectCardProps extends Project {
   onClick: () => void;

@@ -10,8 +10,8 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
-import { ProjectHeader } from "./ProjectHeader";
-import { Theme } from "../types";
+import { ProjectHeader } from "../project/ProjectHeader";
+import { Theme } from "../../types";
 
 const imgFrame21 =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";

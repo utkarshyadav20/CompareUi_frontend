@@ -1,4 +1,4 @@
-import svgPaths from "../imports/svg-kgk8e7ds24";
+import svgPaths from "../../imports/svg-kgk8e7ds24";
 
 export function Logo() {
   return (

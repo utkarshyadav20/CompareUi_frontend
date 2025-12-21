@@ -22,10 +22,11 @@ import {
   Tv,
 } from "lucide-react";
 import { Theme, Project, ProjectType, ViewMode } from "../types";
-import { Logo } from "../components/Logo";
-import { ProjectCard } from "../components/ProjectCard";
-import { NewProjectForm } from "../components/NewProjectForm";
-import imgProfile from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
+import { Logo } from "../components/common/Logo";
+import { ProjectCard } from "../components/project/ProjectCard";
+import { NewProjectForm } from "../components/project/NewProjectForm";
+const imgProfile =
+  "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
 import svgPaths from "../imports/svg-kgk8e7ds24";
 
 interface HomePageProps {
