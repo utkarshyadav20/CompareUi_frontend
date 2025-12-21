@@ -1,19 +1,17 @@
 const shell = require('shelljs');
+require('dotenv').config();
 
-// Using port 1000 as configured in backend .env and verified in previous steps
-const SWAGGER_URL = 'http://localhost:1000/api-json'; 
+// Using hosted backend URL from process.env or fallback
+const SWAGGER_URL = process.env.VITE_API_BASE_URL+ '/swagger-json'; 
 const OUTPUT_DIR = 'src/api/generated';
 
-console.log('Fetching Swagger JSON...');
+console.log('Fetching Swagger JSON from:', SWAGGER_URL);
 
 // Ensure output directory exists
 shell.mkdir('-p', OUTPUT_DIR);
 
 // Fetch Swagger JSON
-// The backend might expose it at /swagger-json or /api-json. 
-// Based on "SwaggerModule.setup('swagger', app, document)" in main.ts, it's likely /swagger-json or accessible via the UI.
-// However, the "new compare" script used http://localhost:1000/swagger-json.
-if (shell.exec('curl -o swagger.json http://localhost:1000/swagger-json').code !== 0) {
+if (shell.exec(`curl -o swagger.json ${SWAGGER_URL}`).code !== 0) {
   console.error('Error: Failed to fetch swagger.json. Is the backend running?');
   process.exit(1);
 }
