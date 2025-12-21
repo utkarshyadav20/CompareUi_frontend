@@ -46,18 +46,18 @@ export function ControlBar({
 
   return (
     <div className="w-full">
-      <div className="flex items-center justify-between px-[32px] py-[11px] bg-white dark:bg-black border-b border-black/10 dark:border-white/10">
+      <div className="flex items-center justify-between px-[32px] py-[11px] bg-background border-b border-border">
         {/* Left Side: Search (if provided) */}
         <div className="flex items-center">
           {onSearchChange && (
-            <div className="w-full md:w-[380px] max-w-[380px] border border-black/50 dark:border-white/50 rounded-lg px-3 md:px-5 py-2.5 flex items-center gap-2.5 text-black/50 dark:text-white/50 bg-transparent">
+            <div className="w-full md:w-[380px] max-w-[380px] border border-border rounded-lg px-3 md:px-5 py-2.5 flex items-center gap-2.5 text-muted-foreground bg-transparent">
               <Search className="w-[18px] h-[18px]" />
               <input
                 type="text"
                 placeholder="Search Baseline images"
                 value={searchQuery || ""}
                 onChange={(e) => onSearchChange(e.target.value)}
-                className="flex-1 bg-transparent outline-none text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 text-sm"
+                className="flex-1 bg-transparent outline-none text-foreground placeholder:text-muted-foreground text-sm"
               />
             </div>
           )}
@@ -67,7 +67,7 @@ export function ControlBar({
         <div className="flex items-center gap-[20px]">
           {/* Method Dropdown */}
           <div className="flex items-center gap-[10px]">
-            <p className="font-semibold text-[14px] text-black dark:text-white">
+            <p className="font-semibold text-[14px] text-foreground">
               Method :
             </p>
             <div className="relative">
@@ -75,12 +75,12 @@ export function ControlBar({
                 onClick={() => setIsMethodDropdownOpen(!isMethodDropdownOpen)}
                 className={`px-[10px] py-[10px] rounded-[4px] border ${
                   selectedMethod
-                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                    ? "bg-muted border-border text-foreground"
                     : "border-green-500/30 text-green-400"
-                } text-[14px] font-mono flex items-center gap-[8px] hover:bg-black/15 dark:hover:bg-white/15 transition-colors`}
+                } text-[14px] font-mono flex items-center gap-[8px] hover:bg-accent transition-colors`}
               >
                 <span>{selectedMethod}</span>
-                <ChevronDown className="w-[14px] h-[14px] text-black/50 dark:text-white/50" />
+                <ChevronDown className="w-[14px] h-[14px] text-muted-foreground" />
               </button>
               {isMethodDropdownOpen && (
                 <>
@@ -88,7 +88,7 @@ export function ControlBar({
                     className="fixed inset-0 z-[40]"
                     onClick={() => setIsMethodDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-[45px] w-[130px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
+                  <div className="absolute right-0 top-[45px] w-[130px] bg-popover rounded-[8px] shadow-lg z-[50] border border-border overflow-hidden">
                     {(["Pixelmatch", "Noise"] as const).map((method) => (
                       <button
                         key={method}
@@ -96,9 +96,9 @@ export function ControlBar({
                           onMethodChange(method);
                           setIsMethodDropdownOpen(false);
                         }}
-                        className="w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left"
+                        className="w-full px-[16px] py-[12px] hover:bg-accent transition-colors text-left"
                       >
-                        <span className="text-black dark:text-white text-[14px] font-mono">
+                        <span className="text-foreground text-[14px] font-mono">
                           {method}
                         </span>
                       </button>
@@ -112,7 +112,7 @@ export function ControlBar({
           {/* AI Agent Toggle (If Provided) */}
           {onAiAgentChange && (
             <div className="flex items-center gap-2.5">
-              <span className="text-black dark:text-white text-sm font-semibold">
+              <span className="text-foreground text-sm font-semibold">
                 AI agent :
               </span>
               <div className="flex gap-1">
@@ -123,7 +123,7 @@ export function ControlBar({
                     className={`px-2.5 py-2 rounded text-sm font-mono transition-colors ${
                       aiAgent === option
                         ? "border border-green-500/30 text-green-400"
-                        : "bg-black/10 dark:bg-white/10 border border-black/10 dark:border-white/10 text-black dark:text-white"
+                        : "bg-muted border border-border text-foreground"
                     }`}
                   >
                     {option}
@@ -135,7 +135,7 @@ export function ControlBar({
 
           {/* Threshold Dropdown */}
           <div className="flex items-center gap-[10px]">
-            <p className="font-semibold text-[14px] text-black dark:text-white">
+            <p className="font-semibold text-[14px] text-foreground">
               Threshold :
             </p>
             <div className="relative">
@@ -145,9 +145,9 @@ export function ControlBar({
                 }
                 className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${
                   threshold
-                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                    ? "bg-muted border-border text-foreground"
                     : "border border-[#6bdf95]/30 text-[#6bdf95]"
-                } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
+                } text-[14px] font-mono flex items-center justify-between hover:bg-accent transition-colors`}
               >
                 <span>{threshold}</span>
                 <ChevronDown className="w-[14px] h-[14px]" />
@@ -158,7 +158,7 @@ export function ControlBar({
                     className="fixed inset-0 z-[40]"
                     onClick={() => setIsThresholdDropdownOpen(false)}
                   />
-                  <div className="absolute right-0 top-[45px] w-[60px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
+                  <div className="absolute right-0 top-[45px] w-[60px] bg-popover rounded-[8px] shadow-lg z-[50] border border-border overflow-hidden">
                     {thresholdOptions.map((t) => (
                       <button
                         key={t}
@@ -166,9 +166,9 @@ export function ControlBar({
                           onThresholdChange(t);
                           setIsThresholdDropdownOpen(false);
                         }}
-                        className="w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors"
+                        className="w-full px-[16px] py-[12px] hover:bg-accent transition-colors"
                       >
-                        <span className="text-black dark:text-white text-[14px] font-mono">
+                        <span className="text-foreground text-[14px] font-mono">
                           {t}
                         </span>
                       </button>
@@ -182,7 +182,7 @@ export function ControlBar({
           {/* Build Dropdown (If Provided) */}
           {buildVersions && onBuildChange && (
             <div className="flex items-center gap-[10px]">
-              <p className="font-semibold text-[14px] text-black dark:text-white">
+              <p className="font-semibold text-[14px] text-foreground">
                 Build :
               </p>
               <div className="relative">
@@ -199,7 +199,7 @@ export function ControlBar({
                       className="fixed inset-0 z-[40]"
                       onClick={() => setIsBuildDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-white dark:bg-zinc-800 rounded-[8px] shadow-lg z-[50] border border-black/10 dark:border-white/10 overflow-hidden">
+                    <div className="absolute right-0 top-[45px] w-[130px] bg-popover rounded-[8px] shadow-lg z-[50] border border-border overflow-hidden">
                       {buildVersions.map((version) => (
                         <button
                           key={version}
@@ -207,13 +207,11 @@ export function ControlBar({
                             onBuildChange(version);
                             setIsBuildDropdownOpen(false);
                           }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left ${
-                            version === selectedBuild
-                              ? "bg-black/5 dark:bg-white/5"
-                              : ""
+                          className={`w-full px-[16px] py-[12px] hover:bg-accent transition-colors text-left ${
+                            version === selectedBuild ? "bg-muted/50" : ""
                           }`}
                         >
-                          <span className="text-black dark:text-white text-[14px] font-mono">
+                          <span className="text-foreground text-[14px] font-mono">
                             {version}
                           </span>
                         </button>
@@ -228,7 +226,7 @@ export function ControlBar({
           {/* Start Button */}
           <button
             onClick={onStartComparison}
-            className="bg-black dark:bg-white text-white dark:text-black px-[16px] py-[11.798px] rounded-[7.26px] flex items-center gap-[9.075px] text-[14px] font-semibold hover:bg-black/90 dark:hover:bg-white/90 transition-colors"
+            className="bg-foreground text-background px-[16px] py-[11.798px] rounded-[7.26px] flex items-center gap-[9.075px] text-[14px] font-semibold hover:opacity-90 transition-colors"
           >
             <span>✦</span>
             <span>Start Comparing UI</span>

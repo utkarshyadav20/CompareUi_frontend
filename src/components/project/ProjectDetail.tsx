@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { RefreshCw, ChevronDown, Globe } from "lucide-react";
-import { Project, Theme } from "../../types";
+import { Project } from "../../types";
 import { ProjectHeader } from "./ProjectHeader";
 import { PROJECT_NAVIGATION_ITEMS } from "../../constants";
 import { NotificationPanel } from "../common/NotificationPanel";
@@ -23,16 +23,9 @@ import { DetailedResult } from "../results/DetailedResult";
 interface ProjectDetailProps {
   project: Project;
   onBack: () => void;
-  theme: Theme;
-  onThemeChange: (theme: Theme) => void;
 }
 
-export function ProjectDetail({
-  project,
-  onBack,
-  theme,
-  onThemeChange,
-}: ProjectDetailProps) {
+export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
   const [selectedMethod, setSelectedMethod] = useState<"Pixelmatch" | "Noise">(
     "Noise"
   );
@@ -172,8 +165,6 @@ export function ProjectDetail({
         testName={testCase?.name || "Detail Screen"}
         onBack={handleBackToResults}
         buildVersion="v12.224"
-        theme={theme}
-        onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
         isProfileMenuOpen={isProfileMenuOpen}
@@ -195,13 +186,11 @@ export function ProjectDetail({
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
       <ProjectHeader
         project={project}
         onBack={onBack}
-        theme={theme}
-        onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
         isProfileMenuOpen={isProfileMenuOpen}
@@ -238,9 +227,9 @@ export function ProjectDetail({
           onStartComparison={() => setShowComparisonToast(true)}
         />
       ) : activeTab === "overview" || activeTab === "testingpanel" ? (
-        <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-280px)]">
+        <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-280px)] bg-background">
           {/* Baselining Images */}
-          <div className="w-full lg:w-[400px] bg-black/5 dark:bg-white/10 rounded-lg p-5 flex flex-col gap-5 border border-black/10 dark:border-white/10 max-h-[600px] lg:max-h-full">
+          <div className="w-full lg:w-[400px] bg-muted rounded-lg p-5 flex flex-col gap-5 border border-border max-h-[600px] lg:max-h-full">
             <BaselineImageInput
               images={filteredImages}
               hasImages={uploadedImages.length > 0}
@@ -269,11 +258,11 @@ export function ProjectDetail({
 
           {/* Right Panel - Website Preview or Actual Build Images */}
           {project.type === "Website" ? (
-            <div className="flex-1 bg-black/5 dark:bg-white/10 rounded-lg p-5 pb-3 flex flex-col gap-5 border border-black/10 dark:border-white/10">
+            <div className="flex-1 bg-muted rounded-lg p-5 pb-3 flex flex-col gap-5 border border-border">
               {/* Header */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-5">
-                  <h3 className="text-black dark:text-white text-[20px]">
+                  <h3 className="text-foreground text-[20px]">
                     Live Website Preview
                   </h3>
                   <div className="bg-[rgba(3,46,21,0.5)] flex items-center gap-2 px-2 py-1.5 rounded">
@@ -286,21 +275,19 @@ export function ProjectDetail({
 
                 <div className="flex items-center gap-5">
                   <div className="flex items-center gap-2">
-                    <span className="text-black dark:text-white text-sm">
+                    <span className="text-foreground text-sm">
                       Resolution :
                     </span>
-                    <button className="bg-black/10 dark:bg-white/10 flex items-center gap-2 px-2.5 py-2 rounded border border-black/10 dark:border-white/10 hover:bg-black/15 dark:hover:bg-white/15 transition-colors">
-                      <RefreshCw className="w-3.5 h-3.5 text-black dark:text-white" />
-                      <span className="text-black dark:text-white text-sm font-mono">
+                    <button className="bg-accent flex items-center gap-2 px-2.5 py-2 rounded border border-border hover:opacity-80 transition-opacity">
+                      <RefreshCw className="w-3.5 h-3.5 text-foreground" />
+                      <span className="text-foreground text-sm font-mono">
                         Fetch
                       </span>
                     </button>
                   </div>
 
                   <div className="flex items-center gap-2 relative">
-                    <span className="text-black dark:text-white text-sm">
-                      Browser :
-                    </span>
+                    <span className="text-foreground text-sm">Browser :</span>
                     <button
                       onClick={() =>
                         setIsBrowserDropdownOpen(!isBrowserDropdownOpen)
@@ -320,7 +307,7 @@ export function ProjectDetail({
                           className="fixed inset-0 z-30"
                           onClick={() => setIsBrowserDropdownOpen(false)}
                         />
-                        <div className="absolute top-full right-0 mt-2 w-[180px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
+                        <div className="absolute top-full right-0 mt-2 w-[180px] bg-popover border border-border rounded-md shadow-lg z-40 overflow-hidden">
                           <div className="p-1">
                             {(
                               [
@@ -336,10 +323,10 @@ export function ProjectDetail({
                                   setSelectedBrowser(browser);
                                   setIsBrowserDropdownOpen(false);
                                 }}
-                                className={`w-full px-3 py-2 flex items-center gap-2 text-sm hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded ${
+                                className={`w-full px-3 py-2 flex items-center gap-2 text-sm hover:bg-accent transition-colors rounded ${
                                   selectedBrowser === browser
-                                    ? "bg-black/5 dark:bg-white/5 text-green-400"
-                                    : "text-black dark:text-white"
+                                    ? "bg-accent text-green-400"
+                                    : "text-foreground"
                                 }`}
                               >
                                 <span className="font-mono">{browser}</span>
@@ -372,7 +359,7 @@ export function ProjectDetail({
                       value={websiteUrl}
                       onChange={(e) => handleWebsiteUrlChange(e.target.value)}
                       placeholder="Enter your live url here ..."
-                      className="flex-1 bg-transparent text-black dark:text-white text-sm outline-none placeholder:text-black/50 dark:placeholder:text-white/50"
+                      className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
                     />
                   </div>
 
@@ -419,10 +406,10 @@ export function ProjectDetail({
                     />
                   ) : (
                     <div className="text-center">
-                      <p className="text-black dark:text-white text-lg font-mono mb-2">
+                      <p className="text-foreground text-lg font-mono mb-2">
                         Waiting
                       </p>
-                      <p className="text-black/50 dark:text-[#71717b] text-sm font-mono">
+                      <p className="text-muted-foreground text-sm font-mono">
                         Enter website URL to preview
                       </p>
                     </div>
@@ -431,18 +418,18 @@ export function ProjectDetail({
               </div>
             </div>
           ) : (
-            <div className="flex-1 bg-black/5 dark:bg-white/10 rounded-lg p-5 flex flex-col items-center justify-center gap-10 border border-black/10 dark:border-white/10 min-h-[400px]">
+            <div className="flex-1 bg-muted rounded-lg p-5 flex flex-col items-center justify-center gap-10 border border-border min-h-[400px]">
               <div className="text-center">
-                <p className="text-black dark:text-white text-lg mb-3 font-mono">
+                <p className="text-foreground text-lg mb-3 font-mono">
                   Receiving....
                 </p>
-                <p className="text-black/50 dark:text-white/50 font-mono">
+                <p className="text-muted-foreground font-mono">
                   Waiting for image to receive
                   <br />
                   from Android build
                 </p>
               </div>
-              <button className="flex items-center gap-2 text-black dark:text-white hover:opacity-80 transition-opacity">
+              <button className="flex items-center gap-2 text-foreground hover:opacity-80 transition-opacity">
                 <RefreshCw className="w-4 h-4" />
                 <span className="underline">Refresh</span>
               </button>

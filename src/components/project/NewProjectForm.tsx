@@ -113,20 +113,18 @@ export function NewProjectForm({
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <SheetContent className="w-[400px] sm:w-full p-4">
         <SheetHeader className="p-0">
-          <SheetTitle className="p-0"> Create New Project</SheetTitle>
+          <SheetTitle className="p-0">Create New Project</SheetTitle>
         </SheetHeader>
 
-        <div className="flex flex-col gap-6 pb-6">
+        <div className="flex flex-col gap-6 pb-6 pt-4">
           {/* Project ID */}
           <div>
-            <label className="text-black dark:text-white block mb-2">
-              Project ID
-            </label>
-            <div className="bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 rounded-lg px-4 py-3 flex items-center justify-between">
-              <span className="text-black/50 dark:text-white/50 text-sm font-mono">
+            <label className="text-foreground block mb-2">Project ID</label>
+            <div className="bg-muted border border-border rounded-lg px-4 py-3 flex items-center justify-between">
+              <span className="text-muted-foreground text-sm font-mono">
                 {projectId}
               </span>
-              <button className="text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white">
+              <button className="text-muted-foreground hover:text-foreground">
                 <Copy className="w-4 h-4" />
               </button>
             </div>
@@ -134,28 +132,24 @@ export function NewProjectForm({
 
           {/* Project Name */}
           <div>
-            <label className="text-black dark:text-white block mb-2">
-              Project Name
-            </label>
+            <label className="text-foreground block mb-2">Project Name</label>
             <input
               type="text"
               value={projectName}
               onChange={(e) => setProjectName(e.target.value)}
               placeholder="Enter Here"
-              className="w-full bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none focus:border-black/80 dark:focus:border-white/80"
+              className="w-full bg-background border border-input rounded-lg px-4 py-3 text-foreground placeholder:text-muted-foreground outline-none focus:border-ring"
             />
           </div>
 
           {/* Project Type */}
           <div>
-            <label className="text-black dark:text-white block mb-2">
-              Project type
-            </label>
+            <label className="text-foreground block mb-2">Project type</label>
             <Select
               value={currentType}
               onValueChange={(value) => setCurrentType(value as ProjectType)}
             >
-              <SelectTrigger className="w-full h-auto bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg p-4 text-black dark:text-white hover:bg-white dark:hover:bg-black">
+              <SelectTrigger className="w-full h-auto bg-background border border-input rounded-lg p-4 text-foreground hover:bg-accent/50">
                 <SelectValue placeholder="Select type" />
               </SelectTrigger>
               <SelectContent>
@@ -171,7 +165,7 @@ export function NewProjectForm({
           {/* Environment Type */}
           {(currentType === "Android TV" || currentType === "Mobile") && (
             <div>
-              <label className="text-black dark:text-white block mb-3">
+              <label className="text-foreground block mb-3">
                 Environment type
               </label>
               <div className="flex gap-4">
@@ -184,9 +178,9 @@ export function NewProjectForm({
                     onChange={(e) =>
                       setEnvironmentType(e.target.value as EnvironmentType)
                     }
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-primary"
                   />
-                  <span className="text-black dark:text-white">Emulator</span>
+                  <span className="text-foreground">Emulator</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
@@ -197,11 +191,9 @@ export function NewProjectForm({
                     onChange={(e) =>
                       setEnvironmentType(e.target.value as EnvironmentType)
                     }
-                    className="w-4 h-4"
+                    className="w-4 h-4 text-primary"
                   />
-                  <span className="text-black dark:text-white">
-                    Physical Device
-                  </span>
+                  <span className="text-foreground">Physical Device</span>
                 </label>
               </div>
             </div>
@@ -211,14 +203,14 @@ export function NewProjectForm({
         <SheetFooter className="flex-row gap-3 sm:justify-start">
           <button
             onClick={onClose}
-            className="flex-1 bg-transparent border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
+            className="flex-1 bg-transparent border border-input rounded-lg px-4 py-3 text-foreground hover:bg-accent transition-colors"
           >
             Discard
           </button>
           <button
             onClick={handleCreate}
             disabled={!projectName.trim()}
-            className="flex-1 bg-black dark:bg-white text-white dark:text-black rounded-lg px-4 py-3 hover:bg-black/90 dark:hover:bg-white/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 bg-primary text-primary-foreground rounded-lg px-4 py-3 hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Create Project
           </button>

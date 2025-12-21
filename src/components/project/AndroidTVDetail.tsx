@@ -202,9 +202,9 @@ export function AndroidTVDetail({
   const isPhysicalDevice = platformType === "Physical Device";
 
   return (
-    <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)]">
+    <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)] bg-background">
       {/* Baselining Images Panel */}
-      <div className="w-full md:w-[335px] bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip shrink-0">
+      <div className="w-full md:w-[335px] bg-muted/40 border border-border overflow-clip shrink-0">
         <div className="p-5 flex flex-col gap-5 h-full">
           <BaselineImageInput
             images={baselineImages}
@@ -228,20 +228,18 @@ export function AndroidTVDetail({
       </div>
 
       {/* Actual Build Images Panel */}
-      <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip">
+      <div className="flex-1 bg-muted/40 border border-border overflow-clip">
         <div className="p-5 flex flex-col gap-5 h-full">
           {/* Header with icons */}
           <div className="flex items-center justify-between w-full">
-            <h3 className="text-black dark:text-white text-[20px]">
-              Actual Build images
-            </h3>
+            <h3 className="text-foreground text-[20px]">Actual Build images</h3>
             <div className="flex items-center gap-0">
               <button
                 onClick={() => handleRefresh("actual")}
                 className="w-4 h-4 flex items-center justify-center hover:opacity-70 transition-opacity"
                 title="Refresh images"
               >
-                <RefreshCw className="w-4 h-4 text-black/60 dark:text-white/60" />
+                <RefreshCw className="w-4 h-4 text-muted-foreground" />
               </button>
               <button
                 onClick={() => handleClearAll("actual")}
@@ -264,11 +262,11 @@ export function AndroidTVDetail({
                     value={folderPath}
                     onChange={(e) => setFolderPath(e.target.value)}
                     placeholder="C:\Users\abhijeetp.QUICKPLAY\Downloads\OTT final logos\OTT 3x1"
-                    className="flex-1 bg-transparent border border-black/50 dark:border-white/50 rounded-lg px-5 py-3 text-black dark:text-white placeholder:text-black/50 dark:placeholder:text-white/50 outline-none text-[16px]"
+                    className="flex-1 bg-transparent border border-muted-foreground/30 rounded-lg px-5 py-3 text-foreground placeholder:text-muted-foreground outline-none text-[16px]"
                   />
                   <button
                     onClick={handleBrowseFolder}
-                    className="bg-black dark:bg-white text-white dark:text-black px-4 py-3 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors shrink-0 flex items-center gap-2 text-sm font-semibold"
+                    className="bg-foreground text-background px-4 py-3 rounded-lg hover:opacity-90 transition-opacity shrink-0 flex items-center gap-2 text-sm font-semibold"
                   >
                     <Folder className="w-[14px] h-[14px]" />
                     Browse Folder
@@ -287,22 +285,22 @@ export function AndroidTVDetail({
                       <div
                         key={image.id}
                         onClick={() => setSelectedActualId(image.id)}
-                        className={`bg-white/5 border rounded-lg p-1.5 cursor-pointer hover:bg-white/10 transition-colors relative ${
+                        className={`bg-muted border rounded-lg p-1.5 cursor-pointer hover:bg-muted/80 transition-colors relative ${
                           selectedActualId === image.id
-                            ? "border-white/50"
+                            ? "border-primary"
                             : showWarning
                             ? "border-red-500"
-                            : "border-white/20"
+                            : "border-border"
                         }`}
                       >
                         <div className="flex flex-col gap-0.5">
                           {/* Image Info */}
                           <div className="flex items-center justify-between text-xs px-1 group">
-                            <p className="text-black dark:text-white overflow-ellipsis overflow-hidden max-w-[190px] font-bold">
+                            <p className="text-foreground overflow-ellipsis overflow-hidden max-w-[190px] font-bold">
                               {image.name}
                             </p>
                             <div className="flex items-center gap-1">
-                              <p className="text-black/20 dark:text-white/20 group-hover:hidden">
+                              <p className="text-muted-foreground group-hover:hidden">
                                 {image.width}x{image.height}
                               </p>
                               {/* 3-dot menu */}
@@ -316,7 +314,7 @@ export function AndroidTVDetail({
                                         : image.id
                                     );
                                   }}
-                                  className="w-4 h-4 flex items-center justify-center text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 rounded"
+                                  className="w-4 h-4 flex items-center justify-center text-foreground hover:bg-muted-foreground/20 rounded"
                                 >
                                   <MoreVertical className="w-3 h-3" />
                                 </button>
@@ -326,13 +324,13 @@ export function AndroidTVDetail({
                                       className="fixed inset-0 z-30"
                                       onClick={() => setOpenImageMenuId(null)}
                                     />
-                                    <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
+                                    <div className="absolute right-0 top-full mt-1 w-[160px] bg-popover border border-border rounded-md shadow-lg z-40 overflow-hidden">
                                       <div className="p-1">
-                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
+                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-foreground text-xs hover:bg-muted transition-colors rounded">
                                           <RefreshCw className="w-3.5 h-3.5" />
                                           <span>Refresh image</span>
                                         </button>
-                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded">
+                                        <button className="w-full px-2 py-1.5 flex items-center gap-2 text-foreground text-xs hover:bg-muted transition-colors rounded">
                                           <Upload className="w-3.5 h-3.5" />
                                           <span>Replace image</span>
                                         </button>
@@ -343,7 +341,7 @@ export function AndroidTVDetail({
                                               "actual"
                                             )
                                           }
-                                          className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
+                                          className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10"
                                         >
                                           <Trash2 className="w-3.5 h-3.5" />
                                           <span>Remove screen</span>
@@ -389,7 +387,7 @@ export function AndroidTVDetail({
                   <div className="flex justify-end mb-auto">
                     <button
                       onClick={handleBrowseFolder}
-                      className="bg-black dark:bg-white text-white dark:text-black px-4 py-2.5 rounded-lg hover:bg-black/90 dark:hover:bg-white/90 transition-colors flex items-center gap-2 text-sm font-semibold"
+                      className="bg-foreground text-background px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity flex items-center gap-2 text-sm font-semibold"
                     >
                       <Folder className="w-[14px] h-[14px]" />
                       Browse Folder
@@ -397,10 +395,10 @@ export function AndroidTVDetail({
                   </div>
                 </div>
               ) : (
-                <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg flex-1 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                <div className="relative border border-dashed border-border rounded-lg flex-1 bg-muted/40 cursor-pointer hover:bg-muted/60 transition-colors">
                   <div className="flex flex-col items-center justify-center h-full gap-2.5 p-2.5">
-                    <Image className="w-5 h-5 text-black dark:text-white" />
-                    <p className="font-mono text-[14px] text-black dark:text-white text-center">
+                    <Image className="w-5 h-5 text-foreground" />
+                    <p className="font-mono text-[14px] text-foreground text-center">
                       Upload/paste Screenshot
                     </p>
                   </div>

@@ -11,7 +11,6 @@ import {
   Minus,
 } from "lucide-react";
 import { ProjectHeader } from "../project/ProjectHeader";
-import { Theme } from "../../types";
 import {
   Select,
   SelectContent,
@@ -36,8 +35,6 @@ interface DetailedResultProps {
   testName: string;
   onBack: () => void;
   buildVersion: string;
-  theme: Theme;
-  onThemeChange: (theme: Theme) => void;
   isNotificationOpen: boolean;
   onNotificationToggle: () => void;
   isProfileMenuOpen: boolean;
@@ -49,8 +46,6 @@ export function DetailedResult({
   testName,
   onBack,
   buildVersion = "v12.224",
-  theme,
-  onThemeChange,
   isNotificationOpen,
   onNotificationToggle,
   isProfileMenuOpen,
@@ -150,13 +145,11 @@ export function DetailedResult({
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
+    <div className="min-h-screen bg-background text-foreground font-sans">
       {/* Header */}
       <ProjectHeader
         title="Detailed Result"
         onBack={onBack}
-        theme={theme}
-        onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={onNotificationToggle}
         isProfileMenuOpen={isProfileMenuOpen}
@@ -165,15 +158,21 @@ export function DetailedResult({
       />
 
       {/* Screen Info Bar */}
-      <div className="w-full border-b border-white/10 bg-[#0A0A0A]">
+      <div className="w-full border-b border-border bg-card">
         <div className="flex items-center justify-between px-4 py-4">
           <div>
-            <p className="text-white/50 text-[12px] mb-[2px]">ScreenName :</p>
+            <p className="text-muted-foreground text-[12px] mb-[2px]">
+              ScreenName :
+            </p>
             <div className="flex items-center gap-4">
-              <p className="text-white text-[20px] font-bold">{testName}</p>
+              <p className="text-foreground text-[20px] font-bold">
+                {testName}
+              </p>
               <div className="flex items-center gap-[8px]">
-                <span className="text-white/50 text-[14px]">Status :</span>
-                <div className="bg-[#450a0a] border border-red-900/50 px-[8px] py-[2px] rounded-[4px] flex items-center gap-[6px]">
+                <span className="text-muted-foreground text-[14px]">
+                  Status :
+                </span>
+                <div className="bg-red-900/20 border border-red-900/50 px-[8px] py-[2px] rounded-[4px] flex items-center gap-[6px]">
                   <div className="w-2 h-2 rounded-full bg-red-600"></div>
                   <span className="text-red-500 text-[12px] font-bold tracking-wide">
                     FAILED
@@ -186,24 +185,24 @@ export function DetailedResult({
           <div className="flex items-center gap-[12px]">
             {/* Build version dropdown */}
             <div className="flex items-center gap-[10px]">
-              <p className="font-semibold text-[14px] text-black dark:text-white">
+              <p className="font-semibold text-[14px] text-foreground">
                 Build :
               </p>
               <Select value={selectedBuild} onValueChange={onBuildChange}>
-                <SelectTrigger className="h-auto w-auto gap-[8px] rounded-[4px] border border-[#6bdf95]/30 !bg-black px-[10px] py-[10px] font-mono text-[14px] text-[#6bdf95] hover:bg-[#6bdf95]/10 focus:ring-0 focus:ring-offset-0 data-[state=open]:border-[#6bdf95] data-[state=open]:ring-0">
+                <SelectTrigger className="h-auto w-auto gap-[8px] rounded-[4px] border border-green-500/30 !bg-background px-[10px] py-[10px] font-mono text-[14px] text-green-500 hover:bg-green-500/10 focus:ring-0 focus:ring-offset-0 data-[state=open]:border-green-500 data-[state=open]:ring-0">
                   <SelectValue placeholder="Select build">
                     {selectedBuild}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent className="w-[130px] border border-white/10 !bg-[#1f1f1f] text-white shadow-xl">
+                <SelectContent className="w-[130px] border border-border !bg-popover text-foreground shadow-xl">
                   {buildVersions.map((version) => (
                     <SelectItem
                       key={version}
                       value={version}
-                      className={`font-mono text-[14px] cursor-pointer transition-colors focus:bg-white/10 focus:text-white ${
+                      className={`font-mono text-[14px] cursor-pointer transition-colors focus:bg-accent focus:text-accent-foreground ${
                         version === selectedBuild
-                          ? "bg-white/10 text-[#6bdf95] focus:text-[#6bdf95]"
-                          : "text-white hover:bg-white/5"
+                          ? "bg-accent/50 text-green-500 focus:text-green-500"
+                          : "text-foreground hover:bg-accent"
                       }`}
                     >
                       {version}
@@ -216,7 +215,7 @@ export function DetailedResult({
             <button
               onClick={handleDownloadPDF}
               disabled={isDownloading}
-              className="px-[10px] py-[10px] rounded-[4px] border border-[#3b82f6]/30 text-[#3b82f6] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#3b82f6]/10 transition-colors disabled:opacity-50"
+              className="px-[10px] py-[10px] rounded-[4px] border border-blue-500/30 text-blue-500 text-[14px] font-mono flex items-center gap-[8px] hover:bg-blue-500/10 transition-colors disabled:opacity-50"
             >
               <Download className="w-4 h-4" />
               <span>Download Report</span>
@@ -224,7 +223,7 @@ export function DetailedResult({
 
             <button
               onClick={handleRaiseIssue}
-              className="px-[10px] py-[10px] rounded-[4px] bg-[#ef4444]/10 border border-[#ef4444]/30 text-[#ef4444] text-[14px] font-mono font-bold hover:bg-[#ef4444]/20 transition-colors shadow-sm"
+              className="px-[10px] py-[10px] rounded-[4px] bg-red-500/10 border border-red-500/30 text-red-500 text-[14px] font-mono font-bold hover:bg-red-500/20 transition-colors shadow-sm"
             >
               Raise Issue
             </button>
@@ -235,7 +234,7 @@ export function DetailedResult({
       {/* Main Content */}
       <div className="flex h-[calc(100vh-140px)]">
         {/* Left Panel - Image Viewer */}
-        <div className="flex-1 bg-[#050505] p-[20px] flex flex-col border-r border-white/10">
+        <div className="flex-1 bg-muted/50 p-[20px] flex flex-col border-r border-border">
           {/* Controls Row */}
           <div className="flex items-center justify-between mb-[16px]">
             <div className="flex items-center bg-transparent gap-4">
@@ -243,8 +242,8 @@ export function DetailedResult({
                 onClick={() => setActiveTab("baseline")}
                 className={`text-[14px] font-mono font-medium ${
                   activeTab === "baseline"
-                    ? "text-white"
-                    : "text-white/50 hover:text-white"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Baseline Image
@@ -253,8 +252,8 @@ export function DetailedResult({
                 onClick={() => setActiveTab("live")}
                 className={`px-3 py-1 rounded-[4px] text-[14px] font-mono font-medium ${
                   activeTab === "live"
-                    ? "bg-[#1A1A1A] text-white border border-white/10"
-                    : "text-white/50 hover:text-white"
+                    ? "bg-secondary text-secondary-foreground border border-border"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Live image
@@ -263,8 +262,8 @@ export function DetailedResult({
                 onClick={() => setActiveTab("difference")}
                 className={`text-[14px] font-mono font-medium ${
                   activeTab === "difference"
-                    ? "text-white"
-                    : "text-white/50 hover:text-white"
+                    ? "text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
                 }`}
               >
                 Image Difference
@@ -272,21 +271,21 @@ export function DetailedResult({
             </div>
 
             {/* Zoom Controls */}
-            <div className="flex items-center bg-[#1A1A1A] rounded-[4px] border border-white/10 p-[2px]">
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
+            <div className="flex items-center bg-card rounded-[4px] border border-border p-[2px]">
+              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-accent text-muted-foreground">
                 <Minus className="w-4 h-4" />
               </button>
-              <div className="w-[40px] text-center text-[12px] text-white font-mono">
+              <div className="w-[40px] text-center text-[12px] text-foreground font-mono">
                 100
               </div>
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70">
+              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-accent text-muted-foreground">
                 <Plus className="w-4 h-4" />
               </button>
             </div>
           </div>
 
           {/* Image Frame */}
-          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center overflow-hidden relative">
+          <div className="flex-1 bg-card rounded-[8px] border border-border p-4 flex items-center justify-center overflow-hidden relative">
             <div className="relative shadow-2xl">
               {/* Mock browser frame/header if needed? The image just shows the content. */}
               {activeTab === "baseline" && (
@@ -315,25 +314,25 @@ export function DetailedResult({
         </div>
 
         {/* Right Panel - Stats & Issues */}
-        <div className="w-[450px] flex flex-col border-l border-white/10 p-4">
+        <div className="w-[450px] flex flex-col border-l border-border p-4 bg-background">
           {/* Stats Header */}
-          <div className="p-[24px] border-b border-white/10">
+          <div className="p-[24px] border-b border-border">
             <div className="flex justify-between items-start mb-[24px]">
               <div>
-                <p className="text-white/50">Different Percentage</p>
-                <p className="text-white text-[32px] font-light leading-none">
+                <p className="text-muted-foreground">Different Percentage</p>
+                <p className="text-foreground text-[32px] font-light leading-none">
                   {differentPercentage}%
                 </p>
               </div>
               <div>
-                <p className="text-white/50 mb-[8px]">Final Verdict</p>
+                <p className="text-muted-foreground mb-[8px]">Final Verdict</p>
                 <div className="flex items-center gap-3">
                   <button
                     onClick={handleApprove}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors ${
                       finalVerdict === "approve"
-                        ? "bg-white text-black border-white"
-                        : "bg-transparent text-white border-transparent hover:bg-white/5"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-transparent text-foreground border-transparent hover:bg-accent"
                     }`}
                   >
                     <Check className="w-4 h-4" />
@@ -343,8 +342,8 @@ export function DetailedResult({
                     onClick={handleReject}
                     className={`flex items-center gap-2 px-3 py-1.5 rounded-[4px] border transition-colors ${
                       finalVerdict === "reject"
-                        ? "bg-white text-black border-white"
-                        : "bg-transparent text-white border-transparent hover:bg-white/5"
+                        ? "bg-foreground text-background border-foreground"
+                        : "bg-transparent text-foreground border-transparent hover:bg-accent"
                     }`}
                   >
                     <XIcon className="w-4 h-4" />
@@ -355,16 +354,16 @@ export function DetailedResult({
             </div>
 
             <div>
-              <p className="text-white/50">Detected Issues</p>
-              <p className="text-white text-[32px] font-light leading-none">
+              <p className="text-muted-foreground">Detected Issues</p>
+              <p className="text-foreground text-[32px] font-light leading-none">
                 {detectedIssues}
               </p>
             </div>
 
             {/* Warning Info */}
-            <div className="mt-[20px] bg-[#1A1A1A] border border-white/5 rounded-[4px] p-[10px] flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-white/30 mt-[2px] shrink-0" />
-              <p className="text-white/50 leading-relaxed">
+            <div className="mt-[20px] bg-card border border-border rounded-[4px] p-[10px] flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-muted-foreground mt-[2px] shrink-0" />
+              <p className="text-muted-foreground leading-relaxed">
                 This action is final. Once submitted, the verdict cannot be
                 changed.
               </p>
@@ -373,10 +372,10 @@ export function DetailedResult({
 
           {/* Issues Content */}
           <div className="flex-1 overflow-y-auto p-[24px]">
-            <h3 className="text-white text-[18px] font-bold mb-[8px]">
+            <h3 className="text-foreground text-[18px] font-bold mb-[8px]">
               Issue Overview
             </h3>
-            <p className="text-white/60 text-[13px] leading-relaxed mb-[24px]">
+            <p className="text-muted-foreground/80 text-[13px] leading-relaxed mb-[24px]">
               When the user is traveling, an error pop-up should appear with the
               message "Are you traveling?" instead of that , we are getting
               "Oops! Something went wrong." message in the current UI
@@ -384,21 +383,21 @@ export function DetailedResult({
 
             {/* Severity Cards */}
             <div className="grid grid-cols-3 gap-[10px] mb-[24px]">
-              <div className="bg-[#1f1111] border border-red-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#ff5555]">Major</p>
-                <p className="text-[#ff5555] text-[20px] font-bold">
+              <div className="bg-red-500/10 border border-red-500/20 rounded-[6px] p-[12px]">
+                <p className="text-red-500">Major</p>
+                <p className="text-red-500 text-[20px] font-bold">
                   {severityCounts.Major}
                 </p>
               </div>
-              <div className="bg-[#1f1c11] border border-yellow-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#fbbf24]">Medium</p>
-                <p className="text-[#fbbf24] text-[20px] font-bold">
+              <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-[6px] p-[12px]">
+                <p className="text-yellow-500">Medium</p>
+                <p className="text-yellow-500 text-[20px] font-bold">
                   {severityCounts.Medium}
                 </p>
               </div>
-              <div className="bg-[#0f141f] border border-blue-900/40 rounded-[6px] p-[12px]">
-                <p className="text-[#3b82f6]">Low</p>
-                <p className="text-[#3b82f6] text-[20px] font-bold">
+              <div className="bg-blue-500/10 border border-blue-500/20 rounded-[6px] p-[12px]">
+                <p className="text-blue-500">Low</p>
+                <p className="text-blue-500 text-[20px] font-bold">
                   {severityCounts.Low}
                 </p>
               </div>
@@ -417,15 +416,15 @@ export function DetailedResult({
                   ? "border-yellow-900/30"
                   : "border-blue-900/30";
                 const bgBase = isMajor
-                  ? "bg-[#1f1111]"
+                  ? "bg-red-500/5"
                   : isMedium
-                  ? "bg-[#1f1c11]"
-                  : "bg-[#0f141f]";
+                  ? "bg-yellow-500/5"
+                  : "bg-blue-500/5";
                 const textColor = isMajor
-                  ? "text-[#ff5555]"
+                  ? "text-red-500"
                   : isMedium
-                  ? "text-[#fbbf24]"
-                  : "text-[#3b82f6]";
+                  ? "text-yellow-500"
+                  : "text-blue-500";
 
                 return (
                   <div
@@ -442,10 +441,10 @@ export function DetailedResult({
                         {issue.severity}
                       </span>
                     </div>
-                    <p className="text-gray-300 text-[13px] font-medium mb-[4px]">
+                    <p className="text-foreground text-[13px] font-medium mb-[4px]">
                       {issue.title}
                     </p>
-                    <p className="text-white/30 text-[11px] font-mono">
+                    <p className="text-muted-foreground text-[11px] font-mono">
                       {issue.coordinates}
                     </p>
                   </div>

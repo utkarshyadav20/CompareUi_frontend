@@ -88,9 +88,9 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
   };
 
   return (
-    <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)]">
+    <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)] bg-background">
       {/* Baselining Images Panel */}
-      <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip flex flex-col">
+      <div className="flex-1 bg-muted/40 border border-border overflow-clip flex flex-col">
         {/* Using the common component which includes header and content */}
         <BaselineImageInput
           images={baselineImages}
@@ -113,23 +113,21 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
       </div>
 
       {/* Actual Build Images Panel */}
-      <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip">
+      <div className="flex-1 bg-muted/40 border border-border overflow-clip">
         <div className="p-5 flex flex-col gap-5 h-full">
           {/* Header */}
-          <h3 className="text-black dark:text-white text-[20px]">
-            Actual Build images
-          </h3>
+          <h3 className="text-foreground text-[20px]">Actual Build images</h3>
 
           {/* Content */}
           {actualImage ? (
-            <div className="bg-black/5 dark:bg-white/5 border border-black/20 dark:border-white/20 rounded-lg p-1.5 w-full">
+            <div className="bg-muted border border-border rounded-lg p-1.5 w-full">
               <div className="flex flex-col gap-0.5">
                 {/* Image Info */}
                 <div className="flex items-center justify-between text-xs px-1">
-                  <p className="text-black dark:text-white overflow-ellipsis overflow-hidden max-w-[190px]">
+                  <p className="text-foreground overflow-ellipsis overflow-hidden max-w-[190px]">
                     {actualImage.name}
                   </p>
-                  <p className="text-black/20 dark:text-white/20">
+                  <p className="text-muted-foreground">
                     {actualImage.width}x{actualImage.height}
                   </p>
                 </div>
@@ -144,10 +142,10 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
               </div>
             </div>
           ) : (
-            <div className="relative border border-dashed border-black/20 dark:border-white/20 rounded-lg flex-1 bg-black/5 dark:bg-white/5 cursor-pointer hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+            <div className="relative border border-dashed border-border rounded-lg flex-1 bg-muted/40 cursor-pointer hover:bg-muted/60 transition-colors">
               <div className="flex flex-col items-center justify-center h-full gap-2.5 p-2.5">
-                <Image className="w-5 h-5 text-black dark:text-white" />
-                <p className="font-mono text-[14px] text-black dark:text-white text-center">
+                <Image className="w-5 h-5 text-foreground" />
+                <p className="font-mono text-[14px] text-foreground text-center">
                   Upload/paste Screenshot
                 </p>
               </div>

@@ -285,22 +285,22 @@ export function ResultTab({
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full bg-background">
       {/* AI Analysis & DB Info Section */}
       <div className="px-[32px] py-[20px] space-y-4"></div>
 
       {/* Search and Controls Bar */}
       <div className="flex items-center justify-between px-[32px] py-[11px]">
         {/* Search */}
-        <div className="relative w-[381px] h-[41px] rounded-[6px] border border-white/50">
+        <div className="relative w-[381px] h-[41px] rounded-[6px] border border-input">
           <div className="flex items-center gap-[10px] px-[20px] py-[14px] h-full">
-            <Search className="w-[18px] h-[18px] text-white/50" />
+            <Search className="w-[18px] h-[18px] text-muted-foreground" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search for result"
-              className="flex-1 bg-transparent text-white text-[16px] outline-none placeholder:text-white/50"
+              className="flex-1 bg-transparent text-foreground text-[16px] outline-none placeholder:text-muted-foreground"
             />
           </div>
         </div>
@@ -308,22 +308,22 @@ export function ResultTab({
         {/* Right side controls */}
         <div className="flex items-center gap-[10px]">
           {/* View toggle */}
-          <div className="h-[41px] rounded-[6px] border-[0.828px] border-white/50 flex items-center p-[4.554px] gap-[4px]">
+          <div className="h-[41px] rounded-[6px] border border-input flex items-center p-[4.554px] gap-[4px]">
             <button
               onClick={() => setViewMode("grid")}
               className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${
-                viewMode === "grid" ? "bg-white/10" : ""
+                viewMode === "grid" ? "bg-muted" : ""
               }`}
             >
-              <Grid2X2 className="w-[14.903px] h-[14.903px] text-white/50" />
+              <Grid2X2 className="w-[14.903px] h-[14.903px] text-muted-foreground" />
             </button>
             <button
               onClick={() => setViewMode("list")}
               className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${
-                viewMode === "list" ? "bg-white/10" : ""
+                viewMode === "list" ? "bg-muted" : ""
               }`}
             >
-              <List className="w-[14.903px] h-[14.903px] text-white/50" />
+              <List className="w-[14.903px] h-[14.903px] text-muted-foreground" />
             </button>
           </div>
 
@@ -331,7 +331,7 @@ export function ResultTab({
           <div className="relative">
             <button
               onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-              className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors"
+              className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-muted transition-colors"
             >
               <p className="font-mono text-[14px] text-[#6bdf95]">
                 {selectedBuild}
@@ -344,7 +344,7 @@ export function ResultTab({
                   className="fixed inset-0 z-20"
                   onClick={() => setIsBuildDropdownOpen(false)}
                 />
-                <div className="absolute right-0 top-[45px] w-[130px] bg-[#2A2A2A] rounded-[8px] shadow-lg z-30 border border-white/10 overflow-hidden">
+                <div className="absolute right-0 top-[45px] w-[130px] bg-popover rounded-[8px] shadow-lg z-30 border border-border overflow-hidden">
                   {buildVersions.map((version) => (
                     <button
                       key={version}
@@ -352,11 +352,11 @@ export function ResultTab({
                         onBuildChange(version);
                         setIsBuildDropdownOpen(false);
                       }}
-                      className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${
-                        version === selectedBuild ? "bg-white/5" : ""
+                      className={`w-full px-[16px] py-[12px] hover:bg-muted transition-colors text-left ${
+                        version === selectedBuild ? "bg-muted" : ""
                       }`}
                     >
-                      <span className="text-white text-[14px] font-mono">
+                      <span className="text-foreground text-[14px] font-mono">
                         {version === "v1.0.234.1" ? (
                           <span className="text-[#6bdf95]">{version}</span>
                         ) : (
@@ -371,7 +371,7 @@ export function ResultTab({
           </div>
 
           {/* Download Full Report button */}
-          <button className="bg-white text-black px-[16px] py-[11.798px] rounded-[6px] flex items-center gap-[9.075px] hover:bg-white/90 transition-colors">
+          <button className="bg-foreground text-background px-[16px] py-[11.798px] rounded-[6px] flex items-center gap-[9.075px] hover:bg-foreground/90 transition-colors">
             <svg
               className="w-[14px] h-[14px]"
               fill="currentColor"
@@ -392,20 +392,22 @@ export function ResultTab({
       {/* Stats Cards */}
       <div className="px-[32px] py-0 flex flex-wrap gap-[9px] items-end">
         {/* Total Test */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
-          <p className="text-white text-[18px]">Total Test</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
+          <p className="text-foreground text-[18px]">Total Test</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">
+            <p className="text-foreground text-[24px] font-bold">
               {allTests.length}
             </p>
           </div>
         </div>
 
         {/* Test Passed */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
-          <p className="text-white text-[18px]">Test Passed</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
+          <p className="text-foreground text-[18px]">Test Passed</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">{passedTests}</p>
+            <p className="text-foreground text-[24px] font-bold">
+              {passedTests}
+            </p>
             <div className="flex items-center gap-[2px] h-[12px]">
               <svg
                 className="w-[10px] h-[11.215px]"
@@ -429,10 +431,12 @@ export function ResultTab({
         </div>
 
         {/* Test Failed */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
-          <p className="text-white text-[18px]">Test Failed</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
+          <p className="text-foreground text-[18px]">Test Failed</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">{failedTests}</p>
+            <p className="text-foreground text-[24px] font-bold">
+              {failedTests}
+            </p>
             <div className="flex items-center gap-[2px] h-[12px]">
               <svg
                 className="w-[10px] h-[11.215px]"
@@ -456,10 +460,10 @@ export function ResultTab({
         </div>
 
         {/* Errors */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
-          <p className="text-white text-[18px]">Errors</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
+          <p className="text-foreground text-[18px]">Errors</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">{errors}</p>
+            <p className="text-foreground text-[24px] font-bold">{errors}</p>
             <div className="flex items-center gap-[2px] h-[12px]">
               <AlertTriangle className="w-[10px] h-[11.215px] text-[#ff383c]" />
               <span className="text-[#ff383c] text-[12px] font-medium">
@@ -470,10 +474,10 @@ export function ResultTab({
         </div>
 
         {/* In Review */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow opacity-20">
-          <p className="text-white text-[18px]">In Review</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow opacity-50">
+          <p className="text-foreground text-[18px]">In Review</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">145</p>
+            <p className="text-foreground text-[24px] font-bold">145</p>
             <div className="flex items-center gap-[2px] h-[12px]">
               <span className="text-[#34c759] text-[12px] font-medium">
                 93.4%
@@ -483,10 +487,10 @@ export function ResultTab({
         </div>
 
         {/* Ready for QA */}
-        <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow opacity-20">
-          <p className="text-white text-[18px]">Ready for QA</p>
+        <div className="bg-card rounded-[8px] border border-border px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow opacity-50">
+          <p className="text-foreground text-[18px]">Ready for QA</p>
           <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">145</p>
+            <p className="text-foreground text-[24px] font-bold">145</p>
             <div className="flex items-center gap-[2px] h-[12px]">
               <span className="text-[#34c759] text-[12px] font-medium">
                 93.4%
@@ -498,41 +502,47 @@ export function ResultTab({
 
       {/* Test Case Section */}
       <div className="px-[32px] py-[20px]">
-        <h2 className="text-white text-[20px] font-bold mb-[12px]">
+        <h2 className="text-foreground text-[20px] font-bold mb-[12px]">
           Test Case
         </h2>
 
         {/* Table Header */}
-        <div className="w-full bg-white/10 rounded-[6px] mb-[8px]">
+        <div className="w-full bg-muted/50 rounded-[6px] mb-[8px]">
           <div className="flex items-center px-[11px] py-[14px]">
             <div className="flex items-center justify-center w-[65px] shrink-0">
-              <p className="text-white/70 text-[18px] font-semibold">S.no</p>
+              <p className="text-muted-foreground text-[18px] font-semibold">
+                S.no
+              </p>
             </div>
             <div className="w-[247px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">
+              <p className="text-muted-foreground text-[18px] font-semibold">
                 Test Name
               </p>
             </div>
             <div className="w-[247px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">
+              <p className="text-muted-foreground text-[18px] font-semibold">
                 TimeStamp
               </p>
             </div>
             <div className="w-[207px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">Status</p>
+              <p className="text-muted-foreground text-[18px] font-semibold">
+                Status
+              </p>
             </div>
             <div className="w-[137px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">
+              <p className="text-muted-foreground text-[18px] font-semibold">
                 Mismatch %
               </p>
             </div>
             <div className="w-[219px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">
+              <p className="text-muted-foreground text-[18px] font-semibold">
                 Duration
               </p>
             </div>
             <div className="w-[125px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">Action</p>
+              <p className="text-muted-foreground text-[18px] font-semibold">
+                Action
+              </p>
             </div>
           </div>
         </div>
@@ -542,21 +552,21 @@ export function ResultTab({
           {filteredTests.slice(0, loadedTests).map((test) => (
             <div
               key={test.id}
-              className="w-full rounded-[6px] border border-white/10 hover:bg-white/5 transition-colors"
+              className="w-full rounded-[6px] border border-border hover:bg-muted/30 transition-colors"
             >
               <div className="flex items-center px-[11px] py-[2px]">
                 <div className="flex items-center justify-center w-[65px] shrink-0 p-[10px]">
-                  <p className="text-white/50 text-[16px] font-bold">
+                  <p className="text-muted-foreground text-[16px] font-bold">
                     {String(test.sNo).padStart(2, "0")}
                   </p>
                 </div>
                 <div className="w-[247px] px-[10px] shrink-0 py-[10px]">
-                  <p className="text-white/50 text-[16px] font-semibold">
+                  <p className="text-muted-foreground text-[16px] font-semibold">
                     {test.testName}
                   </p>
                 </div>
                 <div className="w-[247px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">
+                  <p className="text-muted-foreground text-[16px] font-mono">
                     {test.timestamp}
                   </p>
                 </div>
@@ -595,31 +605,31 @@ export function ResultTab({
                   )}
                 </div>
                 <div className="w-[137px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">
+                  <p className="text-muted-foreground text-[16px] font-mono">
                     {test.mismatchPercent}
                   </p>
                 </div>
                 <div className="w-[219px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">
+                  <p className="text-muted-foreground text-[16px] font-mono">
                     {test.duration}
                   </p>
                 </div>
                 <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[20px]">
                   <button
                     onClick={() => onViewTest(test.id)}
-                    className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors"
+                    className="w-[30px] h-[30px] flex items-center justify-center hover:bg-muted rounded-[6px] transition-colors"
                     disabled={
                       test.status === "In Queue" || test.status === "Running"
                     }
                   >
-                    <Eye className="w-[16px] h-[16px] text-white/50" />
+                    <Eye className="w-[16px] h-[16px] text-muted-foreground" />
                   </button>
-                  <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors">
-                    <Download className="w-[16px] h-[16px] text-white/50" />
+                  <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-muted rounded-[6px] transition-colors">
+                    <Download className="w-[16px] h-[16px] text-muted-foreground" />
                   </button>
                   {test.status === "FAIL" && (
-                    <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors">
-                      <AlertTriangle className="w-[16px] h-[16px] text-white/50" />
+                    <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-muted rounded-[6px] transition-colors">
+                      <AlertTriangle className="w-[16px] h-[16px] text-muted-foreground" />
                     </button>
                   )}
                 </div>
@@ -633,7 +643,7 @@ export function ResultTab({
           <div className="flex items-center justify-center mt-[20px]">
             <button
               onClick={handleLoadMore}
-              className="bg-[#2A2A2A] text-white px-[20px] py-[10px] rounded-[6px] hover:bg-[#3A3A3A] transition-colors flex items-center gap-[8px]"
+              className="bg-card border border-border text-foreground px-[20px] py-[10px] rounded-[6px] hover:bg-accent transition-colors flex items-center gap-[8px]"
             >
               <span>Load More</span>
               <ChevronDown className="w-[16px] h-[16px]" />

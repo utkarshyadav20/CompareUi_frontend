@@ -260,8 +260,6 @@ export function AndroidTVDetailFigma({
         testName={testCase?.name || "Detail Screen"}
         onBack={handleBackToResults}
         buildVersion="v12.224"
-        theme={theme}
-        onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
         isProfileMenuOpen={isProfileMenuOpen}
@@ -271,12 +269,10 @@ export function AndroidTVDetailFigma({
   }
 
   return (
-    <div className="bg-black flex flex-col gap-[2px] min-h-screen w-full">
+    <div className="bg-background flex flex-col gap-[2px] min-h-screen w-full">
       <ProjectHeader
         project={project}
         onBack={onBack || (() => {})}
-        theme={theme}
-        onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
         isProfileMenuOpen={isProfileMenuOpen}
@@ -298,29 +294,27 @@ export function AndroidTVDetailFigma({
       ) : activeTab === "testingpanel" ? (
         <>
           {/* Controls Bar */}
-          <div className="dark">
-            <ControlBar
-              searchQuery={searchQuery} // Figma view has filtering but maybe not exposed in UI previously? Ah wait, it didn't have search input visible in the screenshot code analysis, let me double check. Actually the screenshot analysis on line 41 shows `const [searchQuery, setSearchQuery] = useState("");` and line 197 uses it. BUT the inline JSX I'm replacing (lines 345-498) DOES NOT have a search input. It seems AndroidTVDetailFigma only had the right side controls. I will pass NO search props if it wasn't there, OR add it if requested.
-              // Wait, looking at the previous analysis of AndroidTVDetailFigma lines 345-498...
-              // It STARTS with `<div className="w-full"> <div className="flex items-center justify-end..."`.
-              // "justify-end" implies no left content.
-              // So for this file, I will NOT pass searchQuery props (or pass null/undefined), effectively hiding the search bar on the left, matching previous UI.
+          <ControlBar
+            searchQuery={searchQuery} // Figma view has filtering but maybe not exposed in UI previously? Ah wait, it didn't have search input visible in the screenshot code analysis, let me double check. Actually the screenshot analysis on line 41 shows `const [searchQuery, setSearchQuery] = useState("");` and line 197 uses it. BUT the inline JSX I'm replacing (lines 345-498) DOES NOT have a search input. It seems AndroidTVDetailFigma only had the right side controls. I will pass NO search props if it wasn't there, OR add it if requested.
+            // Wait, looking at the previous analysis of AndroidTVDetailFigma lines 345-498...
+            // It STARTS with `<div className="w-full"> <div className="flex items-center justify-end..."`.
+            // "justify-end" implies no left content.
+            // So for this file, I will NOT pass searchQuery props (or pass null/undefined), effectively hiding the search bar on the left, matching previous UI.
 
-              selectedMethod={selectedMethod}
-              onMethodChange={setSelectedMethod}
-              threshold={threshold}
-              onThresholdChange={setThreshold}
-              onStartComparison={() => console.log("Start Comparison")}
-              selectedBuild={selectedBuild}
-              onBuildChange={setSelectedBuild}
-              buildVersions={buildVersions}
-            />
-          </div>
+            selectedMethod={selectedMethod}
+            onMethodChange={setSelectedMethod}
+            threshold={threshold}
+            onThresholdChange={setThreshold}
+            onStartComparison={() => console.log("Start Comparison")}
+            selectedBuild={selectedBuild}
+            onBuildChange={setSelectedBuild}
+            buildVersions={buildVersions}
+          />
 
           {/* Main Content - Two Panels */}
           <div className="flex-1 flex px-[32px] pb-[25px]">
             {/* Left Panel - Baselining Images */}
-            <div className="w-[384px] bg-white/10 border border-black flex flex-col shrink-0 overflow-hidden">
+            <div className="w-[384px] bg-muted/40 border border-border flex flex-col shrink-0 overflow-hidden">
               <BaselineImageInput
                 images={filteredBaselineImages}
                 hasImages={baselineImages.length > 0}
@@ -344,8 +338,8 @@ export function AndroidTVDetailFigma({
             </div>
 
             {/* Right Panel - Actual Build Images */}
-            <div className="flex-1 bg-white/10 border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-              <p className="font-bold text-[20px] text-white mb-[20px]">
+            <div className="flex-1 bg-muted/40 border border-border p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
+              <p className="font-bold text-[20px] text-foreground mb-[20px]">
                 Actual Build images
               </p>
 
@@ -354,7 +348,7 @@ export function AndroidTVDetailFigma({
                   <div className="flex-1" />
                   {/* Centered Content - Empty State */}
                   <div className="flex flex-col items-center gap-[37px] mb-auto">
-                    <p className="text-[18px] font-mono text-white/50 text-center">
+                    <p className="text-[18px] font-mono text-muted-foreground text-center">
                       Waiting for image to receive
                       <br />
                       from Android build
@@ -362,7 +356,7 @@ export function AndroidTVDetailFigma({
 
                     <button
                       onClick={handleBrowseFolder}
-                      className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
+                      className="flex items-center gap-[11px] text-[18px] text-foreground hover:opacity-80 transition-opacity"
                     >
                       <Folder className="w-[18px] h-[18px]" />
                       <span className="underline decoration-solid">
@@ -378,7 +372,7 @@ export function AndroidTVDetailFigma({
                   <div className="flex justify-end mb-[20px]">
                     <button
                       onClick={handleBrowseFolder}
-                      className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
+                      className="flex items-center gap-[11px] text-[14px] text-foreground bg-muted px-[16px] py-[10px] rounded-[8px] hover:bg-muted/80 transition-colors"
                     >
                       <Folder className="w-[16px] h-[16px]" />
                       <span>Browse Folder</span>
@@ -389,13 +383,13 @@ export function AndroidTVDetailFigma({
                   <div className="grid grid-cols-3 gap-[15px]">
                     {actualImages.map((image) => (
                       <div key={image.id} className="relative group">
-                        <div className="bg-[rgba(255,255,255,0.05)] relative rounded-[8px]">
+                        <div className="bg-muted relative rounded-[8px]">
                           <div className="flex flex-col items-center justify-center size-full">
                             <div className="content-stretch flex flex-col gap-[2px] items-center justify-center overflow-clip p-[6px] relative size-full">
                               {/* Filename and dimensions */}
                               <div className="content-stretch flex items-start justify-between leading-[normal] relative shrink-0 text-[12px] text-nowrap w-full">
                                 <p
-                                  className="font-bold overflow-ellipsis overflow-hidden relative shrink-0 text-white flex-1 mr-[8px]"
+                                  className="font-bold overflow-ellipsis overflow-hidden relative shrink-0 text-foreground flex-1 mr-[8px]"
                                   style={{
                                     fontVariationSettings: "'opsz' 14",
                                   }}
@@ -404,7 +398,7 @@ export function AndroidTVDetailFigma({
                                   {image.name}
                                 </p>
                                 <p
-                                  className="font-normal relative shrink-0 text-[rgba(255,255,255,0.2)]"
+                                  className="font-normal relative shrink-0 text-muted-foreground"
                                   style={{
                                     fontVariationSettings: "'opsz' 14",
                                   }}
@@ -425,7 +419,7 @@ export function AndroidTVDetailFigma({
                           </div>
                           <div
                             aria-hidden="true"
-                            className="absolute border-[0.5px] border-[rgba(255,255,255,0.2)] border-solid inset-0 pointer-events-none rounded-[8px]"
+                            className="absolute border-[0.5px] border-border border-solid inset-0 pointer-events-none rounded-[8px]"
                           />
                         </div>
                         <button
@@ -453,8 +447,8 @@ export function AndroidTVDetailFigma({
       ) : activeTab === "settings" ? (
         <SettingsTab />
       ) : (
-        <div className="px-[32px] py-[24px] text-white">
-          <p className="text-white/50 text-center">
+        <div className="px-[32px] py-[24px] text-foreground bg-background">
+          <p className="text-muted-foreground text-center">
             Content for {activeTab} tab coming soon...
           </p>
         </div>

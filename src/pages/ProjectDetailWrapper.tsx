@@ -1,18 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Project, Theme } from "../types";
+import { Project } from "../types";
 import { ProjectDetail } from "../components/project/ProjectDetail";
 
 interface ProjectDetailWrapperProps {
   projects: Project[];
-  theme: Theme;
-  onThemeChange: (theme: Theme) => void;
 }
 
-export function ProjectDetailWrapper({
-  projects,
-  theme,
-  onThemeChange,
-}: ProjectDetailWrapperProps) {
+export function ProjectDetailWrapper({ projects }: ProjectDetailWrapperProps) {
   const { pid } = useParams();
   const navigate = useNavigate();
 
@@ -20,11 +14,11 @@ export function ProjectDetailWrapper({
 
   if (!project) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white dark:bg-black text-black dark:text-white">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
         <div className="text-2xl font-bold mb-4">Project Not Found</div>
         <button
           onClick={() => navigate("/")}
-          className="bg-black dark:bg-white text-white dark:text-black px-4 py-2 rounded-lg"
+          className="bg-primary text-primary-foreground px-4 py-2 rounded-lg"
         >
           Go Home
         </button>
@@ -32,12 +26,5 @@ export function ProjectDetailWrapper({
     );
   }
 
-  return (
-    <ProjectDetail
-      project={project}
-      onBack={() => navigate("/")}
-      theme={theme}
-      onThemeChange={onThemeChange}
-    />
-  );
+  return <ProjectDetail project={project} onBack={() => navigate("/")} />;
 }

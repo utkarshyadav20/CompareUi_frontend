@@ -1,12 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Routes, Route } from "react-router-dom";
-import { Theme, Project } from "./types";
+import { Project } from "./types";
 import svgPaths from "./imports/svg-kgk8e7ds24";
 import { HomePage } from "./pages/HomePage";
 import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 
 export default function App() {
-  const [theme, setTheme] = useState<Theme>("dark");
   const [projects, setProjects] = useState<Project[]>([
     {
       id: "1",
@@ -24,26 +23,6 @@ export default function App() {
     },
   ]);
 
-  useEffect(() => {
-    // Apply theme to document
-    const root = document.documentElement;
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else if (theme === "light") {
-      root.classList.remove("dark");
-    } else {
-      // System theme
-      const prefersDark = window.matchMedia(
-        "(prefers-color-scheme: dark)"
-      ).matches;
-      if (prefersDark) {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
-    }
-  }, [theme]);
-
   const handleCreateProject = (
     newProject: Omit<Project, "id" | "timestamp">
   ) => {
@@ -57,8 +36,6 @@ export default function App() {
 
   const projectWrapperProps = {
     projects,
-    theme,
-    onThemeChange: setTheme,
   };
 
   return (
@@ -66,12 +43,7 @@ export default function App() {
       <Route
         path="/"
         element={
-          <HomePage
-            projects={projects}
-            theme={theme}
-            onThemeChange={setTheme}
-            onCreateProject={handleCreateProject}
-          />
+          <HomePage projects={projects} onCreateProject={handleCreateProject} />
         }
       />
       <Route
