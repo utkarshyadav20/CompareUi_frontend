@@ -10,6 +10,7 @@ import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
 import { TestComparisonToast } from "../results/TestComparisonToast";
 import { BaselineImageInput } from "../common/BaselineImageInput";
 import { ControlBar } from "../common/ControlBar";
+import { BrowserPreview } from "../common/BrowserPreview";
 
 // Tabs
 import { ActivityTab } from "../settings/ActivityTab";
@@ -285,137 +286,16 @@ export function ProjectDetail({ project, onBack }: ProjectDetailProps) {
                       </span>
                     </button>
                   </div>
-
-                  <div className="flex items-center gap-2 relative">
-                    <span className="text-foreground text-sm">Browser :</span>
-                    <button
-                      onClick={() =>
-                        setIsBrowserDropdownOpen(!isBrowserDropdownOpen)
-                      }
-                      className="flex items-center gap-2 px-2.5 py-2 rounded border border-green-500/30 hover:bg-green-500/10 transition-colors"
-                    >
-                      <span className="text-green-400 text-sm font-mono">
-                        {selectedBrowser}
-                      </span>
-                      <ChevronDown className="w-3.5 h-3.5 text-green-400" />
-                    </button>
-
-                    {/* Browser Dropdown Menu */}
-                    {isBrowserDropdownOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-30"
-                          onClick={() => setIsBrowserDropdownOpen(false)}
-                        />
-                        <div className="absolute top-full right-0 mt-2 w-[180px] bg-popover border border-border rounded-md shadow-lg z-40 overflow-hidden">
-                          <div className="p-1">
-                            {(
-                              [
-                                "Chrome",
-                                "Safari",
-                                "Microsoft Edge",
-                                "Firefox",
-                              ] as const
-                            ).map((browser) => (
-                              <button
-                                key={browser}
-                                onClick={() => {
-                                  setSelectedBrowser(browser);
-                                  setIsBrowserDropdownOpen(false);
-                                }}
-                                className={`w-full px-3 py-2 flex items-center gap-2 text-sm hover:bg-accent transition-colors rounded ${
-                                  selectedBrowser === browser
-                                    ? "bg-accent text-green-400"
-                                    : "text-foreground"
-                                }`}
-                              >
-                                <span className="font-mono">{browser}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </div>
                 </div>
               </div>
 
-              {/* Browser Mockup */}
-              <div className="flex-1 bg-[#09090b] rounded-[10px] p-4 pb-2 flex flex-col gap-3 border border-[#27272a]">
-                {/* Browser Address Bar */}
-                <div className="flex items-center gap-2 h-8">
-                  {/* Traffic Lights */}
-                  <div className="flex items-center gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50"></div>
-                    <div className="w-3 h-3 rounded-full bg-green-500/50"></div>
-                  </div>
-
-                  {/* URL Input */}
-                  <div className="flex-1 bg-white/5 rounded border border-white/50 flex items-center gap-2 px-2.5 py-2">
-                    <Globe className="w-4 h-4 text-white/50" />
-                    <input
-                      type="text"
-                      value={websiteUrl}
-                      onChange={(e) => handleWebsiteUrlChange(e.target.value)}
-                      placeholder="Enter your live url here ..."
-                      className="flex-1 bg-transparent text-foreground text-sm outline-none placeholder:text-muted-foreground"
-                    />
-                  </div>
-
-                  {/* Refresh Button */}
-                  <button
-                    onClick={() => {
-                      // Force iframe reload by updating the key
-                      if (websiteUrl && !websiteUrlError) {
-                        const iframe = document.querySelector(
-                          'iframe[title="Website Preview"]'
-                        ) as HTMLIFrameElement;
-                        if (iframe) {
-                          iframe.src = iframe.src;
-                        }
-                      }
-                    }}
-                    className="bg-[#27272a] p-2 rounded hover:bg-[#3a3a3d] transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5 text-[#9f9fa9]" />
-                  </button>
-                </div>
-
-                {/* Browser Content Area */}
-                <div className="flex-1 bg-[rgba(24,24,27,0.5)] rounded border border-[#3f3f46] flex items-center justify-center min-h-[400px] overflow-hidden relative">
-                  {websiteUrlError ? (
-                    <div className="text-center">
-                      <Globe className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
-                      <p className="text-yellow-500 text-lg font-mono mb-2">
-                        Invalid URL
-                      </p>
-                      <p className="text-[#71717b] text-sm font-mono">
-                        Please enter a valid URL starting with http:// or
-                        <br />
-                        https://
-                      </p>
-                    </div>
-                  ) : websiteUrl ? (
-                    <iframe
-                      key={websiteUrl}
-                      src={websiteUrl}
-                      className="w-full h-full border-0"
-                      title="Website Preview"
-                      sandbox="allow-same-origin allow-scripts allow-popups allow-forms"
-                    />
-                  ) : (
-                    <div className="text-center">
-                      <p className="text-foreground text-lg font-mono mb-2">
-                        Waiting
-                      </p>
-                      <p className="text-muted-foreground text-sm font-mono">
-                        Enter website URL to preview
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              {/* Browser Preview Component */}
+              <BrowserPreview
+                url={websiteUrl}
+                onUrlChange={handleWebsiteUrlChange}
+                selectedBrowser={selectedBrowser}
+                onBrowserChange={setSelectedBrowser}
+              />
             </div>
           ) : (
             <div className="flex-1 bg-muted rounded-lg p-5 flex flex-col items-center justify-center gap-10 border border-border min-h-[400px]">
