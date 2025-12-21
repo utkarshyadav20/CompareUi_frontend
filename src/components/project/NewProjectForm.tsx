@@ -1,7 +1,21 @@
-import { useState } from "react";
-import { ChevronLeft, Copy, ChevronDown, Smartphone } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Copy, Smartphone } from "lucide-react";
 import { ProjectType, EnvironmentType, Project } from "../../types";
 import svgPaths from "../../imports/svg-kgk8e7ds24";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetFooter,
+} from "../../components/ui/sheet";
 
 interface NewProjectFormProps {
   isOpen: boolean;
@@ -19,11 +33,18 @@ export function NewProjectForm({
   const [projectName, setProjectName] = useState("");
   const [environmentType, setEnvironmentType] =
     useState<EnvironmentType>("Emulator");
+  const [currentType, setCurrentType] = useState<ProjectType>(selectedType);
   const [projectId] = useState(
     () =>
       Math.random().toString(36).substring(2, 15) +
       Math.random().toString(36).substring(2, 15)
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      setCurrentType(selectedType);
+    }
+  }, [isOpen, selectedType]);
 
   const handleCreate = () => {
     if (!projectName.trim()) return;
@@ -45,14 +66,14 @@ export function NewProjectForm({
     };
 
     const getIcon = () => {
-      if (selectedType === "Android TV" || selectedType === "Mobile") {
+      if (currentType === "Android TV" || currentType === "Mobile") {
         return (
           <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
             <path d={svgPaths.p824ec00} fill="white" />
           </svg>
         );
       }
-      if (selectedType === "Roku TV") {
+      if (currentType === "Roku TV") {
         return (
           <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
             <path d={svgPaths.p3b2fd480} fill="white" />
@@ -60,7 +81,7 @@ export function NewProjectForm({
           </svg>
         );
       }
-      if (selectedType === "Website") {
+      if (currentType === "Website") {
         return (
           <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
             <path
@@ -77,35 +98,25 @@ export function NewProjectForm({
 
     onCreateProject({
       platform: projectName,
-      platformType: platformTypeMap[selectedType],
+      platformType: platformTypeMap[currentType],
       status: "running",
-      iconBg: iconBgMap[selectedType],
+      iconBg: iconBgMap[currentType],
       icon: getIcon(),
-      type: selectedType,
+      type: currentType,
     });
 
     setProjectName("");
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-end">
-      <div className="bg-white dark:bg-black w-full md:w-[500px] max-w-full h-full border-l border-black/20 dark:border-white/20 flex flex-col">
-        {/* Header */}
-        <div className="px-4 md:px-6 py-4 border-b border-black/20 dark:border-white/20 flex items-center gap-3">
-          <button
-            onClick={onClose}
-            className="text-black/50 dark:text-white/50 hover:text-black dark:hover:text-white"
-          >
-            <ChevronLeft className="w-5 h-5" />
-          </button>
-          <h2 className="text-black dark:text-white text-lg">New Project</h2>
-        </div>
+    <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <SheetContent className="w-[400px] sm:w-full p-4">
+        <SheetHeader className="p-0">
+          <SheetTitle className="p-0"> Create New Project</SheetTitle>
+        </SheetHeader>
 
-        {/* Form Content */}
-        <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+        <div className="flex flex-col gap-6 pb-6">
           {/* Project ID */}
           <div>
             <label className="text-black dark:text-white block mb-2">
@@ -140,14 +151,25 @@ export function NewProjectForm({
             <label className="text-black dark:text-white block mb-2">
               Project type
             </label>
-            <div className="bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 flex items-center justify-between">
-              <span className="text-black dark:text-white">{selectedType}</span>
-              <ChevronDown className="w-4 h-4 text-black dark:text-white" />
-            </div>
+            <Select
+              value={currentType}
+              onValueChange={(value) => setCurrentType(value as ProjectType)}
+            >
+              <SelectTrigger className="w-full h-auto bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg p-4 text-black dark:text-white hover:bg-white dark:hover:bg-black">
+                <SelectValue placeholder="Select type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Smart Image">Smart Image</SelectItem>
+                <SelectItem value="Website">Website</SelectItem>
+                <SelectItem value="Android TV">Android TV</SelectItem>
+                <SelectItem value="Roku TV">Roku TV</SelectItem>
+                <SelectItem value="Mobile">Mobile</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           {/* Environment Type */}
-          {(selectedType === "Android TV" || selectedType === "Mobile") && (
+          {(currentType === "Android TV" || currentType === "Mobile") && (
             <div>
               <label className="text-black dark:text-white block mb-3">
                 Environment type
@@ -186,8 +208,7 @@ export function NewProjectForm({
           )}
         </div>
 
-        {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-black/20 dark:border-white/20 flex gap-3">
+        <SheetFooter className="flex-row gap-3 sm:justify-start">
           <button
             onClick={onClose}
             className="flex-1 bg-transparent border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
@@ -201,8 +222,8 @@ export function NewProjectForm({
           >
             Create Project
           </button>
-        </div>
-      </div>
-    </div>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }

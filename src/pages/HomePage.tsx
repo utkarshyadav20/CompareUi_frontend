@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Filter,
   Grid2X2,
   List,
-  ChevronDown,
   Bell,
   Home,
   Settings,
@@ -18,8 +17,6 @@ import {
   LogOut,
   ArrowRight,
   Plus,
-  Smartphone,
-  Tv,
 } from "lucide-react";
 import { Theme, Project, ProjectType, ViewMode } from "../types";
 import { Logo } from "../components/common/Logo";
@@ -27,7 +24,6 @@ import { ProjectCard } from "../components/project/ProjectCard";
 import { NewProjectForm } from "../components/project/NewProjectForm";
 const imgProfile =
   "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop";
-import svgPaths from "../imports/svg-kgk8e7ds24";
 
 interface HomePageProps {
   projects: Project[];
@@ -44,10 +40,9 @@ export function HomePage({
 }: HomePageProps) {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [selectedProjectType, setSelectedProjectType] =
-    useState<ProjectType>("Android TV");
+  // Default type, can be changed in the form
+  const [selectedProjectType] = useState<ProjectType>("Android TV");
   const [searchQuery, setSearchQuery] = useState("");
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -64,20 +59,6 @@ export function HomePage({
     { label: "Support", active: false },
     { label: "Settings", active: false },
   ];
-
-  const projectTypes: { type: ProjectType; icon: React.ReactNode }[] = [
-    { type: "Smart Image", icon: <Smartphone className="w-4 h-4" /> },
-    { type: "Website", icon: <Monitor className="w-4 h-4" /> },
-    { type: "Android TV", icon: <Tv className="w-4 h-4" /> },
-    { type: "Roku TV", icon: <Tv className="w-4 h-4" /> },
-    { type: "Mobile", icon: <Smartphone className="w-4 h-4" /> },
-  ];
-
-  const handleAddNew = (type: ProjectType) => {
-    setSelectedProjectType(type);
-    setIsDropdownOpen(false);
-    setIsFormOpen(true);
-  };
 
   const filteredProjects = projects.filter(
     (project) =>
@@ -317,33 +298,11 @@ export function HomePage({
 
           <div className="relative">
             <button
-              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              onClick={() => setIsFormOpen(true)}
               className="bg-[#dedede] text-black px-5 py-3 rounded-lg flex items-center gap-2.5 hover:bg-black/20 dark:hover:bg-white transition-colors"
             >
               <span className="font-semibold">Add new</span>
-              <ChevronDown className="w-[18px] h-[18px]" />
             </button>
-
-            {isDropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-10"
-                  onClick={() => setIsDropdownOpen(false)}
-                />
-                <div className="absolute right-0 top-full mt-2 w-[200px] bg-white dark:bg-[#1a1a1a] border border-black/20 dark:border-white/20 rounded-lg shadow-lg overflow-hidden z-20">
-                  {projectTypes.map(({ type, icon }) => (
-                    <button
-                      key={type}
-                      onClick={() => handleAddNew(type)}
-                      className="w-full px-4 py-3 flex items-center gap-3 text-black dark:text-white hover:bg-black/10 dark:hover:bg-white/10 transition-colors text-left"
-                    >
-                      {icon}
-                      <span>{type}</span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            )}
           </div>
         </div>
 
