@@ -17,9 +17,6 @@ import apiClient from '../api/client';
 // Tabs
 import { ActivityTab } from "./ActivityTab";
 import { ResultTab } from "./ResultTab";
-import { DBConnectionTab } from "./DBConnectionTab";
-import { IntegrationTab } from "./IntegrationTab";
-import { SupportTab } from "./SupportTab";
 import { SettingsTab } from "./SettingsTab";
 import { DetailedResult } from "./DetailedResult";
 
@@ -312,11 +309,9 @@ export function ProjectDetail({
         </div>
       ) : null}
 
+
       {activeTab === "settings" && <SettingsTab />}
-      {activeTab === "support" && <SupportTab />}
-      {activeTab === "integration" && <IntegrationTab />}
       {activeTab === "activity" && <ActivityTab />}
-      {activeTab === "dbconnection" && <DBConnectionTab />}
       {activeTab === "result" && (
         <ResultTab
           buildVersion={selectedBuild?.buildName || ""}

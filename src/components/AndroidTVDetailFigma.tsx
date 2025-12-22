@@ -16,9 +16,6 @@ import svgPaths from "../imports/svg-yp1cueaie8";
 import { ResultTab } from "./ResultTab";
 import { DetailedResult } from "./DetailedResult";
 import { ActivityTab } from "./ActivityTab";
-import { DBConnectionTab } from "./DBConnectionTab";
-import { IntegrationTab } from "./IntegrationTab";
-import { SupportTab } from "./SupportTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
 import { ControlBar } from "./ui/ControlBar";
@@ -69,6 +66,7 @@ export function AndroidTVDetailFigma({
     "Pixelmatch"
   );
   const [sensitivity, setSensitivity] = useState("3x");
+  const [minScore, setMinScore] = useState<number>(93); // Default 93% match
   // const [selectedBuild, setSelectedBuild] = useState("v1.0.234.1"); // Removed internal state
   const [isMethodDropdownOpen, setIsMethodDropdownOpen] = useState(false);
   const [isSensitivityDropdownOpen, setIsSensitivityDropdownOpen] = useState(false);
@@ -685,6 +683,7 @@ export function AndroidTVDetailFigma({
         // Backend `compare.controller.ts` line 27: `queryDto.sensitivity ? parseInt(queryDto.sensitivity) : undefined`.
         // parseInt("3x") returns 3. So passing "3x" string is fine.
         sensitivity: sensitivity.replace('x', ''),
+        minScore: minScore ? minScore.toString() : '93',
       });
       if (buildIdParam) {
         queryParams.append('buildId', buildIdParam);
@@ -747,6 +746,8 @@ export function AndroidTVDetailFigma({
               onMethodChange={setSelectedMethod}
               sensitivity={sensitivity}
               onSensitivityChange={setSensitivity}
+              minScore={minScore}
+              onMinScoreChange={setMinScore}
               onStartComparison={handleStartComparison}
               selectedBuild={selectedBuild}
               onBuildChange={onBuildChange}
@@ -864,12 +865,6 @@ export function AndroidTVDetailFigma({
         </>
       ) : activeTab === "activity" ? (
         <ActivityTab />
-      ) : activeTab === "dbconnection" ? (
-        <DBConnectionTab />
-      ) : activeTab === "integration" ? (
-        <IntegrationTab />
-      ) : activeTab === "support" ? (
-        <SupportTab />
       ) : activeTab === "settings" ? (
         <SettingsTab />
       ) : (

@@ -26,6 +26,7 @@ let projectId: string; //Project ID (default to undefined)
 let projectType: string; //Project Type (default to undefined)
 let compareBodyDto: CompareBodyDto; //
 let sensitivity: string; //Comparison sensitivity (e.g. 1x, 2x, 3x) (optional) (default to undefined)
+let minScore: string; //Minimum score percentage (1-100) (optional) (default to undefined)
 let buildId: string; //Build ID (optional) - if not passed, one will be created (optional) (default to undefined)
 
 const { status, data } = await apiInstance.compareControllerRunComparison(
@@ -33,6 +34,7 @@ const { status, data } = await apiInstance.compareControllerRunComparison(
     projectType,
     compareBodyDto,
     sensitivity,
+    minScore,
     buildId
 );
 ```
@@ -45,6 +47,7 @@ const { status, data } = await apiInstance.compareControllerRunComparison(
 | **projectId** | [**string**] | Project ID | defaults to undefined|
 | **projectType** | [**string**] | Project Type | defaults to undefined|
 | **sensitivity** | [**string**] | Comparison sensitivity (e.g. 1x, 2x, 3x) | (optional) defaults to undefined|
+| **minScore** | [**string**] | Minimum score percentage (1-100) | (optional) defaults to undefined|
 | **buildId** | [**string**] | Build ID (optional) - if not passed, one will be created | (optional) defaults to undefined|
 
 

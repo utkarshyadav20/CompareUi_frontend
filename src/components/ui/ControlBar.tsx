@@ -7,6 +7,8 @@ export interface ControlBarProps {
   onMethodChange: (method: "Pixelmatch" | "Noise") => void;
   sensitivity: string;
   onSensitivityChange: (sensitivity: string) => void;
+  minScore?: number;
+  onMinScoreChange?: (score: number) => void;
   onStartComparison: () => void;
 
   // Search Props (Optional)
@@ -31,6 +33,8 @@ export function ControlBar({
   onMethodChange,
   sensitivity,
   onSensitivityChange,
+  minScore,
+  onMinScoreChange,
   onStartComparison,
   searchQuery,
   onSearchChange,
@@ -136,6 +140,34 @@ export function ControlBar({
                     {option}
                   </button>
                 ))}
+              </div>
+            </div>
+
+          )}
+
+          {/* Min Score Input */}
+          {onMinScoreChange && (
+            <div className="flex items-center gap-[10px]">
+              <p className="font-semibold text-[14px] text-black dark:text-white">
+                Max mismatch allowed:
+              </p>
+              <div className="relative flex items-center">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  value={minScore !== undefined ? 100 - minScore : ''}
+                  placeholder="7"
+                  onChange={(e) => {
+                    let val = parseInt(e.target.value);
+                    if (isNaN(val)) val = 0;
+                    if (val > 100) val = 100;
+                    if (val < 0) val = 0;
+                    onMinScoreChange(100 - val);
+                  }}
+                  className="w-[60px] px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono bg-transparent outline-none text-center placeholder-[#6bdf95]/30 focus:border-[#6bdf95]/60 transition-colors"
+                />
+                <span className=" text-[#6bdf95]/50 text-xs pointer-events-none">%</span>
               </div>
             </div>
           )}
@@ -270,5 +302,6 @@ export function ControlBar({
         </div>
       </div>
     </div>
+
   );
 }

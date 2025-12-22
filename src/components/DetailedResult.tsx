@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
+import { useDiffProcessor } from "../hooks/useDiffProcessor";
+
 interface Issue {
   id: string;
   severity: "Major" | "Medium" | "Low";
@@ -101,55 +103,25 @@ export function DetailedResult({
 
   const testStatus = resultData?.resultStatus === 0 ? "FAILED" : "PASSED";
   const differentPercentage = resultData?.diffPercent ?? 0;
-  const detectedIssues = 0;
 
   const baselineImageUrl = resultData?.baselineImageUrl || "https://placehold.co/800x450?text=No+Baseline";
   const liveImageUrl = resultData?.actualImageUrl || "https://placehold.co/800x450?text=No+Actual";
   const differenceImageUrl = resultData?.diffImageUrl || "https://placehold.co/800x450?text=No+Diff";
 
-  const issues: Issue[] = [
-    {
-      id: "1",
-      severity: "Major",
-      title: "Significant color mismatch detected",
-      description: "Significant color mismatch detected",
-      coordinates: "x: 0, y: 0 • 100×100",
-    },
-    {
-      id: "2",
-      severity: "Major",
-      title: "Padding is not as per figma baseline image",
-      description: "Padding is not as per figma baseline image",
-      coordinates: "x: 10, y: 15 • 75×75",
-    },
-    {
-      id: "3",
-      severity: "Major",
-      title: "Text is not matching",
-      description: "Text is not matching",
-      coordinates: "x: 20, y: 25 • 50×50",
-    },
-    {
-      id: "4",
-      severity: "Medium",
-      title: "Color scheme applied incorrectly",
-      description: "Color scheme applied incorrectly",
-      coordinates: "x: 30, y: 35 • 150×150",
-    },
-    {
-      id: "5",
-      severity: "Major",
-      title: "Color scheme applied incorrectly",
-      description: "Color scheme applied incorrectly",
-      coordinates: "x: 30, y: 35 • 150×150",
-    },
-  ];
+  // Use Custom Hook for Diff Processing
+  const { boxes, counts, isProcessing, dimensions } = useDiffProcessor(differenceImageUrl);
 
-  const severityCounts = {
-    Major: 5,
-    Medium: 1,
-    Low: 0,
-  };
+  const detectedIssues = boxes.length;
+  const severityCounts = counts;
+
+  // Convert boxes to Issues for the list
+  const issues: Issue[] = boxes.map((box, index) => ({
+    id: box.id,
+    severity: box.severity,
+    title: `${box.severity} difference detected`,
+    description: `Density: ${(box.density * 100).toFixed(1)}%`,
+    coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`
+  }));
 
   const handleDownloadPDF = async () => {
     setIsDownloading(true);
@@ -309,18 +281,14 @@ export function DetailedResult({
               ))}
             </div>
 
-            {/* Zoom Controls */}
-            {/* <div className="flex items-center bg-[#1A1A1A] rounded-[6px] border border-white/10 p-[2px]">
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
-                <Minus className="w-[14px] h-[14px]" />
-              </button>
-              <div className="w-[40px] text-center text-[12px] text-white font-mono">
-                100%
+            {/* Legend for Difference Highlighting */}
+            {activeTab === 'live' && boxes.length > 0 && (
+              <div className="flex items-center gap-3 bg-[#1A1A1A] p-1.5 px-3 rounded-[6px] border border-white/5 text-[11px] text-zinc-400">
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-500/50 border border-red-500 rounded-[1px]"></div>Major</div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-yellow-500/50 border border-yellow-500 rounded-[1px]"></div>Medium</div>
+                <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-green-500/50 border border-green-500 rounded-[1px]"></div>Low</div>
               </div>
-              <button className="w-[28px] h-[28px] flex items-center justify-center hover:bg-white/5 text-white/70 rounded-[4px]">
-                <Plus className="w-[14px] h-[14px]" />
-              </button>
-            </div> */}
+            )}
           </div>
 
           {/* Image Frame */}
@@ -334,11 +302,49 @@ export function DetailedResult({
                 />
               )}
               {activeTab === "live" && (
-                <img
-                  src={liveImageUrl}
-                  alt="Live"
-                  className="max-w-full max-h-full object-contain rounded-[4px] shadow-2xl"
-                />
+                <div className="relative max-w-full max-h-full flex items-center justify-center">
+                  <img
+                    src={liveImageUrl}
+                    alt="Live"
+                    className="max-w-full max-h-full object-contain rounded-[4px] shadow-2xl block"
+                  />
+                  {/* SVG Overlay for Boxes */}
+                  {dimensions && (
+                    <svg
+                      viewBox={`0 0 ${dimensions.width} ${dimensions.height}`}
+                      preserveAspectRatio="xMidYMid meet"
+                      className="absolute inset-0 w-full h-full pointer-events-none"
+                      style={{ zIndex: 10 }}
+                    >
+                      {boxes.map((box) => {
+                        let strokeColor = 'rgb(21, 93, 252)'; // Low (Greenish-Blue default)
+                        let fillColor = 'rgba(21, 93, 252, 0.2)';
+
+                        if (box.severity === 'Major') {
+                          strokeColor = 'rgb(255, 100, 103)';
+                          fillColor = 'rgba(255, 0, 0, 0.2)';
+                        } else if (box.severity === 'Medium') {
+                          strokeColor = 'rgb(253, 199, 0)';
+                          fillColor = 'rgba(255, 200, 0, 0.2)';
+                        }
+
+                        return (
+                          <rect
+                            key={box.id}
+                            x={box.x}
+                            y={box.y}
+                            width={box.width}
+                            height={box.height}
+                            fill={fillColor}
+                            stroke={strokeColor}
+                            strokeWidth={dimensions.width < 1000 ? 1 : 2} // Adaptive stroke
+                            rx={4}
+                          />
+                        );
+                      })}
+                    </svg>
+                  )}
+                </div>
               )}
               {activeTab === "difference" && (
                 <img
@@ -353,7 +359,7 @@ export function DetailedResult({
 
         {/* Right Panel - Stats & Issues */}
         {/* RIGHT PANEL */}
-        <div className="w-[35%] bg-gradient-to-b from-black to-[#050505] flex flex-col border-l border-white/10">
+        <div className="w-[35%] bg-gradient-to-b from-black to-[#050505] flex flex-col border-l border-white/10 ">
           {/* STATS */}
           <div className="p-6 border-b border-white/10 bg-black/40 backdrop-blur-xl">
             <div className="grid grid-cols-2 gap-10">
@@ -415,9 +421,7 @@ export function DetailedResult({
           <div className="flex-1 overflow-y-auto p-6">
             <h3 className="text-xl font-semibold mb-2 text-white">Issue Overview</h3>
             <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-              When the user is traveling, an error pop-up should appear with the
-              message "Are you traveling?" instead of that, we are getting
-              "Oops! Something went wrong."
+              {isProcessing ? "Analyzing differences..." : "Issues detected automatically based on visual differences."}
             </p>
 
             {/* SEVERITY CARDS */}
@@ -454,7 +458,10 @@ export function DetailedResult({
             </div>
 
             {/* ISSUE LIST */}
-            <div className="flex flex-col gap-0 w-full">
+            <div className="flex flex-col gap-0 w-full" style={{ height: '50vh' }}>
+              {issues.length === 0 && !isProcessing && (
+                <p className="text-zinc-500 text-sm text-center py-4">No issues detected.</p>
+              )}
               {issues.map((issue) => {
                 const isMajor = issue.severity === "Major";
                 const isMedium = issue.severity === "Medium";

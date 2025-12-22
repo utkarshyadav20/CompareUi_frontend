@@ -148,11 +148,12 @@ export const CompareApiAxiosParamCreator = function (configuration?: Configurati
          * @param {string} projectType Project Type
          * @param {CompareBodyDto} compareBodyDto 
          * @param {string} [sensitivity] Comparison sensitivity (e.g. 1x, 2x, 3x)
+         * @param {string} [minScore] Minimum score percentage (1-100)
          * @param {string} [buildId] Build ID (optional) - if not passed, one will be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        compareControllerRunComparison: async (projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, buildId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+        compareControllerRunComparison: async (projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, minScore?: string, buildId?: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
             // verify required parameter 'projectId' is not null or undefined
             assertParamExists('compareControllerRunComparison', 'projectId', projectId)
             // verify required parameter 'projectType' is not null or undefined
@@ -181,6 +182,10 @@ export const CompareApiAxiosParamCreator = function (configuration?: Configurati
 
             if (sensitivity !== undefined) {
                 localVarQueryParameter['sensitivity'] = sensitivity;
+            }
+
+            if (minScore !== undefined) {
+                localVarQueryParameter['minScore'] = minScore;
             }
 
             if (buildId !== undefined) {
@@ -217,12 +222,13 @@ export const CompareApiFp = function(configuration?: Configuration) {
          * @param {string} projectType Project Type
          * @param {CompareBodyDto} compareBodyDto 
          * @param {string} [sensitivity] Comparison sensitivity (e.g. 1x, 2x, 3x)
+         * @param {string} [minScore] Minimum score percentage (1-100)
          * @param {string} [buildId] Build ID (optional) - if not passed, one will be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        async compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, buildId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
-            const localVarAxiosArgs = await localVarAxiosParamCreator.compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, buildId, options);
+        async compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, minScore?: string, buildId?: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, minScore, buildId, options);
             const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
             const localVarOperationServerBasePath = operationServerMap['CompareApi.compareControllerRunComparison']?.[localVarOperationServerIndex]?.url;
             return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
@@ -243,12 +249,13 @@ export const CompareApiFactory = function (configuration?: Configuration, basePa
          * @param {string} projectType Project Type
          * @param {CompareBodyDto} compareBodyDto 
          * @param {string} [sensitivity] Comparison sensitivity (e.g. 1x, 2x, 3x)
+         * @param {string} [minScore] Minimum score percentage (1-100)
          * @param {string} [buildId] Build ID (optional) - if not passed, one will be created
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
-        compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, buildId?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
-            return localVarFp.compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, buildId, options).then((request) => request(axios, basePath));
+        compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, minScore?: string, buildId?: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, minScore, buildId, options).then((request) => request(axios, basePath));
         },
     };
 };
@@ -264,12 +271,13 @@ export class CompareApi extends BaseAPI {
      * @param {string} projectType Project Type
      * @param {CompareBodyDto} compareBodyDto 
      * @param {string} [sensitivity] Comparison sensitivity (e.g. 1x, 2x, 3x)
+     * @param {string} [minScore] Minimum score percentage (1-100)
      * @param {string} [buildId] Build ID (optional) - if not passed, one will be created
      * @param {*} [options] Override http request option.
      * @throws {RequiredError}
      */
-    public compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, buildId?: string, options?: RawAxiosRequestConfig) {
-        return CompareApiFp(this.configuration).compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, buildId, options).then((request) => request(this.axios, this.basePath));
+    public compareControllerRunComparison(projectId: string, projectType: string, compareBodyDto: CompareBodyDto, sensitivity?: string, minScore?: string, buildId?: string, options?: RawAxiosRequestConfig) {
+        return CompareApiFp(this.configuration).compareControllerRunComparison(projectId, projectType, compareBodyDto, sensitivity, minScore, buildId, options).then((request) => request(this.axios, this.basePath));
     }
 }
 
