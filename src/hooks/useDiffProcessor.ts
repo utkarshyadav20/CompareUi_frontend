@@ -211,6 +211,6 @@ export function useDiffProcessor(diffImageUrl: string | null): UseDiffProcessorR
 
     processImage();
   }, [diffImageUrl]);
-
+  
   return { boxes, counts, isProcessing, error, dimensions };
 }

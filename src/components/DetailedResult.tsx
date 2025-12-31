@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
-import { useDiffProcessor } from "../hooks/useDiffProcessor";
+
 
 interface Issue {
   id: string;
@@ -65,28 +65,39 @@ export function DetailedResult({
     null
   );
 
-  console.log("DetailedResult mounted with testId:", testId);
 
   const [loading, setLoading] = useState(false);
   const [resultData, setResultData] = useState<any>(null);
+
+  const [modelResult, setModelResult] = useState<any>(null);
 
   useEffect(() => {
     const fetchDetails = async () => {
       setLoading(true);
       try {
-        // Assume buildVersion passed is the ID, if it's strictly a version string we might need ID.
-        // But in previous steps we saw buildId being passed around as selectedBuild.
-        const res = await apiClient.get('/result/details', {
-          params: {
-            projectId,
-            buildId: buildVersion,
-            screenName: testName, // testName is mapped to screenName/imageName
-            projectType: platformType
-          }
-        });
+        const [res, modelRes] = await Promise.all([
+          apiClient.get('/result/details', {
+            params: {
+              projectId,
+              buildId: buildVersion,
+              screenName: testName,
+              projectType: platformType
+            }
+          }),
+          apiClient.get('/result/model-result', {
+            params: {
+              projectId,
+              buildId: buildVersion,
+              imageName: testName,
+              projectType: platformType
+            }
+          }).catch(err => ({ data: null }))
+        ]);
+
         setResultData(res.data);
+        setModelResult(modelRes.data);
       } catch (err) {
-        console.error("Failed to fetch detailed result:", err);
+        console.error("Failed to fetch results:", err);
       } finally {
         setLoading(false);
       }
@@ -108,18 +119,111 @@ export function DetailedResult({
   const liveImageUrl = resultData?.actualImageUrl || "https://placehold.co/800x450?text=No+Actual";
   const differenceImageUrl = resultData?.diffImageUrl || "https://placehold.co/800x450?text=No+Diff";
 
-  // Use Custom Hook for Diff Processing
-  const { boxes, counts, isProcessing, dimensions } = useDiffProcessor(differenceImageUrl);
+  interface DiffBox {
+    id: string;
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+    density: number;
+    severity: 'Major' | 'Medium' | 'Low';
+    pixelCount: number;
+    title?: string;
+    description?: string;
+  }
+
+  // Merge modelResult descriptions into resultData boxes
+  const coordinates = resultData?.coordinates || {};
+  const originalBoxes: DiffBox[] = coordinates.boxes || [];
+  let boxes: DiffBox[] = [];
+
+  if (modelResult && modelResult.coordsVsText) {
+    try {
+      const analysisItems = typeof modelResult.coordsVsText === 'string'
+        ? JSON.parse(modelResult.coordsVsText)
+        : modelResult.coordsVsText;
+
+      // Create a map of original boxes for geometry lookup
+      const originalBoxMap = new Map(originalBoxes.map(b => [b.id, b]));
+
+      // Group analysis items by ID
+      const groupedItems = new Map<string, any[]>();
+      if (Array.isArray(analysisItems)) {
+        analysisItems.forEach((item: any) => {
+          const id = item.id || 'unknown';
+          if (!groupedItems.has(id)) {
+            groupedItems.set(id, []);
+          }
+          groupedItems.get(id)!.push(item);
+        });
+      }
+
+      // Drive from grouped items
+      boxes = Array.from(groupedItems.entries()).map(([id, items], index) => {
+        // Try to find matching box in original results
+        const matchingBox = originalBoxMap.get(id);
+
+        // Parse ID "x-y" if geometry not found
+        let x = 0, y = 0, width = 50, height = 50;
+
+        if (matchingBox) {
+          x = matchingBox.x;
+          y = matchingBox.y;
+          width = matchingBox.width;
+          height = matchingBox.height;
+        } else if (id && id.includes('-')) {
+          const [xStr, yStr] = id.split('-');
+          x = parseInt(xStr, 10) || 0;
+          y = parseInt(yStr, 10) || 0;
+        }
+
+        // Merge descriptions and titles
+        // Merge descriptions and titles
+        const uniqueTitles = Array.from(new Set(items.map(i => i.type))).filter(Boolean);
+        let description = '';
+        if (items.length > 1) {
+          description = items.map((i, idx) => `${idx + 1}. ${i.description}`).join('\n\n');
+        } else {
+          description = items[0].description;
+        }
+        const title = uniqueTitles.join(' & ');
+
+        return {
+          id: id || `issue-${index}`,
+          x,
+          y,
+          width,
+          height,
+          density: matchingBox?.density || 1,
+          severity: matchingBox?.severity || 'Medium',
+          pixelCount: matchingBox?.pixelCount || 0,
+          title: title || 'Issue',
+          description: description
+        };
+      });
+
+    } catch (e) {
+      console.error("Error parsing modelResult coordsVsText", e);
+      boxes = originalBoxes; // Fallback
+    }
+  } else {
+    boxes = originalBoxes;
+  }
+
+  const counts = coordinates.counts || { Major: 0, Medium: 0, Low: 0 };
+  const dimensions = coordinates.dimensions || null;
+  const isProcessing = false;
 
   const detectedIssues = boxes.length;
   const severityCounts = counts;
 
   // Convert boxes to Issues for the list
-  const issues: Issue[] = boxes.map((box, index) => ({
+  console.log("Boxes:", boxes);
+  const issues: Issue[] = boxes.map((box: any) => ({
     id: box.id,
     severity: box.severity,
-    title: `${box.severity} difference detected`,
-    description: `Density: ${(box.density * 100).toFixed(1)}%`,
+    title: box.title || `${box.severity} difference detected`,
+    description: box.description || `Density: ${(box.density * 100).toFixed(1)}%`,
     coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`
   }));
 
@@ -141,6 +245,9 @@ export function DetailedResult({
   const handleReject = () => {
     setFinalVerdict("reject");
   };
+
+  const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
+  const [tooltipIssueId, setTooltipIssueId] = useState<string | null>(null);
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
@@ -292,7 +399,7 @@ export function DetailedResult({
           </div>
 
           {/* Image Frame */}
-          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center overflow-hidden relative group">
+          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center relative group">
             <div className="relative w-full h-full flex items-center justify-center">
               {activeTab === "baseline" && (
                 <img
@@ -317,8 +424,8 @@ export function DetailedResult({
                       style={{ zIndex: 10 }}
                     >
                       {boxes.map((box) => {
-                        let strokeColor = 'rgb(21, 93, 252)'; // Low (Greenish-Blue default)
-                        let fillColor = 'rgba(21, 93, 252, 0.2)';
+                        let strokeColor = 'rgb(34, 197, 94)'; // Low (Green default)
+                        let fillColor = 'rgba(34, 197, 94, 0.2)';
 
                         if (box.severity === 'Major') {
                           strokeColor = 'rgb(255, 100, 103)';
@@ -326,6 +433,22 @@ export function DetailedResult({
                         } else if (box.severity === 'Medium') {
                           strokeColor = 'rgb(253, 199, 0)';
                           fillColor = 'rgba(255, 200, 0, 0.2)';
+                        }
+
+                        // Determine if we should highlight this box or dim it
+                        const isHovered = hoveredIssueId === box.id;
+                        const isAnyHovered = !!hoveredIssueId;
+
+                        let finalStrokeWidth = dimensions.width < 1000 ? 1 : 2;
+                        let finalOpacity = 1;
+
+                        if (isAnyHovered) {
+                          if (isHovered) {
+                            finalStrokeWidth = dimensions.width < 1000 ? 3 : 5; // Thicker border
+                            finalOpacity = 1; // Full visibility
+                          } else {
+                            finalOpacity = 0.2; // Dim others
+                          }
                         }
 
                         return (
@@ -337,13 +460,82 @@ export function DetailedResult({
                             height={box.height}
                             fill={fillColor}
                             stroke={strokeColor}
-                            strokeWidth={dimensions.width < 1000 ? 1 : 2} // Adaptive stroke
+                            strokeWidth={finalStrokeWidth}
                             rx={4}
+                            style={{
+                              opacity: finalOpacity,
+                              transition: 'opacity 0.2s ease, stroke-width 0.2s ease',
+                              cursor: 'pointer',
+                              pointerEvents: 'all'
+                            }}
+                            onMouseEnter={() => {
+                              setHoveredIssueId(box.id);
+                              setTooltipIssueId(box.id);
+                            }}
+                            onMouseLeave={() => {
+                              setHoveredIssueId(null);
+                              setTooltipIssueId(null);
+                            }}
                           />
                         );
                       })}
                     </svg>
                   )}
+
+                  {/* Tooltip Overlay */}
+                  {tooltipIssueId && dimensions && (() => {
+                    const box = boxes.find(b => b.id === tooltipIssueId);
+                    if (!box) return null;
+
+                    const leftPercent = (box.x / dimensions.width) * 100;
+                    const topPercent = ((box.y + box.height) / dimensions.height) * 100;
+                    const bottomPercent = 100 - topPercent;
+
+                    // Smart positioning logic
+                    const isNearBottom = topPercent > 80;
+                    const isNearLeft = leftPercent < 20;
+                    const isNearRight = leftPercent > 80;
+
+                    let style: React.CSSProperties = {};
+
+                    // Y Positioning
+                    if (isNearBottom) {
+                      // Switch to showing ABOVE the box
+                      style.bottom = `${100 - (box.y / dimensions.height * 100)}%`;
+                      style.marginBottom = '12px';
+                    } else {
+                      style.top = `${topPercent}%`;
+                      style.marginTop = '12px';
+                    }
+
+                    // X Positioning
+                    if (isNearLeft) {
+                      style.left = '0%';
+                      style.marginLeft = '-10px'; // Slight offset
+                    } else if (isNearRight) {
+                      style.right = '0%';
+                      style.marginRight = '-10px';
+                    } else {
+                      style.left = `${leftPercent}%`;
+                      style.transform = 'translateX(-50%)';
+                    }
+
+                    return (
+                      <div
+                        className="absolute z-50 bg-[#09090b] border border-zinc-800 text-white p-3 rounded-lg shadow-2xl max-w-[280px] min-w-[200px] pointer-events-none"
+                        style={style}
+                      >
+                        <div className="flex items-center gap-2 mb-2 border-b border-zinc-800 pb-2">
+                          <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-zinc-400">
+                            {box.title}
+                          </span>
+                        </div>
+                        <p className="font-sans leading-relaxed text-zinc-300 text-[13px] font-medium">
+                          {box.description}
+                        </p>
+                      </div>
+                    );
+                  })()}
                 </div>
               )}
               {activeTab === "difference" && (
@@ -419,7 +611,23 @@ export function DetailedResult({
 
           {/* ISSUES */}
           <div className="flex-1 overflow-y-auto p-6">
-            <h3 className="text-xl font-semibold mb-2 text-white">Issue Overview</h3>
+            <div className="flex items-center gap-3 mb-2">
+              <h3 className="text-xl font-semibold text-white">Issue Overview
+              </h3>
+              {(!modelResult || !modelResult.coordsVsText) && (
+                <span
+                  style={{
+                    fontSize: "1.25rem",
+                    fontWeight: 600,
+                    background: "linear-gradient(90deg, #4FC3F7, #7E57C2, #EC407A)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                  }}
+                >
+                  (Smart description loading)
+                </span>
+              )}
+            </div>
             <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
               {isProcessing ? "Analyzing differences..." : "Issues detected automatically based on visual differences."}
             </p>
@@ -446,11 +654,11 @@ export function DetailedResult({
                 </div>
               </div>
 
-              <div className="bg-[rgba(0,0,211,0.1)] content-stretch flex flex-col gap-[10px] items-start min-w-[80px] p-[12px] relative rounded-[8px] shrink-0 w-[160px]">
+              <div className="bg-[rgba(34,197,94,0.1)] content-stretch flex flex-col gap-[10px] items-start min-w-[80px] p-[12px] relative rounded-[8px] shrink-0 w-[160px]">
                 <div aria-hidden="true" className="absolute border-[rgba(255,255,255,0.1)] border-[0.5px] border-solid inset-0 pointer-events-none rounded-[8px]"></div>
-                <p className="font-sans font-normal leading-[normal] relative shrink-0 text-[16px] w-full" style={{ color: 'rgb(21, 93, 252)' }}>Low</p>
+                <p className="font-sans font-normal leading-[normal] relative shrink-0 text-[16px] w-full" style={{ color: 'rgb(34, 197, 94)' }}>Low</p>
                 <div className="content-stretch flex items-end relative shrink-0 w-full">
-                  <p className="font-bold leading-[normal] relative shrink-0 text-[24px] text-nowrap" style={{ color: 'rgb(21, 93, 252)' }}>
+                  <p className="font-bold leading-[normal] relative shrink-0 text-[24px] text-nowrap" style={{ color: 'rgb(34, 197, 94)' }}>
                     {severityCounts.Low}
                   </p>
                 </div>
@@ -471,17 +679,22 @@ export function DetailedResult({
                   ? 'rgb(255, 100, 103)'
                   : isMedium
                     ? 'rgb(253, 199, 0)'
-                    : 'rgb(21, 93, 252)';
+                    : 'rgb(34, 197, 94)';
 
                 // Icon Color
                 const iconColor = isMajor
                   ? 'rgb(255, 0, 0)'
                   : isMedium
                     ? 'rgb(253, 199, 0)'
-                    : 'rgb(21, 93, 252)';
+                    : 'rgb(34, 197, 94)';
 
                 return (
-                  <div key={issue.id} className="content-stretch flex items-center justify-center px-[14px] py-[10px] relative w-full border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer">
+                  <div
+                    key={issue.id}
+                    className="content-stretch flex items-center justify-center px-[14px] py-[10px] relative w-full border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer"
+                    onMouseEnter={() => setHoveredIssueId(issue.id)}
+                    onMouseLeave={() => setHoveredIssueId(null)}
+                  >
                     <div className="content-stretch flex gap-[10px] items-start relative shrink-0 w-full">
                       <div className="content-stretch flex gap-[8px] items-center not-italic px-0 py-[2px] relative shrink-0 text-nowrap">
                         {isMajor ? (
@@ -489,14 +702,19 @@ export function DetailedResult({
                         ) : (
                           <AlertTriangle size={12} style={{ color: iconColor }} />
                         )}
-                        <div className="flex flex-col justify-center leading-[0] relative shrink-0 text-[16px]">
+                        {/* <div className="flex flex-col justify-center leading-[0] relative shrink-0 text-[16px]">
                           <p className="leading-[normal] text-nowrap" style={{ color: titleColor }}>{issue.severity}</p>
-                        </div>
+                        </div> */}
                       </div>
                       <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
                         <div className="relative shrink-0">
                           <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-nowrap font-mono" style={{ color: titleColor }}>
-                            {issue.title}
+                            {issue.title + " (" + issue.severity + ")"}
+                          </p>
+                        </div>
+                        <div className="relative shrink-0 w-full mb-1">
+                          <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal">
+                            {issue.description}
                           </p>
                         </div>
                         <div className="content-stretch flex gap-[8px] items-center relative shrink-0">

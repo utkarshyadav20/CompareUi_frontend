@@ -1274,6 +1274,63 @@ export const ResultApiAxiosParamCreator = function (configuration?: Configuratio
          * 
          * @param {string} projectId 
          * @param {string} buildId 
+         * @param {string} imageName 
+         * @param {string} projectType 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resultControllerGetModelResult: async (projectId: string, buildId: string, imageName: string, projectType: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'projectId' is not null or undefined
+            assertParamExists('resultControllerGetModelResult', 'projectId', projectId)
+            // verify required parameter 'buildId' is not null or undefined
+            assertParamExists('resultControllerGetModelResult', 'buildId', buildId)
+            // verify required parameter 'imageName' is not null or undefined
+            assertParamExists('resultControllerGetModelResult', 'imageName', imageName)
+            // verify required parameter 'projectType' is not null or undefined
+            assertParamExists('resultControllerGetModelResult', 'projectType', projectType)
+            const localVarPath = `/result/model-result`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (projectId !== undefined) {
+                localVarQueryParameter['projectId'] = projectId;
+            }
+
+            if (buildId !== undefined) {
+                localVarQueryParameter['buildId'] = buildId;
+            }
+
+            if (imageName !== undefined) {
+                localVarQueryParameter['imageName'] = imageName;
+            }
+
+            if (projectType !== undefined) {
+                localVarQueryParameter['projectType'] = projectType;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
+         * @param {string} projectId 
+         * @param {string} buildId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1341,6 +1398,21 @@ export const ResultApiFp = function(configuration?: Configuration) {
          * 
          * @param {string} projectId 
          * @param {string} buildId 
+         * @param {string} imageName 
+         * @param {string} projectType 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async resultControllerGetModelResult(projectId: string, buildId: string, imageName: string, projectType: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.resultControllerGetModelResult(projectId, buildId, imageName, projectType, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['ResultApi.resultControllerGetModelResult']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
+         * @param {string} projectId 
+         * @param {string} buildId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1375,6 +1447,18 @@ export const ResultApiFactory = function (configuration?: Configuration, basePat
          * 
          * @param {string} projectId 
          * @param {string} buildId 
+         * @param {string} imageName 
+         * @param {string} projectType 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        resultControllerGetModelResult(projectId: string, buildId: string, imageName: string, projectType: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.resultControllerGetModelResult(projectId, buildId, imageName, projectType, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
+         * @param {string} projectId 
+         * @param {string} buildId 
          * @param {*} [options] Override http request option.
          * @throws {RequiredError}
          */
@@ -1399,6 +1483,19 @@ export class ResultApi extends BaseAPI {
      */
     public resultControllerGetDetailedResult(projectId: string, buildId: string, screenName: string, projectType: string, options?: RawAxiosRequestConfig) {
         return ResultApiFp(this.configuration).resultControllerGetDetailedResult(projectId, buildId, screenName, projectType, options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} projectId 
+     * @param {string} buildId 
+     * @param {string} imageName 
+     * @param {string} projectType 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public resultControllerGetModelResult(projectId: string, buildId: string, imageName: string, projectType: string, options?: RawAxiosRequestConfig) {
+        return ResultApiFp(this.configuration).resultControllerGetModelResult(projectId, buildId, imageName, projectType, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**
