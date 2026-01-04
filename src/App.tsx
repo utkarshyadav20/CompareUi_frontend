@@ -88,6 +88,24 @@ export default function App() {
     }
   };
 
+
+
+  const handleDeleteProject = async (projectId: string) => {
+    // Optimistic update
+    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+
+    try {
+      // Use direct axios call since the generated SDK method might be missing
+      await apiClient.delete(`/project/${projectId}`);
+      console.log("Project deleted successfully on backend");
+    } catch (error) {
+      console.error("Failed to delete project:", error);
+      // Revert optimistic update? Complicated since we don't have the full object easily here.
+      // Ideally we should refresh or handle error better.
+      alert("Failed to delete project on backend. Please try refreshing.");
+    }
+  };
+
   const projectWrapperProps = {
     projects,
     theme,
@@ -104,6 +122,7 @@ export default function App() {
             theme={theme}
             onThemeChange={setTheme}
             onCreateProject={handleCreateProject}
+            onDeleteProject={handleDeleteProject}
           />
         }
       />

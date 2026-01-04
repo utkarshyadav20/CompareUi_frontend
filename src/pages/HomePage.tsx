@@ -25,6 +25,7 @@ import { Theme, Project, ProjectType, ViewMode } from "../types";
 import { Logo } from "../components/Logo";
 import { ProjectCard } from "../components/ProjectCard";
 import { NewProjectForm } from "../components/NewProjectForm";
+import { ConfirmationModal } from "../components/common/ConfirmationModal";
 import imgProfile from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
 import svgPaths from "../imports/svg-kgk8e7ds24";
 
@@ -33,6 +34,7 @@ interface HomePageProps {
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
   onCreateProject: (project: Omit<Project, "id" | "timestamp">) => void;
+  onDeleteProject: (projectId: string) => Promise<void>;
 }
 
 export function HomePage({
@@ -40,6 +42,7 @@ export function HomePage({
   theme,
   onThemeChange,
   onCreateProject,
+  onDeleteProject,
 }: HomePageProps) {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -51,6 +54,8 @@ export function HomePage({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("overview");
+
+  const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   const navigationItems = [
     { label: "Overview", active: true },
@@ -93,6 +98,17 @@ export function HomePage({
       "Roku TV": "rtv",
     };
     return `/project/${typeMap[project.type]}/${project.id}`;
+  };
+
+  const handleDeleteRequest = (project: Project) => {
+    setProjectToDelete(project);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (projectToDelete) {
+      await onDeleteProject(projectToDelete.id);
+      setProjectToDelete(null);
+    }
   };
 
   return (
@@ -189,31 +205,28 @@ export function HomePage({
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => onThemeChange("system")}
-                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                              theme === "system"
-                                ? "bg-black/10 dark:bg-white/10"
-                                : ""
-                            }`}
+                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "system"
+                              ? "bg-black/10 dark:bg-white/10"
+                              : ""
+                              }`}
                           >
                             <Monitor className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => onThemeChange("light")}
-                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                              theme === "light"
-                                ? "bg-black/10 dark:bg-white/10"
-                                : ""
-                            }`}
+                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "light"
+                              ? "bg-black/10 dark:bg-white/10"
+                              : ""
+                              }`}
                           >
                             <Sun className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => onThemeChange("dark")}
-                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${
-                              theme === "dark"
-                                ? "bg-black/10 dark:bg-white/10"
-                                : ""
-                            }`}
+                            className={`p-1 rounded hover:bg-black/20 dark:hover:bg-white/20 ${theme === "dark"
+                              ? "bg-black/10 dark:bg-white/10"
+                              : ""
+                              }`}
                           >
                             <Moon className="w-3 h-3" />
                           </button>
@@ -257,11 +270,10 @@ export function HomePage({
               onClick={() =>
                 setActiveTab(item.label.toLowerCase().replace(" ", "") as any)
               }
-              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${
-                activeTab === item.label.toLowerCase().replace(" ", "")
-                  ? "text-black dark:text-white"
-                  : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
-              }`}
+              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${activeTab === item.label.toLowerCase().replace(" ", "")
+                ? "text-black dark:text-white"
+                : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
+                }`}
             >
               {item.label}
               {activeTab === item.label.toLowerCase().replace(" ", "") && (
@@ -294,21 +306,19 @@ export function HomePage({
           <div className="border border-black/50 dark:border-white/50 rounded-lg p-1.5 flex items-center bg-white dark:bg-black">
             <button
               onClick={() => setViewMode("grid")}
-              className={`px-2.5 py-2 rounded transition-colors ${
-                viewMode === "grid"
-                  ? "bg-black/10 dark:bg-white/10"
-                  : "hover:bg-black/10 dark:hover:bg-white/10"
-              }`}
+              className={`px-2.5 py-2 rounded transition-colors ${viewMode === "grid"
+                ? "bg-black/10 dark:bg-white/10"
+                : "hover:bg-black/10 dark:hover:bg-white/10"
+                }`}
             >
               <Grid2X2 className="w-[18px] h-[18px] text-black/50 dark:text-white/50" />
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`px-2.5 py-2 rounded transition-colors ${
-                viewMode === "list"
-                  ? "bg-black/10 dark:bg-white/10"
-                  : "hover:bg-black/10 dark:hover:bg-white/10"
-              }`}
+              className={`px-2.5 py-2 rounded transition-colors ${viewMode === "list"
+                ? "bg-black/10 dark:bg-white/10"
+                : "hover:bg-black/10 dark:hover:bg-white/10"
+                }`}
             >
               <List className="w-[18px] h-[18px] text-black/50 dark:text-white/50" />
             </button>
@@ -362,6 +372,7 @@ export function HomePage({
                 {...project}
                 viewMode={viewMode}
                 onClick={() => navigate(getProjectUrl(project))}
+                onDelete={() => handleDeleteRequest(project)}
               />
             ))}
           </div>
@@ -374,6 +385,18 @@ export function HomePage({
         onClose={() => setIsFormOpen(false)}
         selectedType={selectedProjectType}
         onCreateProject={onCreateProject}
+      />
+
+      <ConfirmationModal
+        isOpen={!!projectToDelete}
+        onClose={() => setProjectToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        title={
+          <span>Delete project <strong>permanently</strong> ?</span>
+        }
+        description="If you select “confirm” this project will be deleted permanently."
+        confirmText="Confirm"
+        variant="danger"
       />
     </div>
   );

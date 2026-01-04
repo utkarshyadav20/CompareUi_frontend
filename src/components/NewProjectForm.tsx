@@ -110,7 +110,7 @@ export function NewProjectForm({
         {/* Form Content */}
         <div className="flex-1 overflow-y-auto px-6 py-6 space-y-6">
           {/* Project ID */}
-          <div>
+          {/* <div>
             <label className="text-black dark:text-white block mb-2">
               Project ID
             </label>
@@ -122,7 +122,7 @@ export function NewProjectForm({
                 <Copy className="w-4 h-4" />
               </button>
             </div>
-          </div>
+          </div> */}
 
           {/* Project Name */}
           <div>
@@ -158,7 +158,7 @@ export function NewProjectForm({
             </label>
             <div className="bg-white dark:bg-black border border-black/50 dark:border-white/50 rounded-lg px-4 py-3 flex items-center justify-between">
               <span className="text-black dark:text-white">{selectedType}</span>
-              <ChevronDown className="w-4 h-4 text-black dark:text-white" />
+              {/* <ChevronDown className="w-4 h-4 text-black dark:text-white" /> */}
             </div>
           </div>
 

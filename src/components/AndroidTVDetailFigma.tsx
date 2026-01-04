@@ -15,6 +15,7 @@ import {
 import svgPaths from "../imports/svg-yp1cueaie8";
 import { ResultTab } from "./ResultTab";
 import { DetailedResult } from "./DetailedResult";
+import { TestComparisonToast } from "./TestComparisonToast";
 import { ActivityTab } from "./ActivityTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
@@ -45,10 +46,12 @@ interface AndroidTVDetailFigmaProps {
   projectName: string;
   platformType: string;
   onBack?: () => void;
+  project: Project;
   // Build props
   buildVersions: any[];
   selectedBuild: any;
   onBuildChange: (build: any) => void;
+  onStartComparison?: () => void;
 }
 
 export function AndroidTVDetailFigma({
@@ -56,11 +59,14 @@ export function AndroidTVDetailFigma({
   projectName = "Gray Media _ KTWX",
   platformType = "Android TV Physical Device",
   onBack,
+  project: projectProp,
   buildVersions,
   selectedBuild,
   onBuildChange,
+  onStartComparison
 }: AndroidTVDetailFigmaProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showComparisonToast, setShowComparisonToast] = useState(false);
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [selectedMethod, setSelectedMethod] = useState<"Pixelmatch" | "Noise">(
     "Pixelmatch"
@@ -85,12 +91,13 @@ export function AndroidTVDetailFigma({
   /* Removed hardcoded buildVersions */
   const sensitivityOptions = ["1x", "2x", "3x", "4x", "5x"];
 
-  const project: Project = {
+  // Use the passed project prop, but ensure we have fallback defaults if needed (though prop is required)
+  const project: Project = projectProp || {
     id: projectId,
     platform: projectName,
     platformType: platformType,
-    status: "running", // specific status not passed, defaulting
-    iconBg: "bg-transparent", // Custom styling used before
+    status: "running",
+    iconBg: "bg-transparent",
     type: "Android TV",
     timestamp: "",
     icon: (
@@ -141,11 +148,16 @@ export function AndroidTVDetailFigma({
             console.log(`Uploaded ${file.name} to Cloudinary: ${imageUrl}`);
 
             // 2. Create/Update screen in Backend
+            let buildId: string | undefined = undefined;
+            if (typeof selectedBuild === 'string') buildId = selectedBuild;
+            else if (selectedBuild?.buildId) buildId = selectedBuild.buildId;
+
             await apiClient.post('/figma/upload-screen', {
               projectId,
               projectType: getApiProjectType(platformType),
               screenName: file.name,
-              imageUrl: imageUrl
+              imageUrl: imageUrl,
+              buildId: buildId
             });
 
             console.log(`Saved screen ${file.name} to backend`);
@@ -458,9 +470,15 @@ export function AndroidTVDetailFigma({
 
         if (screens.length > 0) {
           const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
+
+          let buildId: string | undefined = undefined;
+          if (typeof selectedBuild === 'string') buildId = selectedBuild;
+          else if (selectedBuild?.buildId) buildId = selectedBuild.buildId;
+
           await figmaApi.figmaControllerCreate({
             project_id: projectId,
-            figma_data: screens
+            figma_data: screens,
+            build_id: buildId
           });
           await fetchScreens();
           alert('Images imported successfully from CSV.');
@@ -503,12 +521,17 @@ export function AndroidTVDetailFigma({
 
       const screenName = `Screen${screenNameSuffix}`;
 
+      let buildId: string | undefined = undefined;
+      if (typeof selectedBuild === 'string') buildId = selectedBuild;
+      else if (selectedBuild?.buildId) buildId = selectedBuild.buildId;
+
       // 1. Extract AND Save via backend in one go
       const response = await apiClient.post('/figma/extract-image', {
         url: baselineUrl,
         projectId,
         projectType: getApiProjectType(platformType),
-        screenName: screenName
+        screenName: screenName,
+        buildId: buildId
       });
 
       const { imageUrl, savedScreen } = response.data;
@@ -640,6 +663,9 @@ export function AndroidTVDetailFigma({
       return;
     }
 
+    setShowComparisonToast(true);
+    // if (onStartComparison) onStartComparison(); // Optional: keep if parent needs to know
+
     setLoadingActivity("compare");
     try {
       const screenshotsPayload = await Promise.all(actualImages.map(async (img) => {
@@ -735,6 +761,7 @@ export function AndroidTVDetailFigma({
         <>
           {/* Controls Bar */}
           <div className="dark">
+            {/* ... ControlBar ... */}
             <ControlBar
               searchQuery={searchQuery} // Figma view has filtering but maybe not exposed in UI previously? Ah wait, it didn't have search input visible in the screenshot code analysis, let me double check. Actually the screenshot analysis on line 41 shows `const [searchQuery, setSearchQuery] = useState("");` and line 197 uses it. BUT the inline JSX I'm replacing (lines 345-498) DOES NOT have a search input. It seems AndroidTVDetailFigma only had the right side controls. I will pass NO search props if it wasn't there, OR add it if requested.
               // Wait, looking at the previous analysis of AndroidTVDetailFigma lines 345-498...
@@ -873,6 +900,17 @@ export function AndroidTVDetailFigma({
             Content for {activeTab} tab coming soon...
           </p>
         </div>
+      )}
+      {/* Test Comparison Toast */}
+      {showComparisonToast && (
+        <TestComparisonToast
+          onClose={() => setShowComparisonToast(false)}
+          onViewReport={() => {
+            console.log("View full report clicked (local)");
+            setShowComparisonToast(false);
+            setActiveTab("result");
+          }}
+        />
       )}
     </div>
   );

@@ -6,6 +6,7 @@ All URIs are relative to *http://localhost*
 |------------- | ------------- | -------------|
 |[**projectControllerCreate**](#projectcontrollercreate) | **POST** /project | |
 |[**projectControllerCreateBuild**](#projectcontrollercreatebuild) | **POST** /project/build | Create a new build|
+|[**projectControllerDelete**](#projectcontrollerdelete) | **DELETE** /project/{id} | |
 |[**projectControllerFindAll**](#projectcontrollerfindall) | **GET** /project | |
 |[**projectControllerGetBuilds**](#projectcontrollergetbuilds) | **GET** /project/builds | Get all builds for a project|
 
@@ -110,6 +111,56 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**201** | Build created successfully |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **projectControllerDelete**
+> projectControllerDelete()
+
+
+### Example
+
+```typescript
+import {
+    ProjectApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new ProjectApi(configuration);
+
+let id: string; // (default to undefined)
+
+const { status, data } = await apiInstance.projectControllerDelete(
+    id
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **id** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Search, Grid2X2, List, ChevronDown, Eye, Download, AlertTriangle } from 'lucide-react';
+import { Search, Grid2X2, List, ChevronDown, Eye } from 'lucide-react';
 import apiClient from '../api/client';
 
 interface Result {
   id: string;
   imageName: string;
   diffPercent: number;
-  resultStatus: number; // 0: Fail, 1: Pass
+  resultStatus: string; // 'pass', 'fail', 'error', 'inProgress', 'On Hold'
   createdAt: string;
   heatmapUrl?: string;
   // duration is not currently in backend response, we can omit or mock it
@@ -72,8 +72,8 @@ export function ResultTab({
     test.imageName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const passedTests = tests.filter(t => t.resultStatus === 1).length;
-  const failedTests = tests.filter(t => t.resultStatus !== 1).length;
+  const passedTests = tests.filter(t => t.resultStatus === 'pass').length;
+  const failedTests = tests.filter(t => t.resultStatus === 'fail').length;
   // Determining "Errors" vs "Fail" might need more status codes. For now assume Status 0 is Fail.
   const errors = 0; // Backend only sends integer status, seemingly 0 or 1.
 
@@ -294,18 +294,43 @@ export function ResultTab({
                   <p className="text-white/50 text-[16px] font-mono">{test.createdAt ? formatDate(test.createdAt) : '--:--'}</p>
                 </div>
                 <div className="w-[207px] shrink-0 px-[10px] py-[10px]">
-                  {test.resultStatus === 1 && (
-                    <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
-                      <div className="w-[8px] h-[8px] rounded-full bg-[#00c950]" />
-                      <span className="text-[#05df72] text-[16px] font-mono">PASS</span>
-                    </div>
-                  )}
-                  {test.resultStatus === 0 && (
-                    <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
-                      <div className="w-[8px] h-[8px] rounded-full bg-red-500" />
-                      <span className="text-red-500 text-[16px] font-mono">FAIL</span>
-                    </div>
-                  )}
+                  {(() => {
+                    const status = test.resultStatus.toLowerCase();
+                    if (status === 'pass') {
+                      return (
+                        <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
+                          <div className="w-[8px] h-[8px] rounded-full bg-[#00c950]" />
+                          <span className="text-[#05df72] text-[16px] font-mono">PASS</span>
+                        </div>
+                      );
+                    } else if (status === 'fail' || status === 'error') {
+                      return (
+                        <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
+                          <div className="w-[8px] h-[8px] rounded-full bg-red-500" />
+                          <span className="text-red-500 text-[16px] font-mono">{status.toUpperCase()}</span>
+                        </div>
+                      );
+                    } else if (status === 'inprogress') {
+                      return (
+                        <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
+                          <div className="w-[8px] h-[8px] rounded-full bg-yellow-500" />
+                          <span className="text-yellow-500 text-[16px] font-mono">IN PROGRESS</span>
+                        </div>
+                      );
+                    } else if (status === 'on hold') {
+                      return (
+                        <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
+                          <div className="w-[8px] h-[8px] rounded-full bg-white/50" />
+                          <span className="text-white/50 text-[16px] font-mono">ON HOLD</span>
+                        </div>
+                      );
+                    }
+                    return (
+                      <div className="flex items-center gap-[8px] px-[8px] py-0 rounded-[4px]">
+                        <span className="text-white/50 text-[16px] font-mono">{status.toUpperCase()}</span>
+                      </div>
+                    );
+                  })()}
                 </div>
                 <div className="w-[137px] shrink-0 px-[10px] py-[10px]">
                   <p className="text-white/50 text-[16px] font-mono">{test.diffPercent}%</p>

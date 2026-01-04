@@ -275,12 +275,46 @@ export function DetailedResult({
           {/* Center: Status */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center gap-3">
             <span className="font-mono text-zinc-400 text-sm">Status</span>
-            <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${testStatus === "FAILED" ? "bg-red-950/30 border-red-900/50" : "bg-green-950/30 border-green-900/50"}`}>
-              <div className={`w-2 h-2 rounded-full ${testStatus === "FAILED" ? "bg-red-500" : "bg-green-500"}`}></div>
-              <span className={`font-mono text-xs font-bold ${testStatus === "FAILED" ? "text-red-400" : "text-green-400"}`}>
-                {loading ? "LOADING..." : testStatus}
-              </span>
-            </div>
+            {(() => {
+              const statusText = (resultData?.resultStatus || "UNKNOWN").toString();
+              const status = statusText.toLowerCase();
+
+              let bgColor = "bg-zinc-800";
+              let borderColor = "border-zinc-700";
+              let dotColor = "bg-zinc-500";
+              let textColor = "text-zinc-400";
+
+              if (status === 'pass') {
+                bgColor = "bg-green-950/30";
+                borderColor = "border-green-900/50";
+                dotColor = "bg-green-500";
+                textColor = "text-green-400";
+              } else if (status === 'fail' || status === 'error') {
+                bgColor = "bg-red-950/30";
+                borderColor = "border-red-900/50";
+                dotColor = "bg-red-500";
+                textColor = "text-red-400";
+              } else if (status === 'inprogress') {
+                bgColor = "bg-yellow-950/30";
+                borderColor = "border-yellow-900/50";
+                dotColor = "bg-yellow-500";
+                textColor = "text-yellow-400";
+              } else if (status === 'on hold') {
+                bgColor = "bg-zinc-800";
+                borderColor = "border-zinc-700";
+                dotColor = "bg-zinc-500";
+                textColor = "text-zinc-400";
+              }
+
+              return (
+                <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${bgColor} ${borderColor}`}>
+                  <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                  <span className={`font-mono text-xs font-bold ${textColor}`}>
+                    {loading ? "LOADING..." : statusText.toUpperCase()}
+                  </span>
+                </div>
+              );
+            })()}
           </div>
 
           {/* Right: Controls */}

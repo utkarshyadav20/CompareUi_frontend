@@ -4,13 +4,17 @@ import {
   CircleCheckBig,
   CircleX,
   MoreVertical,
+  Trash2,
+  Plus,
 } from "lucide-react";
+
 import { Project, ViewMode } from "../types";
 import { NewBuildForm } from "./NewBuildForm";
 
 export interface ProjectCardProps extends Project {
   onClick: () => void;
   viewMode: ViewMode;
+  onDelete?: () => void;
 }
 
 export function ProjectCard({
@@ -25,6 +29,7 @@ export function ProjectCard({
   timestamp,
   onClick,
   viewMode,
+  onDelete,
 }: ProjectCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNewBuildOpen, setIsNewBuildOpen] = useState(false);
@@ -38,16 +43,29 @@ export function ProjectCard({
       }} />
       <div className="absolute right-0 top-full mt-2 min-w-[200px] bg-white dark:bg-[#191919] border border-black/10 dark:border-white/10 rounded-lg shadow-xl z-20 overflow-hidden py-1">
         <button
-          className="w-full px-4 py-2.5 text-left text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2"
+          className="w-full px-4 py-2.5 text-left text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer"
           onClick={(e) => {
             e.stopPropagation();
             setIsMenuOpen(false);
             setIsNewBuildOpen(true);
           }}
         >
+          <Plus className="w-4 h-4" />
           Create New Build
         </button>
+        <button
+          className="w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer"
+          onClick={(e) => {
+            e.stopPropagation();
+            setIsMenuOpen(false);
+            onDelete?.();
+          }}
+        >
+          <Trash2 className="w-4 h-4" />
+          Delete Project
+        </button>
       </div>
+
     </>
   );
 

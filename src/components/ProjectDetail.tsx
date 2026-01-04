@@ -189,17 +189,19 @@ export function ProjectDetail({
     );
   }
 
-  // Use Figma design for Android TV projects
-  if (project.type === "Android TV") {
+  // Use Figma design for Android TV, Roku TV, and Mobile projects
+  if (project.type === "Android TV" || project.type === "Roku TV" || project.type === "Mobile") {
     return (
       <AndroidTVDetailFigma
         projectId={project.id}
         projectName={project.platform}
         platformType={project.platformType}
         onBack={onBack}
+        project={project}
         buildVersions={builds}
         selectedBuild={selectedBuild}
         onBuildChange={setSelectedBuild}
+        onStartComparison={() => setShowComparisonToast(true)}
       />
     );
   }
@@ -243,13 +245,6 @@ export function ProjectDetail({
       {(activeTab === "overview" || activeTab === "testingpanel") &&
         project.type === "Smart Image" ? (
         <SmartImageDetail projectId={project.id} />
-      ) : (activeTab === "overview" || activeTab === "testingpanel") &&
-        (project.type === "Mobile" || project.type === "Roku TV") ? (
-        <AndroidTVDetail
-          projectId={project.id}
-          platformType={project.platformType}
-          onStartComparison={() => setShowComparisonToast(true)}
-        />
       ) : activeTab === "overview" || activeTab === "testingpanel" ? (
         <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-280px)]">
           {/* Baselining Images */}
