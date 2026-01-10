@@ -44,6 +44,7 @@
             "react-resizable-panels": "^2.1.7",
             "react-router-dom": "^7.11.0",
             "recharts": "^2.15.2",
+            "serve": "^14.2.5",
             "sonner": "^2.0.3",
             "tailwind-merge": "*",
             "vaul": "^1.1.2"
@@ -63,6 +64,7 @@
             "dev": "npm run generate:api && vite",
             "build": "vite build",
             "lint": "eslint .",
-            "preview": "vite preview"
+            "preview": "vite preview",
+            "start": "serve -s dist -l 8080"
       }
 }
