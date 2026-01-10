@@ -65,6 +65,6 @@
             "build": "vite build",
             "lint": "eslint .",
             "preview": "vite preview",
-            "start": "serve -s dist -l 8080"
+            "start": "serve -s build -l 8080"
       }
 }
