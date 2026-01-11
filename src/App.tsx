@@ -146,6 +146,14 @@ export default function App() {
         path="/project/rtv/:pid"
         element={<ProjectDetailWrapper {...projectWrapperProps} />}
       />
+      <Route
+        path="/project/ftv/:pid"
+        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+      />
+      <Route
+        path="/project/stv/:pid"
+        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+      />
     </Routes>
   );
 }

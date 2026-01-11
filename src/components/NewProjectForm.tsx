@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, Copy, ChevronDown, Smartphone } from "lucide-react";
 import { ProjectType, EnvironmentType, Project } from "../types";
+import { getIcon } from "../utils/projectUtils";
 import svgPaths from "../imports/svg-kgk8e7ds24";
 
 interface NewProjectFormProps {
@@ -35,6 +36,8 @@ export function NewProjectForm({
       "Android TV": "bg-green-500/40",
       "Roku TV": "bg-purple-600/40",
       Mobile: "bg-blue-500/40",
+      "Fire TV": "bg-orange-500/40",
+      "Smart TV": "bg-indigo-500/40",
     };
 
     const platformTypeMap: Record<ProjectType, string> = {
@@ -43,37 +46,13 @@ export function NewProjectForm({
       "Android TV": `Android TV ${environmentType}`,
       "Roku TV": "Roku TV",
       Mobile: `Mobile ${environmentType}`,
+      "Fire TV": "Fire TV",
+      "Smart TV": "Smart TV",
     };
 
-    const getIcon = () => {
-      if (selectedType === "Android TV" || selectedType === "Mobile") {
-        return (
-          <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
-            <path d={svgPaths.p824ec00} fill="white" />
-          </svg>
-        );
-      }
-      if (selectedType === "Roku TV") {
-        return (
-          <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
-            <path d={svgPaths.p3b2fd480} fill="white" />
-            <path d={svgPaths.p21145800} fill="white" />
-          </svg>
-        );
-      }
-      if (selectedType === "Website") {
-        return (
-          <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
-            <path
-              d={svgPaths.p28bc3a00}
-              fill="white"
-              fillRule="evenodd"
-              clipRule="evenodd"
-            />
-          </svg>
-        );
-      }
-      return <Smartphone className="w-5 h-5 text-white" />;
+    const getIconElement = () => {
+      // Use the utility function to get the icon
+      return getIcon(selectedType);
     };
 
     onCreateProject({
@@ -81,7 +60,7 @@ export function NewProjectForm({
       platformType: platformTypeMap[selectedType],
       status: "running",
       iconBg: iconBgMap[selectedType],
-      icon: getIcon(),
+      icon: getIconElement(),
       type: selectedType,
       buildName: buildName.trim() || undefined,
     });

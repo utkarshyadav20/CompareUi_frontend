@@ -177,6 +177,9 @@ export function ProjectDetail({
       <DetailedResult
         testId={selectedTestId}
         testName={testCase?.name || "Detail Screen"}
+        projectId={project.id}
+        projectName={project.platform}
+        platformType={project.type}
         onBack={handleBackToResults}
         buildVersion="v12.224"
         theme={theme}
@@ -189,8 +192,8 @@ export function ProjectDetail({
     );
   }
 
-  // Use Figma design for Android TV, Roku TV, and Mobile projects
-  if (project.type === "Android TV" || project.type === "Roku TV" || project.type === "Mobile") {
+  // Use Figma design for Android TV, Roku TV, Mobile, Fire TV and Smart TV projects
+  if (project.type === "Android TV" || project.type === "Roku TV" || project.type === "Mobile" || project.type === "Fire TV" || project.type === "Smart TV") {
     return (
       <AndroidTVDetailFigma
         projectId={project.id}

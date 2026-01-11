@@ -7,7 +7,7 @@ interface Result {
   imageName: string;
   diffPercent: number;
   resultStatus: string; // 'pass', 'fail', 'error', 'inProgress', 'On Hold'
-  createdAt: string;
+  timestamp: string;
   heatmapUrl?: string;
   // duration is not currently in backend response, we can omit or mock it
 }
@@ -83,7 +83,8 @@ export function ResultTab({
 
   const formatDate = (dateString: string) => {
     try {
-      return new Date(dateString).toLocaleString();
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-GB') + ' at ' + date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
     } catch {
       return dateString;
     }
@@ -282,7 +283,11 @@ export function ResultTab({
         {/* Table Rows */}
         <div className="space-y-[4px]">
           {filteredTests.slice(0, loadedTests).map((test, index) => (
-            <div key={test.id || index} className="w-full rounded-[6px] border border-white/10 hover:bg-white/5 transition-colors">
+            <div
+              key={test.id || index}
+              className="w-full rounded-[6px] border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
+              onClick={() => onViewTest(test.id)}
+            >
               <div className="flex items-center px-[11px] py-[2px]">
                 <div className="flex items-center justify-center w-[65px] shrink-0 p-[10px]">
                   <p className="text-white/50 text-[16px] font-bold">{String(index + 1).padStart(2, '0')}</p>
@@ -291,7 +296,7 @@ export function ResultTab({
                   <p className="text-white/50 text-[16px] font-semibold truncate" title={test.imageName}>{test.imageName}</p>
                 </div>
                 <div className="w-[247px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">{test.createdAt ? formatDate(test.createdAt) : '--:--'}</p>
+                  <p className="text-white/50 text-[16px] font-mono">{test.timestamp ? formatDate(test.timestamp) : '--:--'}</p>
                 </div>
                 <div className="w-[207px] shrink-0 px-[10px] py-[10px]">
                   {(() => {

@@ -14,6 +14,9 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
+import { ReportDocument } from "./common/ReportDocument";
+// @ts-ignore
+import html2pdf from "html2pdf.js";
 
 
 interface Issue {
@@ -28,6 +31,7 @@ interface DetailedResultProps {
   testId: string;
   testName: string;
   projectId: string;
+  projectName?: string; // Optional prop for project name
   platformType: string;
   onBack: () => void;
   buildVersion: string;
@@ -45,6 +49,7 @@ export function DetailedResult({
   testId,
   testName,
   projectId,
+  projectName, // Destructure projectName
   platformType,
   onBack,
   buildVersion = "v12.224",
@@ -228,10 +233,54 @@ export function DetailedResult({
   }));
 
   const handleDownloadPDF = async () => {
+    const element = document.getElementById('report-content');
+    if (!element || !resultData) return;
+
     setIsDownloading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    alert("PDF report downloaded.");
-    setIsDownloading(false);
+
+    const opt: any = {
+      margin: 0,
+      filename: `${testName}_Report.pdf`,
+      image: { type: 'png', quality: 1.0 },
+      html2canvas: {
+        scale: 4,
+        useCORS: true,
+        letterRendering: true,
+        onclone: (clonedDoc: Document) => {
+          // Force override global CSS variables that use oklch (unsupported by html2canvas)
+          const root = clonedDoc.documentElement;
+          root.style.setProperty('--ring', '#000000');
+          root.style.setProperty('--foreground', '#000000');
+          root.style.setProperty('--background', '#ffffff');
+          root.style.setProperty('--card', '#ffffff');
+          root.style.setProperty('--card-foreground', '#000000');
+          root.style.setProperty('--popover', '#ffffff');
+          root.style.setProperty('--primary', '#000000');
+          root.style.setProperty('--secondary', '#ffffff');
+          root.style.setProperty('--muted', '#f3f4f6');
+          root.style.setProperty('--accent', '#f3f4f6');
+          root.style.setProperty('--destructive', '#ef4444');
+          root.style.setProperty('--border', '#e5e7eb');
+          root.style.setProperty('--input', '#e5e7eb');
+
+          // Also handle Tailwind 4 theme specific variables if needed
+          root.style.setProperty('--color-red-400', '#ff0000');
+          root.style.setProperty('--color-red-500', '#ff0000');
+          root.style.setProperty('--color-green-400', '#00ff00');
+          root.style.setProperty('--color-green-500', '#00ff00');
+        }
+      },
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+
+    try {
+      await html2pdf().set(opt).from(element).save();
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      alert("Failed to generate PDF report.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const handleRaiseIssue = () => {
@@ -398,9 +447,12 @@ export function DetailedResult({
       </div>
 
       {/* Main Content */}
-      <div className="flex h-[calc(100vh-140px)]">
+      <div className="flex h-[calc(100vh-140px)] w-full overflow-hidden">
         {/* Left Panel - Image Viewer */}
-        <div className="w-[65%] bg-[#050505] p-[20px] flex flex-col border-r border-white/10">
+        <div
+          className="bg-[#050505] p-[20px] flex flex-col border-r border-white/10"
+          style={{ width: '55%', flex: '0 0 55%', minWidth: 0 }}
+        >
           {/* Controls Row */}
           <div className="flex items-center justify-between mb-[16px]">
             <div className="flex items-center bg-[#1A1A1A] p-1 rounded-[6px] border border-white/5">
@@ -433,7 +485,7 @@ export function DetailedResult({
           </div>
 
           {/* Image Frame */}
-          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center relative group">
+          <div className="flex-1 bg-[#111] rounded-[8px] border border-white/10 p-4 flex items-center justify-center relative group overflow-hidden">
             <div className="relative w-full h-full flex items-center justify-center">
               {activeTab === "baseline" && (
                 <img
@@ -585,7 +637,10 @@ export function DetailedResult({
 
         {/* Right Panel - Stats & Issues */}
         {/* RIGHT PANEL */}
-        <div className="w-[35%] bg-gradient-to-b from-black to-[#050505] flex flex-col border-l border-white/10 ">
+        <div
+          className="bg-gradient-to-b from-black to-[#050505] flex flex-col border-l border-white/10"
+          style={{ width: '45%', flex: '0 0 45%', minWidth: 0 }}
+        >
           {/* STATS */}
           <div className="p-6 border-b border-white/10 bg-black/40 backdrop-blur-xl">
             <div className="grid grid-cols-2 gap-10">
@@ -747,17 +802,17 @@ export function DetailedResult({
                           </p>
                         </div>
                         <div className="relative shrink-0 w-full mb-1">
-                          <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal">
+                          <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words">
                             {issue.description}
                           </p>
                         </div>
-                        <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
+                        {/* <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
                           <div className="relative shrink-0">
                             <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-[#52525c] text-nowrap font-mono">
                               {issue.coordinates}
                             </p>
                           </div>
-                        </div>
+                        </div> */}
                       </div>
                     </div>
                   </div>
@@ -767,6 +822,32 @@ export function DetailedResult({
           </div>
         </div>
       </div>
-    </div>
+
+      {/* Hidden Report Container for PDF Generation */}
+      {
+        resultData && (
+          <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '960px' }}>
+            <div id="report-content">
+              {(() => {
+                // Compute build name for the report
+                const foundBuild = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
+                const currentBuildName = (foundBuild && typeof foundBuild !== 'string') ? (foundBuild.buildName || foundBuild.buildId) : buildVersion;
+
+                return (
+                  <ReportDocument
+                    result={resultData}
+                    modelResult={modelResult}
+                    projectName={projectName || "No Project Name"}
+                    appName=""
+                    deviceType={platformType}
+                    buildName={currentBuildName}
+                  />
+                );
+              })()}
+            </div>
+          </div>
+        )
+      }
+    </div >
   );
 }

@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>UI Image Comparison Report</title>
+
+  <!-- Poppins -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #FFFFFF;
+      --card: #FBFBFB;
+      --border: #E5E7EB;
+      --text: #1F2937;
+      --muted: #6B7280;
+      --fail: #FF0000;
+      --fail-bg: rgba(255, 0, 0, 0.14);
+      --blue: #2563EB;
+      --major: #FF0000;
+      --medium: #2F2FE6;
+      --low: #D08700;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      background: var(--bg);
+      font-family: Poppins, sans-serif;
+      color: var(--text);
+    }
+
+    .page {
+      max-width: 960px;
+      margin: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .title {
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .status {
+      padding: 4px 8px;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.65px;
+      color: var(--fail);
+      background: var(--fail-bg);
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .card-title {
+      font-size: 15px;
+      font-weight: 500;
+    }
+
+    /* Meta Grid */
+    .meta-grid {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+
+    .meta-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .meta-label {
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .meta-value {
+      font-size: 13px;
+    }
+
+    .meta-value.bold {
+      font-weight: 700;
+    }
+
+    .meta-value.fail {
+      color: var(--fail);
+      font-weight: 700;
+    }
+
+    /* Issue Summary */
+    .issue-box {
+      padding: 10px;
+      font-size: 13px;
+    }
+
+    /* Visual Evidence */
+    .visual-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      
+      color: #3B4450;
+    }
+
+    .visual-row {
+      display: flex;
+      gap: 16px;
+      justify-content: space-between;
+    }
+
+    .image-col {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .image-frame {
+      width: 100%;
+      border: 1px solid rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .image-frame img {
+      width: 100%;
+      display: block;
+    }
+
+    .image-link {
+      font-size: 11px;
+      color: var(--blue);
+      text-decoration: underline;
+      text-align: center;
+    }
+
+    .legend {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 13px;
+    }
+
+    .legend-color {
+      width: 22px;
+      height: 10px;
+    }
+
+    /* Issue Table */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      
+    }
+
+    .table th, .table td {
+      padding: 10px;
+      border-bottom: 1px solid var(--border);
+      text-align: left;
+    }
+
+    .table th {
+      font-weight: 500;
+      color: var(--muted);
+    }
+/* Fix Issue No column width */
+.table th:first-child,
+.table td:first-child {
+  width: 90px;
+  max-width: 90px;
+  min-width: 90px;
+  white-space: nowrap;
+}
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    @media print {
+          * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+      body {
+        padding: 4px;
+        
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-left">
+        <div class="title">UI Image Comparison Report</div>
+        <div class="subtitle">Gray Media · KTWX · STAGE · Android TV · Detail Screen</div>
+      </div>
+      <div class="status">FAILED</div>
+    </div>
+
+    <!-- Project Info -->
+    <div class="card">
+      <div class="card-title">Project Information</div>
+      <div class="meta-grid">
+        <div class="meta-col">
+          <div>
+            <div class="meta-label">Project Name</div>
+            <div class="meta-value">Gray Media</div>
+          </div>
+          <div>
+            <div class="meta-label">Application Name</div>
+            <div class="meta-value">KTWX</div>
+          </div>
+          <div>
+            <div class="meta-label">Timestamp</div>
+            <div class="meta-value">2026-01-08 19:42 IST</div>
+          </div>
+        </div>
+
+        <div class="meta-col">
+          <div>
+            <div class="meta-label">Screen Name</div>
+            <div class="meta-value">Detail Screen</div>
+          </div>
+          <div>
+            <div class="meta-label">Device</div>
+            <div class="meta-value">Android TV (Emulator)</div>
+          </div>
+          <div>
+            <div class="meta-label">Build</div>
+            <div class="meta-value">v12.224</div>
+          </div>
+        </div>
+
+        <div class="meta-col">
+          <div>
+            <div class="meta-label">Environment</div>
+            <div class="meta-value">Stage</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Result Summary -->
+    <div class="card">
+      <div class="card-title">Result Summary</div>
+      <div class="meta-grid">
+        <div>
+          <div class="meta-label">Difference Percentage</div>
+          <div class="meta-value bold">80.24%</div>
+        </div>
+        <div>
+          <div class="meta-label">Test Status</div>
+          <div class="meta-value fail">FAILED</div>
+        </div>
+        <div>
+          <div class="meta-label">Total Issues Detected</div>
+          <div class="meta-value bold">6</div>
+        </div>
+        <div>
+          <div class="meta-label">Generated By / Tester</div>
+          <div class="meta-value">@Abhijeet Punia</div>
+        </div>
+        <div>
+          <div class="meta-label">Approved By</div>
+          <div class="meta-value">@Utkarsh Yadav</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue Summary -->
+    <div class="card">
+      <div class="card-title">Issue Summary</div>
+      <div class="issue-box">
+        Background color mismatch detected across header and CTA regions.
+      </div>
+    </div>
+
+    <!-- Visual Evidence -->
+    <div class="card">
+      <div class="visual-header">
+        <div class="card-title">Visual Evidence</div>
+        <div><a
+         class="heatmap"
+         href="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/fad32197-a128-4339-a2e4-6db2c856590f"
+         target="_blank"> Pixel difference heatmap image link</a>
+        </div>
+        
+      </div>
+
+      <div class="visual-row">
+  <!-- Baseline -->
+  <div class="image-col">
+    <div class="image-frame">
+      <img
+        src="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/fad32197-a128-4339-a2e4-6db2c856590f"
+        alt="Baseline image"
+      />
+    </div>
+    <a
+      class="image-link"
+      href="https://figma-alpha-api.s3.us-west-2.amazonaws.com/images/fad32197-a128-4339-a2e4-6db2c856590f"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Baseline image
+    </a>
+  </div>
+
+  <!-- Actual implementation -->
+  <div class="image-col">
+    <div class="image-frame">
+      <img
+        src="./image.png"
+        alt="Actual implementation image"
+      />
+    </div>
+    <a
+      class="image-link"
+      href="https://res.cloudinary.com/compareui/image/upload/v1766299670/Screen2_runkzg.png"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Actual implementation image
+    </a>
+  </div>
+</div>
+
+
+      <div class="legend">
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--major)"></div> Major
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--medium)"></div> Medium
+        </div>
+        <div class="legend-item">
+          <div class="legend-color" style="background: var(--low)"></div> Low
+        </div>
+      </div>
+    </div>
+
+    <!-- Issue List -->
+    <div class="card">
+      <div class="card-title">Issue List</div>
+      <table class="table">
+        <tr>
+          <th>Issue No.</th>
+          <th>Severity</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td>01</td>
+          <td>Major</td>
+          <td>Color</td>
+          <td>Background color mismatch detected</td>
+        </tr>
+        <tr>
+          <td>02</td>
+          <td>Major</td>
+          <td>Layout</td>
+          <td>Padding inconsistency in container</td>
+        </tr>
+        <tr>
+          <td>03</td>
+          <td>Medium</td>
+          <td>Text</td>
+          <td>Font weight deviation</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      Report generated automatically · For internal QA use only
+    </div>
+
+  </div>
+</body>
+</html>

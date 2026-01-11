@@ -205,6 +205,8 @@ export function AndroidTVDetailFigma({
     if (lower.includes('android tv')) return 'android tv';
     if (lower.includes('roku tv')) return 'roku tv';
     if (lower.includes('mobile')) return 'mobile';
+    if (lower.includes('fire tv')) return 'fire tv';
+    if (lower.includes('smart tv')) return 'smart tv';
     return lower;
   };
 
@@ -641,6 +643,7 @@ export function AndroidTVDetailFigma({
         testId={selectedTestId}
         testName={testCase?.name || selectedTestId || "Detail Screen"}
         projectId={projectId}
+        projectName={projectName || project.platform}
         platformType={getApiProjectType(platformType)}
         onBack={handleBackToResults}
         buildVersion={typeof selectedBuild === 'string' ? selectedBuild : selectedBuild?.buildId || "v12.224"}

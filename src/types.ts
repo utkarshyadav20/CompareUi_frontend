@@ -4,7 +4,10 @@ export type ProjectType =
   | "Website"
   | "Android TV"
   | "Roku TV"
-  | "Mobile";
+  | "Mobile"
+  | "Fire TV"
+  | "Smart TV";
+
 export type EnvironmentType = "Emulator" | "Physical Device";
 export type ProjectStatus = "running" | "completed" | "failed";
 export type Theme = "light" | "dark" | "system";

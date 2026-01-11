@@ -75,6 +75,8 @@ export function HomePage({
     { type: "Android TV", icon: <Tv className="w-4 h-4" /> },
     { type: "Roku TV", icon: <Tv className="w-4 h-4" /> },
     { type: "Mobile", icon: <Smartphone className="w-4 h-4" /> },
+    { type: "Fire TV", icon: <Tv className="w-4 h-4" /> },
+    { type: "Smart TV", icon: <Tv className="w-4 h-4" /> },
   ];
 
   const handleAddNew = (type: ProjectType) => {
@@ -96,6 +98,8 @@ export function HomePage({
       Website: "web",
       Mobile: "mob",
       "Roku TV": "rtv",
+      "Fire TV": "ftv",
+      "Smart TV": "stv",
     };
     return `/project/${typeMap[project.type]}/${project.id}`;
   };

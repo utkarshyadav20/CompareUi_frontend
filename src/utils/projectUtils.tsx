@@ -2,6 +2,9 @@ import { Project, ProjectType } from "../types";
 import { Smartphone } from "lucide-react";
 import svgPaths from "../imports/svg-kgk8e7ds24";
 
+import fireTvIcon from "../assets/fire-tv-icon.png";
+import smartTvIcon from "../assets/smart-tv-icon.jpg";
+
 // Define the shape of the project object as it comes from the backend
 export interface BackendProjectDto {
     projectId: string;
@@ -12,6 +15,12 @@ export interface BackendProjectDto {
 }
 
 export const getIcon = (projectType: ProjectType) => {
+    if (projectType === "Fire TV") {
+        return <img src={fireTvIcon} alt="Fire TV" className="w-5 h-5 object-contain" />;
+    }
+    if (projectType === "Smart TV") {
+        return <img src={smartTvIcon} alt="Smart TV" className="w-5 h-5 object-contain rounded-[2px]" />;
+    }
     if (projectType === "Android TV" || projectType === "Mobile") {
         return (
             <svg className="w-5 h-5" viewBox="0 0 37 37" fill="none">
@@ -48,6 +57,8 @@ const iconBgMap: Record<ProjectType, string> = {
     "Android TV": "bg-green-500/40",
     "Roku TV": "bg-purple-600/40",
     Mobile: "bg-blue-500/40",
+    "Fire TV": "bg-orange-500/40",
+    "Smart TV": "bg-indigo-500/40",
 };
 
 // Helper: Title case conversion (e.g. "smart image" -> "Smart Image")
@@ -58,6 +69,8 @@ const toTitleCase = (str: string): ProjectType => {
         "android tv": "Android TV",
         "roku tv": "Roku TV",
         "mobile": "Mobile",
+        "fire tv": "Fire TV",
+        "smart tv": "Smart TV",
     };
     return map[str.toLowerCase()] || "Smart Image"; // Default fallback
 };
