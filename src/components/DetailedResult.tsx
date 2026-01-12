@@ -238,17 +238,27 @@ export function DetailedResult({
 
     setIsDownloading(true);
 
-    const opt: any = {
+    const opt = {
       margin: 0,
       filename: `${testName}_Report.pdf`,
-      image: { type: 'png', quality: 1.0 },
+
+      image: {
+        type: 'png' as const,
+        quality: 1,
+      },
+
       html2canvas: {
-        scale: 4,
+        scale: 2,                 // ✅ stable & sharp
         useCORS: true,
-        letterRendering: true,
+        backgroundColor: '#ffffff',
+        letterRendering: false,   // ✅ FIXES text baseline issue
+        windowWidth: element.scrollWidth,
+        windowHeight: element.scrollHeight,
+
         onclone: (clonedDoc: Document) => {
-          // Force override global CSS variables that use oklch (unsupported by html2canvas)
           const root = clonedDoc.documentElement;
+
+          // ---- Override unsupported OKLCH / Tailwind vars ----
           root.style.setProperty('--ring', '#000000');
           root.style.setProperty('--foreground', '#000000');
           root.style.setProperty('--background', '#ffffff');
@@ -263,25 +273,34 @@ export function DetailedResult({
           root.style.setProperty('--border', '#e5e7eb');
           root.style.setProperty('--input', '#e5e7eb');
 
-          // Also handle Tailwind 4 theme specific variables if needed
+          // Tailwind v4 color fallbacks
           root.style.setProperty('--color-red-400', '#ff0000');
           root.style.setProperty('--color-red-500', '#ff0000');
           root.style.setProperty('--color-green-400', '#00ff00');
           root.style.setProperty('--color-green-500', '#00ff00');
-        }
+        },
       },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+
+      jsPDF: {
+        unit: 'px',
+        format: [
+          element.scrollWidth,
+          element.scrollHeight,
+        ] as [number, number], // 🔥 KEY FIX - Explicit tuple type
+        orientation: 'portrait' as const,
+      },
     };
 
     try {
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
-      console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF report.");
+      console.error('PDF generation failed:', error);
+      alert('Failed to generate PDF report.');
     } finally {
       setIsDownloading(false);
     }
   };
+
 
   const handleRaiseIssue = () => {
     alert("Raise Issue clicked.");

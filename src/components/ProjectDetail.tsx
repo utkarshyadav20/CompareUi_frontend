@@ -233,8 +233,8 @@ export function ProjectDetail({
           onSearchChange={setSearchQuery}
           selectedMethod={selectedMethod}
           onMethodChange={setSelectedMethod}
-          threshold={threshold}
-          onThresholdChange={setThreshold}
+          sensitivity={threshold}
+          onSensitivityChange={setThreshold}
           aiAgent={aiAgent}
           onAiAgentChange={setAiAgent}
           onStartComparison={() => setShowComparisonToast(true)}
@@ -312,6 +312,8 @@ export function ProjectDetail({
       {activeTab === "activity" && <ActivityTab />}
       {activeTab === "result" && (
         <ResultTab
+          projectId={project.id}
+          projectType={project.type}
           buildVersion={selectedBuild?.buildName || ""}
           selectedBuild={selectedBuild}
           buildVersions={builds}
