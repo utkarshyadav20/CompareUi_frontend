@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Grid2X2, List, ChevronDown, Eye } from 'lucide-react';
+import { Search, Grid2X2, List, ChevronDown, Eye, CloudCog } from 'lucide-react';
 import apiClient from '../api/client';
 import FullReport from './common/FullReport';
 
@@ -15,6 +15,7 @@ interface Result {
 
 interface ResultTabProps {
   projectId: string;
+  projectName: string;
   projectType: string;
   buildVersion: string;
   selectedBuild: any;
@@ -25,6 +26,7 @@ interface ResultTabProps {
 
 export function ResultTab({
   projectId,
+  projectName,
   projectType,
   buildVersion,
   selectedBuild,
@@ -140,7 +142,7 @@ export function ResultTab({
         return {
           result: detailsRes.data,
           modelResult: modelRes.data || { coordsVsText: [] },
-          projectName: projectType, // or pass strict project name if available
+          projectName: projectName,
           appName: "App", // This might need to be passed down or inferred
           deviceType: projectType,
           buildName: buildName

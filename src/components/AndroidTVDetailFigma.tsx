@@ -754,7 +754,9 @@ export function AndroidTVDetailFigma({
       {activeTab === "result" ? (
         <ResultTab
           projectId={projectId}
-          buildVersion={selectedBuild}
+          projectName={projectName}
+          projectType={getApiProjectType(platformType)}
+          buildVersion={typeof selectedBuild === 'string' ? selectedBuild : (selectedBuild?.buildName || selectedBuild?.buildId)}
           selectedBuild={selectedBuild}
           buildVersions={buildVersions}
           onBuildChange={onBuildChange}

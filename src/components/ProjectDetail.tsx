@@ -313,6 +313,7 @@ export function ProjectDetail({
       {activeTab === "result" && (
         <ResultTab
           projectId={project.id}
+          projectName={project.platform}
           projectType={project.type}
           buildVersion={selectedBuild?.buildName || ""}
           selectedBuild={selectedBuild}

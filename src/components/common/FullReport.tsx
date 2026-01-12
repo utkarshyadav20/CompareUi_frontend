@@ -38,49 +38,91 @@ const FullReport: React.FC<FullReportProps> = ({ screens, onDone }) => {
                     return;
                 }
 
+                // Hide all pages initially to ensure clean capture flow
+                pages.forEach((p) => ((p as HTMLElement).style.display = 'none'));
+
                 // Ensure page is at top
                 window.scrollTo(0, 0);
 
-                const pdf = new jsPDF({
-                    orientation: 'portrait',
-                    unit: 'px',
-                    format: 'a4',
-                });
+                let pdf: jsPDF | null = null;
 
                 for (let i = 0; i < pages.length; i++) {
                     const page = pages[i] as HTMLElement;
 
+                    // Show current page
+                    page.style.display = 'block';
+
                     // Wait for images
                     await awaitImages(page);
-
-                    // Ensure the specific page is visible
-                    page.style.display = 'block';
 
                     try {
                         const canvas = await html2canvas(page, {
                             scale: 2,
                             useCORS: true,
-                            allowTaint: true,
+                            allowTaint: false,
                             backgroundColor: '#ffffff',
                             logging: false,
                             scrollX: 0,
-                            scrollY: 0,
-                            // Remove custom window dimensions to let it auto-detect from DOM
+                            scrollY: -window.scrollY,
+                            windowWidth: 1600, // Force large width to avoid cropping
+                            windowHeight: document.documentElement.offsetHeight,
+                            onclone: (clonedDoc: Document) => {
+                                const root = clonedDoc.documentElement;
+                                // Fix variables for html2canvas
+                                root.style.setProperty('--ring', '#000000');
+                                root.style.setProperty('--foreground', '#000000');
+                                root.style.setProperty('--background', '#ffffff');
+                                root.style.setProperty('--card', '#ffffff');
+                                root.style.setProperty('--card-foreground', '#000000');
+                                root.style.setProperty('--popover', '#ffffff');
+                                root.style.setProperty('--primary', '#000000');
+                                root.style.setProperty('--secondary', '#ffffff');
+                                root.style.setProperty('--muted', '#f3f4f6');
+                                root.style.setProperty('--accent', '#f3f4f6');
+                                root.style.setProperty('--destructive', '#ef4444');
+                                root.style.setProperty('--border', '#e5e7eb');
+                                root.style.setProperty('--input', '#e5e7eb');
+                                // Fallback colors
+                                root.style.setProperty('--color-red-400', '#ff0000');
+                                root.style.setProperty('--color-red-500', '#ff0000');
+                                root.style.setProperty('--color-green-400', '#00ff00');
+                                root.style.setProperty('--color-green-500', '#00ff00');
+                            }
                         });
 
                         const imgData = canvas.toDataURL('image/png');
-                        const pdfWidth = pdf.internal.pageSize.getWidth();
-                        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+                        const imgWidth = canvas.width;
+                        const imgHeight = canvas.height;
 
-                        if (i > 0) pdf.addPage();
+                        if (!pdf) {
+                            // Initialize PDF with the dimensions of the first page
+                            pdf = new jsPDF({
+                                orientation: imgWidth > imgHeight ? 'landscape' : 'portrait',
+                                unit: 'px',
+                                format: [imgWidth, imgHeight]
+                            });
+                        } else {
+                            // Add subsequent pages with their own dimensions
+                            pdf.addPage([imgWidth, imgHeight], imgWidth > imgHeight ? 'landscape' : 'portrait');
+                        }
 
-                        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                        // Add image at 1:1 scale (matching the page size)
+                        pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+
                     } catch (pageError) {
                         console.error(`Error processing page ${i + 1}:`, pageError);
                     }
+
+                    // Hide page again after capture
+                    page.style.display = 'none';
                 }
 
-                pdf.save('Combined_UI_Report.pdf');
+                if (pdf) {
+                    pdf.save('Combined_UI_Report.pdf');
+                } else {
+                    console.error("No PDF generated");
+                }
+
             } catch (error) {
                 console.error("Critical error generating PDF:", error);
                 alert("Failed to generate PDF report.");
@@ -98,19 +140,19 @@ const FullReport: React.FC<FullReportProps> = ({ screens, onDone }) => {
         <div
             ref={containerRef}
             style={{
-                position: 'absolute', // Absolute positioning to flow with document
+                position: 'fixed',
                 top: 0,
-                left: 0,
+                left: '-10000px', // Move off-screen to hide from user
                 width: '100%',
-                zIndex: 10000,
+                zIndex: -1, // Ensure it doesn't overlay anything
                 background: 'white',
                 minHeight: '100vh',
-                padding: '20px'
+                padding: '20px',
+                visibility: 'visible' // Must be visible for html2canvas
             }}
         >
-            <div style={{ position: 'fixed', top: '20px', right: '20px', color: 'black', fontWeight: 'bold', zIndex: 10001, background: 'rgba(255,255,255,0.8)', padding: '10px', borderRadius: '5px', border: '1px solid #ccc' }}>
-                Generating PDF...
-            </div>
+            {/* Generating text is no longer needed since it's hidden */}
+
 
             <div style={{ width: '960px', margin: '0 auto' }}>
                 {screens.map((screen, index) => (
