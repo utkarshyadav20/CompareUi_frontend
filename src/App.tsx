@@ -11,6 +11,7 @@ import { mapBackendProjectToFrontend, BackendProjectDto } from "./utils/projectU
 export default function App() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Apply theme to document
@@ -35,6 +36,7 @@ export default function App() {
   // Fetch projects from backend on mount
   useEffect(() => {
     const fetchProjects = async () => {
+      setIsLoading(true);
       try {
         const projectApi = new ProjectApi(undefined, undefined, apiClient);
         const response = await projectApi.projectControllerFindAll();
@@ -50,6 +52,8 @@ export default function App() {
         }
       } catch (error) {
         console.error("Failed to fetch projects:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -110,6 +114,7 @@ export default function App() {
     projects,
     theme,
     onThemeChange: setTheme,
+    isLoading,
   };
 
   return (
@@ -123,6 +128,7 @@ export default function App() {
             onThemeChange={setTheme}
             onCreateProject={handleCreateProject}
             onDeleteProject={handleDeleteProject}
+            isLoading={isLoading}
           />
         }
       />

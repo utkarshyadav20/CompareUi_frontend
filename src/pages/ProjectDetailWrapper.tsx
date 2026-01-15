@@ -1,22 +1,33 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { Project, Theme } from "../types";
 import { ProjectDetail } from "../components/ProjectDetail";
+import LoaderGif from "../assets/Loader.gif";
 
 interface ProjectDetailWrapperProps {
   projects: Project[];
   theme: Theme;
   onThemeChange: (theme: Theme) => void;
+  isLoading?: boolean;
 }
 
 export function ProjectDetailWrapper({
   projects,
   theme,
   onThemeChange,
+  isLoading = false,
 }: ProjectDetailWrapperProps) {
   const { pid } = useParams();
   const navigate = useNavigate();
 
   const project = projects.find((p) => p.id === pid);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
+        <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+      </div>
+    );
+  }
 
   if (!project) {
     return (

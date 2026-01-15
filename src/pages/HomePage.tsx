@@ -27,7 +27,7 @@ import { ProjectCard } from "../components/ProjectCard";
 import { NewProjectForm } from "../components/NewProjectForm";
 import { ConfirmationModal } from "../components/common/ConfirmationModal";
 import imgProfile from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
-import svgPaths from "../imports/svg-kgk8e7ds24";
+import LoaderGif from "../assets/Loader.gif";
 
 interface HomePageProps {
   projects: Project[];
@@ -35,6 +35,7 @@ interface HomePageProps {
   onThemeChange: (theme: Theme) => void;
   onCreateProject: (project: Omit<Project, "id" | "timestamp">) => void;
   onDeleteProject: (projectId: string) => Promise<void>;
+  isLoading?: boolean;
 }
 
 export function HomePage({
@@ -43,6 +44,7 @@ export function HomePage({
   onThemeChange,
   onCreateProject,
   onDeleteProject,
+  isLoading = false,
 }: HomePageProps) {
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
@@ -363,23 +365,34 @@ export function HomePage({
         {/* Projects Section */}
         <div className="mb-6">
           <h2 className="text-black dark:text-white text-xl mb-4">Projects</h2>
-          <div
-            className={
-              viewMode === "grid"
-                ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                : "space-y-3"
-            }
-          >
-            {filteredProjects.map((project) => (
-              <ProjectCard
-                key={project.id}
-                {...project}
-                viewMode={viewMode}
-                onClick={() => navigate(getProjectUrl(project))}
-                onDelete={() => handleDeleteRequest(project)}
-              />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-20">
+              <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="text-center py-20 text-black/50 dark:text-white/50">
+              <p className="text-lg">No projects found</p>
+              <p className="text-sm mt-2">Click "Add new" to create your first project</p>
+            </div>
+          ) : (
+            <div
+              className={
+                viewMode === "grid"
+                  ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  : "space-y-3"
+              }
+            >
+              {filteredProjects.map((project) => (
+                <ProjectCard
+                  key={project.id}
+                  {...project}
+                  viewMode={viewMode}
+                  onClick={() => navigate(getProjectUrl(project))}
+                  onDelete={() => handleDeleteRequest(project)}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </main>
 

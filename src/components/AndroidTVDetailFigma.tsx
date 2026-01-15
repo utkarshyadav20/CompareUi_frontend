@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 // import imgFrame21 from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
 import svgPaths from "../imports/svg-yp1cueaie8";
+import LoaderGif from "../assets/Loader.gif";
 import { ResultTab } from "./ResultTab";
 import { DetailedResult } from "./DetailedResult";
 import { TestComparisonToast } from "./TestComparisonToast";
@@ -210,9 +211,10 @@ export function AndroidTVDetailFigma({
     return lower;
   };
 
-  const [loadingActivity, setLoadingActivity] = useState<"url" | "csv" | "image" | "compare" | null>(null);
+  const [loadingActivity, setLoadingActivity] = useState<"url" | "csv" | "image" | "compare" | "screens" | null>("screens");
 
   const fetchScreens = async () => {
+    setLoadingActivity("screens");
     try {
       const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
       const apiProjectType = getApiProjectType(platformType);
@@ -225,6 +227,8 @@ export function AndroidTVDetailFigma({
       }
     } catch (error) {
       console.error('Failed to fetch screens:', error);
+    } finally {
+      setLoadingActivity(prev => prev === 'screens' ? null : prev);
     }
   };
 
@@ -752,16 +756,20 @@ export function AndroidTVDetailFigma({
 
       {/* Conditional Content based on activeTab */}
       {activeTab === "result" ? (
-        <ResultTab
-          projectId={projectId}
-          projectName={projectName}
-          projectType={getApiProjectType(platformType)}
-          buildVersion={typeof selectedBuild === 'string' ? selectedBuild : (selectedBuild?.buildName || selectedBuild?.buildId)}
-          selectedBuild={selectedBuild}
-          buildVersions={buildVersions}
-          onBuildChange={onBuildChange}
-          onViewTest={handleViewTest}
-        />
+        <div className="overflow-hidden flex flex-col" style={{ height: 'calc(100vh - 140px)' }}>
+          <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-white/20">
+            <ResultTab
+              projectId={projectId}
+              projectName={projectName}
+              projectType={getApiProjectType(platformType)}
+              buildVersion={typeof selectedBuild === 'string' ? selectedBuild : (selectedBuild?.buildName || selectedBuild?.buildId)}
+              selectedBuild={selectedBuild}
+              buildVersions={buildVersions}
+              onBuildChange={onBuildChange}
+              onViewTest={handleViewTest}
+            />
+          </div>
+        </div>
       ) : activeTab === "testingpanel" ? (
         <>
           {/* Controls Bar */}
@@ -789,7 +797,7 @@ export function AndroidTVDetailFigma({
           </div>
 
           {/* Main Content - Two Panels */}
-          <div className="flex-1 flex px-[32px] pb-[25px]">
+          <div className="flex px-[32px] pb-[25px] overflow-hidden gap-[32px]" style={{ height: 'calc(100vh - 180px)' }}>
             {/* Left Panel - Baselining Images */}
             <div className="w-[384px] bg-white/10 border border-black flex flex-col shrink-0 overflow-hidden">
               <BaselineImageInput
@@ -835,7 +843,11 @@ export function AndroidTVDetailFigma({
                 Actual Build images
               </p>
 
-              {actualImages.length === 0 ? (
+              {loadingActivity === "compare" ? (
+                <div className="flex-1 flex items-center justify-center">
+                  <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+                </div>
+              ) : actualImages.length === 0 ? (
                 <EmptyState
                   icon={Folder}
                   description={
@@ -896,9 +908,13 @@ export function AndroidTVDetailFigma({
           </div>
         </>
       ) : activeTab === "activity" ? (
-        <ActivityTab />
+        <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-white/20" style={{ height: 'calc(100vh - 100px)' }}>
+          <ActivityTab />
+        </div>
       ) : activeTab === "settings" ? (
-        <SettingsTab />
+        <div className="overflow-y-auto scrollbar-thin scrollbar-thumb-white/20" style={{ height: 'calc(100vh - 100px)' }}>
+          <SettingsTab />
+        </div>
       ) : (
         <div className="px-[32px] py-[24px] text-white">
           <p className="text-white/50 text-center">

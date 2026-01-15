@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Search, Grid2X2, List, ChevronDown, Eye, CloudCog } from 'lucide-react';
 import apiClient from '../api/client';
 import FullReport from './common/FullReport';
+import LoaderGif from '../assets/Loader.gif';
 
 interface Result {
   id: string;
@@ -39,7 +40,7 @@ export function ResultTab({
   const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
   const [loadedTests, setLoadedTests] = useState(10);
   const [tests, setTests] = useState<Result[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [download, setDownload] = useState(false);
   const [generatingReport, setGeneratingReport] = useState(false);
   const [screens, setScreens] = useState<any[]>([]);
@@ -387,7 +388,7 @@ export function ResultTab({
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center py-10">
-            <p className="text-white">Loading results...</p>
+            <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
           </div>
         )}
 
