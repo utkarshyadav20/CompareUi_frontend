@@ -388,7 +388,7 @@ export function ResultTab({
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center py-10">
-            <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+            <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
           </div>
         )}
 

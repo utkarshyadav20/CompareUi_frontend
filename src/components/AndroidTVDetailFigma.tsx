@@ -845,7 +845,7 @@ export function AndroidTVDetailFigma({
 
               {loadingActivity === "compare" ? (
                 <div className="flex-1 flex items-center justify-center">
-                  <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+                  <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
                 </div>
               ) : actualImages.length === 0 ? (
                 <EmptyState

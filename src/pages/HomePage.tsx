@@ -367,7 +367,7 @@ export function HomePage({
           <h2 className="text-black dark:text-white text-xl mb-4">Projects</h2>
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+              <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
             </div>
           ) : filteredProjects.length === 0 ? (
             <div className="text-center py-20 text-black/50 dark:text-white/50">

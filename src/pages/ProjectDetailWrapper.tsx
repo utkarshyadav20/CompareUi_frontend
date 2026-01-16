@@ -24,7 +24,7 @@ export function ProjectDetailWrapper({
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white dark:bg-black">
-        <img src={LoaderGif} alt="Loading..." className="w-16 h-16" />
+        <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
       </div>
     );
   }
