@@ -447,6 +447,42 @@ export const FigmaApiAxiosParamCreator = function (configuration?: Configuration
         },
         /**
          * 
+         * @param {string} url 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        figmaControllerGetProxyImage: async (url: string, options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            // verify required parameter 'url' is not null or undefined
+            assertParamExists('figmaControllerGetProxyImage', 'url', url)
+            const localVarPath = `/figma/proxy-image`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'GET', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+            if (url !== undefined) {
+                localVarQueryParameter['url'] = url;
+            }
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+        /**
+         * 
          * @param {string} projectId 
          * @param {string} projectType 
          * @param {string} screenName 
@@ -671,6 +707,18 @@ export const FigmaApiFp = function(configuration?: Configuration) {
         },
         /**
          * 
+         * @param {string} url 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async figmaControllerGetProxyImage(url: string, options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.figmaControllerGetProxyImage(url, options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['FigmaApi.figmaControllerGetProxyImage']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+        /**
+         * 
          * @param {string} projectId 
          * @param {string} projectType 
          * @param {string} screenName 
@@ -769,6 +817,15 @@ export const FigmaApiFactory = function (configuration?: Configuration, basePath
         },
         /**
          * 
+         * @param {string} url 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        figmaControllerGetProxyImage(url: string, options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.figmaControllerGetProxyImage(url, options).then((request) => request(axios, basePath));
+        },
+        /**
+         * 
          * @param {string} projectId 
          * @param {string} projectType 
          * @param {string} screenName 
@@ -853,6 +910,16 @@ export class FigmaApi extends BaseAPI {
      */
     public figmaControllerExtractImage(options?: RawAxiosRequestConfig) {
         return FigmaApiFp(this.configuration).figmaControllerExtractImage(options).then((request) => request(this.axios, this.basePath));
+    }
+
+    /**
+     * 
+     * @param {string} url 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public figmaControllerGetProxyImage(url: string, options?: RawAxiosRequestConfig) {
+        return FigmaApiFp(this.configuration).figmaControllerGetProxyImage(url, options).then((request) => request(this.axios, this.basePath));
     }
 
     /**

@@ -1,8 +1,16 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Image, Link, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Image, Link } from '@react-pdf/renderer';
+
+import { API_BASE_URL } from '../../api/config';
 
 // Register fonts if needed, otherwise use standard fonts
 // Font.register({ family: 'Roboto', src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf' });
+
+const getProxyUrl = (url: string) => {
+    if (!url) return '';
+    const baseUrl = API_BASE_URL.replace(/\/$/, '');
+    return `${baseUrl}/figma/proxy-image?url=${encodeURIComponent(url)}`;
+};
 
 interface Box {
     x: number;
@@ -188,7 +196,8 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
-        paddingVertical: 5,
+        paddingVertical: 10,
+        marginBottom: 10,
     },
     tableHeader: {
         fontWeight: 'bold',
@@ -238,14 +247,19 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
     const dimensions = result.coordinates?.dimensions || { width: 1920, height: 1080 };
     const { width: originalWidth, height: originalHeight } = dimensions;
 
+    // Calculate display dimensions to match the column width
+    // Page: 595pt. Margins/Padding: ~90-100pt. Two cols. ~250pt width. Use 240 to avoid wrapping.
+    const displayWidth = 240;
+    const scale = displayWidth / originalWidth;
+    const displayHeight = originalHeight * scale;
+
     const getBoxStyle = (box: Box) => {
-        // Need to be careful with positioning. 
-        // In react-pdf, percentage works relative to parent View.
+        // Use absolute points (pt) based on scale to avoid percentage ambiguity
         return {
-            left: `${(box.x / originalWidth) * 100}%`,
-            top: `${(box.y / originalHeight) * 100}%`,
-            width: `${(box.width / originalWidth) * 100}%`,
-            height: `${(box.height / originalHeight) * 100}%`,
+            left: box.x * scale,
+            top: box.y * scale,
+            width: box.width * scale,
+            height: box.height * scale,
             borderColor: box.severity === 'Major' ? '#FF0000' : box.severity === 'Medium' ? '#2F2FE6' : '#D08700',
         };
     };
@@ -335,7 +349,8 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                 </View>
 
                 {/* Visual Evidence */}
-                <View style={[styles.section, { flex: 1, minHeight: 350 }]} wrap={false}>
+                {/* Ensure no flex expansion and standard height behavior */}
+                <View style={[styles.section]}>
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
                         <Text style={styles.sectionTitle}>Visual Evidence</Text>
                         <Link src={result.diffImageUrl} style={styles.link}>Pixel difference heatmap image link</Link>
@@ -344,16 +359,23 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                     <View style={styles.imagesContainer}>
                         {/* Baseline */}
                         <View style={styles.imageCol}>
-                            <View style={styles.imageFrame}>
-                                <Image src={result.baselineImageUrl} style={styles.image} />
+                            <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
+                                <Image
+                                    src={getProxyUrl(result.baselineImageUrl)}
+                                    style={[styles.image, { objectFit: 'fill' }]}
+                                />
                             </View>
                             <Link src={result.baselineImageUrl} style={styles.link}>Baseline image</Link>
                         </View>
 
                         {/* Actual with Boxes */}
                         <View style={styles.imageCol}>
-                            <View style={styles.imageFrame}>
-                                <Image src={result.actualImageUrl} style={styles.image} />
+                            {/* Use fixed width and dynamic height to ensure exact aspect ratio match */}
+                            <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
+                                <Image
+                                    src={getProxyUrl(result.actualImageUrl)}
+                                    style={[styles.image, { objectFit: 'fill' }]}
+                                />
                                 {(result.coordinates?.boxes || []).map((box) => (
                                     <View
                                         key={box.id}
@@ -382,17 +404,17 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                 </View>
 
                 {/* Issue List - on next page if needed */}
-                <View break style={styles.section}>
+                <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Issue List</Text>
                     <View style={styles.table}>
-                        <View style={styles.tableRow}>
+                        <View style={[styles.tableRow, { backgroundColor: '#F3F4F6', borderBottomWidth: 2 }]} fixed>
                             <Text style={[styles.tableHeader, styles.col1]}>No.</Text>
                             <Text style={[styles.tableHeader, styles.col2]}>Severity</Text>
                             <Text style={[styles.tableHeader, styles.col3]}>Type</Text>
                             <Text style={[styles.tableHeader, styles.col4]}>Description</Text>
                         </View>
                         {issues.map((issue, index) => (
-                            <View key={`${issue.id}-${index}`} style={styles.tableRow}>
+                            <View key={`${issue.id}-${index}`} style={styles.tableRow} wrap={false}>
                                 <Text style={[styles.tableCell, styles.col1]}>{String(index + 1).padStart(2, '0')}</Text>
                                 <Text style={[styles.tableCell, styles.col2]}>{issue.severity}</Text>
                                 <Text style={[styles.tableCell, styles.col3]}>{issue.type}</Text>

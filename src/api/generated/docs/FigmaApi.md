@@ -8,6 +8,7 @@ All URIs are relative to *http://localhost*
 |[**figmaControllerDeleteAllScreens**](#figmacontrollerdeleteallscreens) | **DELETE** /figma/screens | |
 |[**figmaControllerDeleteScreen**](#figmacontrollerdeletescreen) | **DELETE** /figma/screen | |
 |[**figmaControllerExtractImage**](#figmacontrollerextractimage) | **POST** /figma/extract-image | |
+|[**figmaControllerGetProxyImage**](#figmacontrollergetproxyimage) | **GET** /figma/proxy-image | |
 |[**figmaControllerGetScreen**](#figmacontrollergetscreen) | **GET** /figma/screen | |
 |[**figmaControllerGetScreens**](#figmacontrollergetscreens) | **GET** /figma/screens | |
 |[**figmaControllerUpdateAllScreens**](#figmacontrollerupdateallscreens) | **GET** /figma/update-all-screens | |
@@ -212,6 +213,56 @@ No authorization required
 | Status code | Description | Response headers |
 |-------------|-------------|------------------|
 |**201** |  |  -  |
+
+[[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
+
+# **figmaControllerGetProxyImage**
+> figmaControllerGetProxyImage()
+
+
+### Example
+
+```typescript
+import {
+    FigmaApi,
+    Configuration
+} from './api';
+
+const configuration = new Configuration();
+const apiInstance = new FigmaApi(configuration);
+
+let url: string; // (default to undefined)
+
+const { status, data } = await apiInstance.figmaControllerGetProxyImage(
+    url
+);
+```
+
+### Parameters
+
+|Name | Type | Description  | Notes|
+|------------- | ------------- | ------------- | -------------|
+| **url** | [**string**] |  | defaults to undefined|
+
+
+### Return type
+
+void (empty response body)
+
+### Authorization
+
+No authorization required
+
+### HTTP request headers
+
+ - **Content-Type**: Not defined
+ - **Accept**: Not defined
+
+
+### HTTP response details
+| Status code | Description | Response headers |
+|-------------|-------------|------------------|
+|**200** |  |  -  |
 
 [[Back to top]](#) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to Model list]](../README.md#documentation-for-models) [[Back to README]](../README.md)
 

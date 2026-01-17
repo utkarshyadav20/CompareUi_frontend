@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
-import { pdf } from '@react-pdf/renderer';
+import { usePDF } from '@react-pdf/renderer';
 import { PDFReportDocument } from "./common/PDFReportDocument";
 
 
@@ -65,6 +65,7 @@ export function DetailedResult({
     "baseline" | "live" | "difference"
   >("baseline");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [generatePdf, setGeneratePdf] = useState(false);
   const [finalVerdict, setFinalVerdict] = useState<"approve" | "reject" | null>(
     null
   );
@@ -111,6 +112,53 @@ export function DetailedResult({
       fetchDetails();
     }
   }, [projectId, buildVersion, testName, platformType]);
+
+  // PDF Generation Hook
+  const [instance, updateInstance] = usePDF({
+    document: <PDFReportDocument
+      result={resultData || {}} // Placeholder to satisfy types, but effectively empty if null
+      modelResult={modelResult}
+      projectName={projectName || "No Project Name"}
+      appName=""
+      deviceType={platformType}
+      buildName={""}
+    />
+  });
+
+  // Watch for generation request and completion
+  useEffect(() => {
+    if (generatePdf && !instance.loading && instance.url) {
+      // Create temporary link and click it
+      const link = document.createElement('a');
+      link.href = instance.url;
+      link.download = `${testName}_Report.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      // Reset state
+      setGeneratePdf(false);
+      setIsDownloading(false);
+    }
+  }, [generatePdf, instance.loading, instance.url, testName]);
+
+  const handleDownloadClick = () => {
+    if (!resultData) return;
+    setIsDownloading(true);
+    setGeneratePdf(true);
+
+    // Trigger generation with actual data
+    updateInstance(
+      <PDFReportDocument
+        result={resultData}
+        modelResult={modelResult}
+        projectName={projectName || "No Project Name"}
+        appName=""
+        deviceType={platformType}
+        buildName={(buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion)) as any)?.buildName || buildVersion}
+      />
+    );
+  };
 
 
   // Build Dropdown State
@@ -222,7 +270,6 @@ export function DetailedResult({
   const severityCounts = counts;
 
   // Convert boxes to Issues for the list
-  console.log("Boxes:", boxes);
   const issues: Issue[] = boxes.map((box: any) => ({
     id: box.id,
     severity: box.severity,
@@ -231,43 +278,8 @@ export function DetailedResult({
     coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`
   }));
 
-  const handleDownloadPDF = async () => {
-    if (!resultData) return;
-
-    setIsDownloading(true);
-
-    try {
-      // Compute build name for the report
-      const foundBuild = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
-      const currentBuildName = (foundBuild && typeof foundBuild !== 'string') ? (foundBuild.buildName || foundBuild.buildId) : buildVersion;
-
-      const blob = await pdf(
-        <PDFReportDocument
-          result={resultData}
-          modelResult={modelResult}
-          projectName={projectName || "No Project Name"}
-          appName=""
-          deviceType={platformType}
-          buildName={currentBuildName}
-        />
-      ).toBlob();
-
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `${testName}_Report.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-
-    } catch (error) {
-      console.error('PDF generation failed:', error);
-      alert('Failed to generate PDF report.');
-    } finally {
-      setIsDownloading(false);
-    }
-  };
+  // Removed manual handleDownloadPDF to avoid Buffer issues. 
+  // We will use PDFDownloadLink component instead for direct download.
 
 
   const handleRaiseIssue = () => {
@@ -414,13 +426,16 @@ export function DetailedResult({
               </div>
             </div>
 
+
+
+            {/* Using standard button that triggers usePDF generation */}
             <button
-              onClick={handleDownloadPDF}
+              onClick={handleDownloadClick}
               disabled={isDownloading}
-              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold flex items-center gap-2 hover:bg-zinc-200 transition-colors disabled:opacity-50 shadow-sm"
+              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-wait"
             >
               <Download className="w-4 h-4" />
-              <span>Download Report</span>
+              <span>{isDownloading ? 'Generating...' : 'Download Report'}</span>
             </button>
 
             <button
