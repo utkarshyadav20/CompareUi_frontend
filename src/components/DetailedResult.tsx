@@ -14,9 +14,8 @@ import {
 } from "lucide-react";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
-import { ReportDocument } from "./common/ReportDocument";
-// @ts-ignore
-import html2pdf from "html2pdf.js";
+import { pdf } from '@react-pdf/renderer';
+import { PDFReportDocument } from "./common/PDFReportDocument";
 
 
 interface Issue {
@@ -233,66 +232,35 @@ export function DetailedResult({
   }));
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById('report-content');
-    if (!element || !resultData) return;
+    if (!resultData) return;
 
     setIsDownloading(true);
 
-    const opt = {
-      margin: 0,
-      filename: `${testName}_Report.pdf`,
-
-      image: {
-        type: 'png' as const,
-        quality: 1,
-      },
-
-      html2canvas: {
-        scale: 2,                 // ✅ stable & sharp
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        letterRendering: false,   // ✅ FIXES text baseline issue
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
-
-        onclone: (clonedDoc: Document) => {
-          const root = clonedDoc.documentElement;
-
-          // ---- Override unsupported OKLCH / Tailwind vars ----
-          root.style.setProperty('--ring', '#000000');
-          root.style.setProperty('--foreground', '#000000');
-          root.style.setProperty('--background', '#ffffff');
-          root.style.setProperty('--card', '#ffffff');
-          root.style.setProperty('--card-foreground', '#000000');
-          root.style.setProperty('--popover', '#ffffff');
-          root.style.setProperty('--primary', '#000000');
-          root.style.setProperty('--secondary', '#ffffff');
-          root.style.setProperty('--muted', '#f3f4f6');
-          root.style.setProperty('--accent', '#f3f4f6');
-          root.style.setProperty('--destructive', '#ef4444');
-          root.style.setProperty('--border', '#e5e7eb');
-          root.style.setProperty('--input', '#e5e7eb');
-
-          // Tailwind v4 color fallbacks
-          root.style.setProperty('--color-red-400', '#ff0000');
-          root.style.setProperty('--color-red-500', '#ff0000');
-          root.style.setProperty('--color-green-400', '#00ff00');
-          root.style.setProperty('--color-green-500', '#00ff00');
-        },
-      },
-
-      jsPDF: {
-        unit: 'px',
-        format: [
-          element.scrollWidth,
-          element.scrollHeight,
-        ] as [number, number], // 🔥 KEY FIX - Explicit tuple type
-        orientation: 'portrait' as const,
-      },
-    };
-
     try {
-      await html2pdf().set(opt).from(element).save();
+      // Compute build name for the report
+      const foundBuild = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
+      const currentBuildName = (foundBuild && typeof foundBuild !== 'string') ? (foundBuild.buildName || foundBuild.buildId) : buildVersion;
+
+      const blob = await pdf(
+        <PDFReportDocument
+          result={resultData}
+          modelResult={modelResult}
+          projectName={projectName || "No Project Name"}
+          appName=""
+          deviceType={platformType}
+          buildName={currentBuildName}
+        />
+      ).toBlob();
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${testName}_Report.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
     } catch (error) {
       console.error('PDF generation failed:', error);
       alert('Failed to generate PDF report.');
@@ -842,31 +810,7 @@ export function DetailedResult({
         </div>
       </div>
 
-      {/* Hidden Report Container for PDF Generation */}
-      {
-        resultData && (
-          <div style={{ position: 'fixed', top: '-9999px', left: '-9999px', width: '960px' }}>
-            <div id="report-content">
-              {(() => {
-                // Compute build name for the report
-                const foundBuild = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
-                const currentBuildName = (foundBuild && typeof foundBuild !== 'string') ? (foundBuild.buildName || foundBuild.buildId) : buildVersion;
-
-                return (
-                  <ReportDocument
-                    result={resultData}
-                    modelResult={modelResult}
-                    projectName={projectName || "No Project Name"}
-                    appName=""
-                    deviceType={platformType}
-                    buildName={currentBuildName}
-                  />
-                );
-              })()}
-            </div>
-          </div>
-        )
-      }
+      {/* Hidden Report Container - Removed as we now generate PDF programmatically */}
     </div >
   );
 }
