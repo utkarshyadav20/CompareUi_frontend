@@ -15,7 +15,7 @@ import {
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
 import { usePDF } from '@react-pdf/renderer';
-import { PDFReportDocument } from "./common/PDFReportDocument";
+import { PDFReportDocument } from "./common/report/detailed/PDFReportDocument";
 
 
 interface Issue {

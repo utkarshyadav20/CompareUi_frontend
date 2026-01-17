@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Search, Grid2X2, List, ChevronDown, Eye, CloudCog } from 'lucide-react';
+import { pdf } from '@react-pdf/renderer';
+import { FullReportDocument } from './common/report/fullReport/FullReportDocument';
+import { Search, Grid2X2, List, ChevronDown, Eye } from 'lucide-react';
 import apiClient from '../api/client';
-import FullReport from './common/FullReport';
 import LoaderGif from '../assets/Loader.gif';
 
 interface Result {
@@ -41,9 +42,6 @@ export function ResultTab({
   const [loadedTests, setLoadedTests] = useState(10);
   const [tests, setTests] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
-  const [download, setDownload] = useState(false);
-  const [generatingReport, setGeneratingReport] = useState(false);
-  const [screens, setScreens] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -99,87 +97,46 @@ export function ResultTab({
     }
   };
 
+
   const handleFullReport = async () => {
-    if (filteredTests.length === 0) {
-      alert("No results to generate report for.");
-      return;
-    }
-
-    setGeneratingReport(true);
-    let buildId = '';
-    let buildName = typeof selectedBuild === 'string' ? selectedBuild : (selectedBuild?.buildName || selectedBuild?.buildId || buildVersion);
-
-    if (typeof selectedBuild === 'string') {
-      buildId = selectedBuild;
-    } else if (selectedBuild && selectedBuild.buildId) {
-      buildId = selectedBuild.buildId;
-    }
-
     try {
-      // Parallel fetch for all filtered tests
-      const resultsPromise = await Promise.allSettled(filteredTests.map(async (test) => {
-        const testName = test.imageName;
+      console.log("Generating Full Report...");
 
-        // Fetch details and model result concurrently for this test
-        const [detailsRes, modelRes] = await Promise.all([
-          apiClient.get('/result/details', {
-            params: {
-              projectId,
-              buildId,
-              screenName: testName,
-              projectType: projectType
-            }
-          }),
-          apiClient.get('/result/model-result', {
-            params: {
-              projectId,
-              buildId,
-              imageName: testName,
-              projectType: projectType
-            }
-          }).catch(() => ({ data: null })) // Handle missing model result gracefully
-        ]);
+      let buildId = '';
+      let currentBuildName = '';
 
-        return {
-          result: detailsRes.data,
-          modelResult: modelRes.data || { coordsVsText: [] },
-          projectName: projectName,
-          appName: "App", // This might need to be passed down or inferred
-          deviceType: projectType,
-          buildName: buildName
-        };
-      }));
-
-      const outcomes = await resultsPromise;
-
-      const validScreens = outcomes
-        .filter((outcome): outcome is PromiseFulfilledResult<any> => outcome.status === 'fulfilled')
-        .map(outcome => outcome.value);
-
-      const failures = outcomes.filter(outcome => outcome.status === 'rejected');
-
-      if (failures.length > 0) {
-        console.warn(`Failed to fetch details for ${failures.length} tests.`);
-        // Optional: Show toast or alert about partial success
+      if (typeof selectedBuild === 'string') {
+        buildId = selectedBuild;
+        currentBuildName = buildId;
+      } else if (selectedBuild && selectedBuild.buildId) {
+        buildId = selectedBuild.buildId;
+        currentBuildName = selectedBuild.buildName || `Build ${buildId}`;
       }
 
-      if (validScreens.length === 0) {
-        alert("Failed to fetch details for any test. Cannot generate report.");
-        setGeneratingReport(false);
+      if (!projectId || !buildId) {
+        console.error("Missing project or build ID for report");
         return;
       }
 
-      setScreens(validScreens);
-      setDownload(true);
-      setGeneratingReport(false);
+      const response = await apiClient.get('/result/build-report', {
+        params: { projectId, buildId }
+      });
 
+      const reportData = response.data;
+
+      const blob = await pdf(<FullReportDocument data={reportData} />).toBlob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Full_Report_${currentBuildName}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      console.log("Full report downloaded.");
     } catch (error) {
-      console.error("Full report generation failed:", error);
-      alert("An error occurred while generating the report.");
-      setGeneratingReport(false);
+      console.error("Error generating full report:", error);
     }
   };
-
   return (
     <div className="w-full">
       {/* Search and Controls Bar */}
@@ -197,111 +154,97 @@ export function ResultTab({
             />
           </div>
         </div>
+        <div className='flex items-center gap-[10px]'>
+          {/* Right side controls */}
+          <div className="flex items-center gap-[10px]">
+            {/* View toggle */}
+            <div className="h-[41px] rounded-[6px] border-[0.828px] border-white/50 flex items-center p-[4.554px] gap-[4px]">
+              <button
+                onClick={() => setViewMode('grid')}
+                className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${viewMode === 'grid' ? 'bg-white/10' : ''}`}
+              >
+                <Grid2X2 className="w-[14.903px] h-[14.903px] text-white/50" />
+              </button>
+              <button
+                onClick={() => setViewMode('list')}
+                className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${viewMode === 'list' ? 'bg-white/10' : ''}`}
+              >
+                <List className="w-[14.903px] h-[14.903px] text-white/50" />
+              </button>
+            </div>
 
-        {/* Right side controls */}
-        <div className="flex items-center gap-[10px]">
-          {/* View toggle */}
-          <div className="h-[41px] rounded-[6px] border-[0.828px] border-white/50 flex items-center p-[4.554px] gap-[4px]">
-            <button
-              onClick={() => setViewMode('grid')}
-              className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${viewMode === 'grid' ? 'bg-white/10' : ''}`}
-            >
-              <Grid2X2 className="w-[14.903px] h-[14.903px] text-white/50" />
-            </button>
-            <button
-              onClick={() => setViewMode('list')}
-              className={`flex items-center justify-center p-[8.28px] rounded-[3.312px] ${viewMode === 'list' ? 'bg-white/10' : ''}`}
-            >
-              <List className="w-[14.903px] h-[14.903px] text-white/50" />
-            </button>
+            {/* Build version dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
+                className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors"
+              >
+                <p className="font-mono text-[14px] text-[#6bdf95]">
+                  {typeof selectedBuild === 'string'
+                    ? selectedBuild
+                    : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
+                  }
+                </p>
+                <ChevronDown className="w-[14px] h-[14px] text-[#6bdf95]" />
+              </button>
+              {isBuildDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-[90]" onClick={() => setIsBuildDropdownOpen(false)} />
+                  <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[100] border border-white/20 overflow-hidden">
+                    {buildVersions.length > 0 ? (
+                      buildVersions.map((build) => {
+                        const buildId = typeof build === 'string' ? build : build.buildId;
+                        const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
+                        const isSelected = typeof selectedBuild === 'string'
+                          ? selectedBuild === build
+                          : selectedBuild?.buildId === build.buildId;
+
+                        return (
+                          <button
+                            key={buildId}
+                            onClick={() => {
+                              onBuildChange(build);
+                              setIsBuildDropdownOpen(false);
+                            }}
+                            className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected ? "bg-white/5" : ""
+                              }`}
+                          >
+                            <span className="text-white text-[14px] font-mono">
+                              {buildName}
+                            </span>
+                          </button>
+                        );
+                      })
+                    ) : (
+                      <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
+                        No builds found
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
           </div>
-
-          {/* Build version dropdown */}
-          <div className="relative">
-            <button
-              onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-              className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors"
-            >
-              <p className="font-mono text-[14px] text-[#6bdf95]">
-                {typeof selectedBuild === 'string'
-                  ? selectedBuild
-                  : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
-                }
-              </p>
-              <ChevronDown className="w-[14px] h-[14px] text-[#6bdf95]" />
-            </button>
-            {isBuildDropdownOpen && (
-              <>
-                <div className="fixed inset-0 z-[90]" onClick={() => setIsBuildDropdownOpen(false)} />
-                <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[100] border border-white/20 overflow-hidden">
-                  {buildVersions.length > 0 ? (
-                    buildVersions.map((build) => {
-                      const buildId = typeof build === 'string' ? build : build.buildId;
-                      const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
-                      const isSelected = typeof selectedBuild === 'string'
-                        ? selectedBuild === build
-                        : selectedBuild?.buildId === build.buildId;
-
-                      return (
-                        <button
-                          key={buildId}
-                          onClick={() => {
-                            onBuildChange(build);
-                            setIsBuildDropdownOpen(false);
-                          }}
-                          className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected ? "bg-white/5" : ""
-                            }`}
-                        >
-                          <span className="text-white text-[14px] font-mono">
-                            {buildName}
-                          </span>
-                        </button>
-                      );
-                    })
-                  ) : (
-                    <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
-                      No builds found
-                    </div>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-
           {/* Download Full Report button */}
           <button
             onClick={handleFullReport}
-            disabled={generatingReport}
-            className={`bg-white text-black px-[16px] py-[11.798px] rounded-[6px] flex items-center gap-[9.075px] transition-colors ${generatingReport ? 'opacity-50 cursor-not-allowed' : 'hover:bg-white/90'}`}
+            className={`bg-white text-black px-[16px] py-[11.798px] rounded-[6px] flex items-center gap-[9.075px] transition-colors hover:bg-white/90`}
           >
-            {generatingReport ? (
-              <span className="w-[14px] h-[14px] border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            ) : (
-              <svg className="w-[14px] h-[14px]" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
-                <path d="M14 2v6h6" />
-                <path d="M12 18v-6" />
-                <path d="M9 15l3 3 3-3" />
-              </svg>
-            )}
+            <svg className="w-[14px] h-[14px]" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
+              <path d="M14 2v6h6" />
+              <path d="M12 18v-6" />
+              <path d="M9 15l3 3 3-3" />
+            </svg>
             <span className="font-semibold text-[14px]">
-              {generatingReport ? 'Generating...' : 'Download Full Report'}
+              Download Full Report
             </span>
           </button>
         </div>
       </div>
 
-      {/* Hidden full report renderer */}
-      {download && (
-        <FullReport
-          screens={screens}
-          onDone={() => {
-            setDownload(false);
-            setGeneratingReport(false);
-            setScreens([]);
-          }}
-        />
-      )}
+
 
       {/* Stats Cards */}
       <div className="px-[32px] py-0 flex flex-wrap gap-[9px] items-end">
