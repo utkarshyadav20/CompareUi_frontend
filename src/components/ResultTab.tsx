@@ -303,7 +303,7 @@ export function ResultTab({
 
         {/* Table Header */}
         <div className="w-full bg-white/10 rounded-[6px] mb-[8px]">
-          <div className="flex items-center px-[11px] py-[14px]">
+          <div className="flex items-center px-[11px] py-[14px] justify-between">
             <div className="flex items-center justify-center w-[65px] shrink-0">
               <p className="text-white/70 text-[18px] font-semibold">S.no</p>
             </div>
@@ -319,9 +319,9 @@ export function ResultTab({
             <div className="w-[137px] shrink-0 px-[10px]">
               <p className="text-white/70 text-[18px] font-semibold">Mismatch %</p>
             </div>
-            <div className="w-[219px] shrink-0 px-[10px]">
+            {/* <div className="w-[219px] shrink-0 px-[10px]">
               <p className="text-white/70 text-[18px] font-semibold">Duration</p>
-            </div>
+            </div> */}
             <div className="w-[125px] shrink-0 px-[10px]">
               <p className="text-white/70 text-[18px] font-semibold">Action</p>
             </div>
@@ -343,7 +343,7 @@ export function ResultTab({
               className="w-full rounded-[6px] border border-white/10 hover:bg-white/5 transition-colors cursor-pointer"
               onClick={() => onViewTest(test.id)}
             >
-              <div className="flex items-center px-[11px] py-[2px]">
+              <div className="flex items-center px-[11px] py-[2px] justify-between">
                 <div className="flex items-center justify-center w-[65px] shrink-0 p-[10px]">
                   <p className="text-white/50 text-[16px] font-bold">{String(index + 1).padStart(2, '0')}</p>
                 </div>
@@ -395,13 +395,12 @@ export function ResultTab({
                 <div className="w-[137px] shrink-0 px-[10px] py-[10px]">
                   <p className="text-white/50 text-[16px] font-mono">{test.diffPercent}%</p>
                 </div>
-                <div className="w-[219px] shrink-0 px-[10px] py-[10px]">
+                {/* <div className="w-[219px] shrink-0 px-[10px] py-[10px]">
                   <p className="text-white/50 text-[16px] font-mono">--:--</p>
-                </div>
+                </div> */}
                 <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[20px]">
                   <button
                     onClick={() => {
-                      console.log("View test clicked:", test.id);
                       onViewTest(test.id);
                     }}
                     className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors"

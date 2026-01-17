@@ -277,14 +277,13 @@ export function AndroidTVDetailFigma({
           id: s.id ? s.id.toString() : Date.now().toString() + Math.random(),
           name: s.imageName,
           url: s.screenshot,
-          width: 0, // Backend might not store width/height? Screnshot entity definition not fully visible but earlier code suggested it was just image.
+          width: 0,
           height: 0
         }));
 
         setActualImages(fetchedImages);
       } catch (error) {
         console.error('Failed to fetch build screenshots:', error);
-        // Don't alert here to avoid annoying popups on every change, maybe just log or toast
       } finally {
         setLoadingActivity(null);
       }
@@ -292,6 +291,23 @@ export function AndroidTVDetailFigma({
 
     fetchBuildScreenshots();
   }, [projectId, selectedBuild, activeTab]);
+
+  // Effect to calculate dimensions for images that don't have them
+  useEffect(() => {
+    actualImages.forEach((img) => {
+      if ((!img.width || !img.height) && img.url) {
+        const image = new Image();
+        image.src = img.url;
+        image.onload = () => {
+          setActualImages((prevImages) =>
+            prevImages.map((prevImg) =>
+              prevImg.id === img.id ? { ...prevImg, width: image.width, height: image.height } : prevImg
+            )
+          );
+        };
+      }
+    });
+  }, [actualImages]);
 
   const handleRefreshOne = async (screenName: string) => {
     try {
@@ -839,9 +855,18 @@ export function AndroidTVDetailFigma({
 
             {/* Right Panel - Actual Build Images */}
             <div className="flex-1 bg-white/10 border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-              <p className="font-bold text-[20px] text-white mb-[20px]">
-                Actual Build images
-              </p>
+              <div className="flex justify-between mb-[20px]">
+                <p className="font-bold text-[20px] text-white mb-[20px]">
+                  Actual Build images
+                </p>
+                <button
+                  onClick={handleBrowseFolder}
+                  className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
+                >
+                  <Folder className="w-[16px] h-[16px]" />
+                  <span>Browse Folder</span>
+                </button>
+              </div>
 
               {loadingActivity === "compare" ? (
                 <div className="flex-1 flex items-center justify-center">
@@ -868,16 +893,6 @@ export function AndroidTVDetailFigma({
                 />
               ) : (
                 <>
-                  {/* Browse Folder Button when images exist */}
-                  <div className="flex justify-end mb-[20px]">
-                    <button
-                      onClick={handleBrowseFolder}
-                      className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
-                    >
-                      <Folder className="w-[16px] h-[16px]" />
-                      <span>Browse Folder</span>
-                    </button>
-                  </div>
 
                   {/* Display Actual Images in Grid */}
                   <ImageGrid className="grid-cols-3 gap-[15px]">
