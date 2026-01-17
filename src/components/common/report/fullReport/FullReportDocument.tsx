@@ -1,7 +1,9 @@
 import React from 'react';
 import { Page, Text, View, Document, StyleSheet, Image, Link, Font } from '@react-pdf/renderer';
 import { API_BASE_URL } from '../../../../api/config';
-
+import coverBg from '../../../../assets/coverbg.png';
+import { relative } from 'path';
+import lastBg from '../../../../assets/lastpage.png';
 // Register fonts (same as PDFReportDocument)
 Font.register({
     family: 'Poppins',
@@ -11,6 +13,27 @@ Font.register({
         { src: 'https://cdn.jsdelivr.net/fontsource/fonts/poppins@latest/latin-500-normal.ttf', fontWeight: 500 },
         { src: 'https://cdn.jsdelivr.net/fontsource/fonts/poppins@latest/latin-600-normal.ttf', fontWeight: 600 },
         { src: 'https://cdn.jsdelivr.net/fontsource/fonts/poppins@latest/latin-700-normal.ttf', fontWeight: 700 },
+    ],
+});
+Font.register({
+    family: 'InstrumentSans',
+    fonts: [
+        {
+            src: 'https://cdn.jsdelivr.net/fontsource/fonts/instrument-sans@latest/latin-400-normal.ttf',
+            fontWeight: 400,
+        },
+        {
+            src: 'https://cdn.jsdelivr.net/fontsource/fonts/instrument-sans@latest/latin-500-normal.ttf',
+            fontWeight: 500,
+        },
+        {
+            src: 'https://cdn.jsdelivr.net/fontsource/fonts/instrument-sans@latest/latin-600-normal.ttf',
+            fontWeight: 600,
+        },
+        {
+            src: 'https://cdn.jsdelivr.net/fontsource/fonts/instrument-sans@latest/latin-700-normal.ttf',
+            fontWeight: 700,
+        },
     ],
 });
 
@@ -245,27 +268,91 @@ const styles = StyleSheet.create({
         color: '#6B7280',
     },
     coverPage: {
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        height: '100%',
-        padding: 30,
-        fontFamily: 'Poppins',
+        padding: 0,
+        position: 'relative',
         backgroundColor: '#FFFFFF',
+        fontFamily: 'Poppins',
     },
+
+    coverBg: {
+        position: 'relative',
+        top: 0,
+        left: 0,
+        width: '100 %',   // A4 width in pt
+        height: '100%',
+        zIndex: -10, // A4 height in pt
+    },
+    lastBg: {
+        position: 'relative',
+        top: 0,
+        left: 0,
+        width: '100 %',   // A4 width in pt
+        height: '100%',
+        zIndex: -10, // A4 height in pt
+    },
+    coverContent: {
+        position: 'absolute',
+        bottom: 100,
+        left: 20,
+        textAlign: 'left',
+    },
+
     coverTitle: {
-        fontSize: 28,
-        fontWeight: 600,
-        marginBottom: 20,
-        color: '#1F2937',
-        textAlign: 'center',
+        position: 'absolute',
+        fontFamily: 'InstrumentSans',
+        letterSpacing: '-2.056px',
+        fontSize: 42,
+        fontWeight: 500,
+        left: 20,
+        bottom: 320,
+
+        textAlign: 'left',
+        color: '#000000',
     },
-    coverDetail: {
-        fontSize: 14,
-        marginBottom: 10,
-        color: '#4B5563',
-        textAlign: 'center',
-    }
+
+    coverprojectName: {
+        fontFamily: 'InstrumentSans',
+        letterSpacing: '-.461px',
+        position: 'relative',
+        textAlign: 'left',
+        fontSize: 24,
+        fontWeight: 600,
+        color: '#000000',
+        marginBottom: 6,
+    },
+
+    coverdevice: {
+        fontFamily: 'InstrumentSans',
+        letterSpacing: '-.461px',
+        position: 'relative',
+        textAlign: 'left',
+        fontSize: 16,
+        fontWeight: 400,
+        color: '#000000',
+        marginBottom: 6,
+    },
+
+
+
+    coverdot: {
+        width: 4,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: '#9CA3AF',
+        marginHorizontal: 8,
+    },
+
+    coverfooter: {
+        fontFamily: 'InstrumentSans',
+        letterSpacing: '-.461px',
+        position: 'absolute',
+        bottom: 32,
+        left: 20,
+        textAlign: 'left',
+        fontSize: 10,
+        color: '#000000',
+    },
+
 });
 
 export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) => {
@@ -289,191 +376,194 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
     return (
         <Document>
             {/* Page 1: Cover / Project Info */}
-            <Page size="A4" style={styles.coverPage}>
-                <View style={{ marginBottom: 40 }}>
-                    {/* You could add a logo here if available */}
-                    <Text style={styles.coverTitle}>Automated UI Comparison Report</Text>
-                </View>
+            <Page size="A4" style={styles.coverPage} wrap={false}>
 
-                <View style={{ width: '80%', padding: 20, border: '1px solid #E5E7EB', borderRadius: 4, backgroundColor: '#F9FAFB' }}>
-                    <View style={{ marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: 300 }}>Project Name</Text>
-                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{details.projectName}</Text>
-                    </View>
-                    <View style={{ marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: 300 }}>Project Type</Text>
-                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{details.projectType}</Text>
-                    </View>
-                    <View style={{ marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: 300 }}>Build Name</Text>
-                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{details.buildName}</Text>
-                    </View>
-                    <View style={{ marginBottom: 10, flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: 300 }}>Build ID</Text>
-                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{details.buildId}</Text>
-                    </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                        <Text style={{ fontSize: 12, color: '#6B7280', fontWeight: 300 }}>Generated On</Text>
-                        <Text style={{ fontSize: 14, fontWeight: 500 }}>{formattedDate}</Text>
-                    </View>
-                </View>
-
-                <Text style={[styles.footer, { position: 'absolute', bottom: 30 }]}>
-                    Generated automatically by CompareUI
+                {/* Background */}
+                <Image src={coverBg} style={styles.coverBg} />
+                <Text style={styles.coverTitle}>
+                    {"UI Comparison \nReport"}
                 </Text>
+                {/* Main Content */}
+                <View style={styles.coverContent}>
+
+                    <Text style={styles.coverprojectName}>
+                        {details.projectName}
+                    </Text>
+
+                    <Text style={styles.coverdevice}>
+                        {details.projectType}
+                    </Text>
+
+                    <Text style={styles.coverdevice}>{"Production"} · {details.buildName}</Text>
+                </View>
+
+                {/* Footer */}
+                <Text style={styles.coverfooter}>
+                    {"Device Model"} · {formattedDate}
+                </Text>
+
             </Page>
 
+
             {/* Consecutive Pages: One per Row (Screen Result) */}
-            {rows.map((row, index) => {
-                const dimensions = row.coordinates?.dimensions || { width: 1920, height: 1080 };
-                const { width: originalWidth, height: originalHeight } = dimensions;
+            {
+                rows.map((row, index) => {
+                    const dimensions = row.coordinates?.dimensions || { width: 1920, height: 1080 };
+                    const { width: originalWidth, height: originalHeight } = dimensions;
 
-                const displayWidth = 240;
-                const scale = displayWidth / originalWidth;
-                const displayHeight = originalHeight * scale;
+                    const displayWidth = 240;
+                    const scale = displayWidth / originalWidth;
+                    const displayHeight = originalHeight * scale;
 
-                const issues = (row.modelAnalysis?.coordsVsText || []).map(issue => {
-                    const box = row.coordinates?.boxes?.find(b => b.id === issue.id);
-                    return {
-                        ...issue,
-                        severity: box?.severity || 'Low' // Default if not found
-                    };
-                });
+                    const issues = (row.modelAnalysis?.coordsVsText || []).map(issue => {
+                        const box = row.coordinates?.boxes?.find(b => b.id === issue.id);
+                        return {
+                            ...issue,
+                            severity: box?.severity || 'Low' // Default if not found
+                        };
+                    });
 
-                // Helper to merge model issues if needed, similar to DetailedResult but kept simple for PDF
-                // or assume prepared data. The mock data has specific issues.
+                    // Helper to merge model issues if needed, similar to DetailedResult but kept simple for PDF
+                    // or assume prepared data. The mock data has specific issues.
 
-                return (
-                    <Page key={index} size="A4" style={styles.page}>
-                        {/* Header */}
-                        <View style={styles.header}>
-                            <View>
-                                <Text style={styles.title}>{row.screenName}</Text>
-                                <Text style={styles.subtitle}>
-                                    {details.projectName} · {details.projectType} · {details.buildName}
-                                </Text>
-                            </View>
-                            <View style={[
-                                styles.status,
-                                row.resultStatus.toLowerCase() === 'pass'
-                                    ? { color: '#00C950', backgroundColor: 'rgba(0, 201, 80, 0.1)' }
-                                    : {}
-                            ]}>
-                                <Text>{row.resultStatus}</Text>
-                            </View>
-                        </View>
-
-                        {/* Result Summary */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Summary</Text>
-                            <View style={styles.grid}>
-                                <View style={styles.column}>
-                                    <Text style={styles.label}>Difference</Text>
-                                    <Text style={[styles.value, styles.bold]}>{row.diffPercent}%</Text>
-                                </View>
-                                <View style={styles.column}>
-                                    <Text style={styles.label}>Status</Text>
-                                    <Text style={[
-                                        styles.value,
-                                        styles.bold,
-                                        row.resultStatus.toLowerCase() === 'pass' ? styles.pass : styles.fail
-                                    ]}>
-                                        {row.resultStatus}
+                    return (
+                        <Page key={index} size="A4" style={styles.page}>
+                            {/* Header */}
+                            <View style={styles.header}>
+                                <View>
+                                    <Text style={styles.title}>{row.screenName}</Text>
+                                    <Text style={styles.subtitle}>
+                                        {details.projectName} · {details.projectType} · {details.buildName}
                                     </Text>
                                 </View>
-                                <View style={styles.column}>
-                                    <Text style={styles.label}>Issues</Text>
-                                    <Text style={[styles.value, styles.bold]}>{row.coordinates?.boxes?.length || 0}</Text>
+                                <View style={[
+                                    styles.status,
+                                    row.resultStatus.toLowerCase() === 'pass'
+                                        ? { color: '#00C950', backgroundColor: 'rgba(0, 201, 80, 0.1)' }
+                                        : {}
+                                ]}>
+                                    <Text>{row.resultStatus}</Text>
                                 </View>
                             </View>
-                        </View>
 
-                        {/* Visual Evidence */}
-                        <View style={styles.section}>
-                            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
-                                <Text style={styles.sectionTitle}>Visual Evidence</Text>
-                                <Link src={row.diffImageUrl} style={styles.link}>Heatmap Link</Link>
-                            </View>
-
-                            <View style={styles.imagesContainer}>
-                                {/* Baseline */}
-                                <View style={styles.imageCol}>
-                                    <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
-                                        <Image
-                                            src={getProxyUrl(row.baselineImageUrl)}
-                                            style={[styles.image, { objectFit: 'fill' }]}
-                                        />
+                            {/* Result Summary */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Summary</Text>
+                                <View style={styles.grid}>
+                                    <View style={styles.column}>
+                                        <Text style={styles.label}>Difference</Text>
+                                        <Text style={[styles.value, styles.bold]}>{row.diffPercent}%</Text>
                                     </View>
-                                    <Link src={row.baselineImageUrl} style={styles.link}>Baseline</Link>
+                                    <View style={styles.column}>
+                                        <Text style={styles.label}>Status</Text>
+                                        <Text style={[
+                                            styles.value,
+                                            styles.bold,
+                                            row.resultStatus.toLowerCase() === 'pass' ? styles.pass : styles.fail
+                                        ]}>
+                                            {row.resultStatus}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.column}>
+                                        <Text style={styles.label}>Issues</Text>
+                                        <Text style={[styles.value, styles.bold]}>{row.coordinates?.boxes?.length || 0}</Text>
+                                    </View>
+                                </View>
+                            </View>
+
+                            {/* Visual Evidence */}
+                            <View style={styles.section}>
+                                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <Text style={styles.sectionTitle}>Visual Evidence</Text>
+                                    <Link src={row.diffImageUrl} style={styles.link}>Heatmap Link</Link>
                                 </View>
 
-                                {/* Actual */}
-                                <View style={styles.imageCol}>
-                                    <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
-                                        <Image
-                                            src={getProxyUrl(row.actualImageUrl)}
-                                            style={[styles.image, { objectFit: 'fill' }]}
-                                        />
-                                        {(row.coordinates?.boxes || []).map((box) => (
-                                            <View
-                                                key={box.id}
-                                                style={[styles.boundingBox, getBoxStyle(box, scale)]}
+                                <View style={styles.imagesContainer}>
+                                    {/* Baseline */}
+                                    <View style={styles.imageCol}>
+                                        <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
+                                            <Image
+                                                src={getProxyUrl(row.baselineImageUrl)}
+                                                style={[styles.image, { objectFit: 'fill' }]}
                                             />
-                                        ))}
+                                        </View>
+                                        <Link src={row.baselineImageUrl} style={styles.link}>Baseline</Link>
                                     </View>
-                                    <Link src={row.actualImageUrl} style={styles.link}>Actual</Link>
+
+                                    {/* Actual */}
+                                    <View style={styles.imageCol}>
+                                        <View style={[styles.imageFrame, { width: displayWidth, height: displayHeight }]}>
+                                            <Image
+                                                src={getProxyUrl(row.actualImageUrl)}
+                                                style={[styles.image, { objectFit: 'fill' }]}
+                                            />
+                                            {(row.coordinates?.boxes || []).map((box) => (
+                                                <View
+                                                    key={box.id}
+                                                    style={[styles.boundingBox, getBoxStyle(box, scale)]}
+                                                />
+                                            ))}
+                                        </View>
+                                        <Link src={row.actualImageUrl} style={styles.link}>Actual</Link>
+                                    </View>
+                                </View>
+
+                                <View style={styles.legend}>
+                                    <View style={styles.legendItem}>
+                                        <View style={[styles.legendColor, { backgroundColor: '#FF0000' }]} />
+                                        <Text>Major</Text>
+                                    </View>
+                                    <View style={styles.legendItem}>
+                                        <View style={[styles.legendColor, { backgroundColor: '#2F2FE6' }]} />
+                                        <Text>Medium</Text>
+                                    </View>
+                                    <View style={styles.legendItem}>
+                                        <View style={[styles.legendColor, { backgroundColor: '#D08700' }]} />
+                                        <Text>Low</Text>
+                                    </View>
                                 </View>
                             </View>
 
-                            <View style={styles.legend}>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendColor, { backgroundColor: '#FF0000' }]} />
-                                    <Text>Major</Text>
-                                </View>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendColor, { backgroundColor: '#2F2FE6' }]} />
-                                    <Text>Medium</Text>
-                                </View>
-                                <View style={styles.legendItem}>
-                                    <View style={[styles.legendColor, { backgroundColor: '#D08700' }]} />
-                                    <Text>Low</Text>
+                            {/* Issue List */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Issues</Text>
+                                <View style={styles.table}>
+                                    <View style={[styles.tableRow, { backgroundColor: '#F3F4F6', borderBottomWidth: 2 }]} fixed>
+                                        <Text style={[styles.tableHeader, styles.col1]}>No.</Text>
+                                        <Text style={[styles.tableHeader, styles.col2]}>Severity</Text>
+                                        <Text style={[styles.tableHeader, styles.col3]}>Type</Text>
+                                        <Text style={[styles.tableHeader, styles.col4]}>Description</Text>
+                                    </View>
+                                    {issues.map((issue, issueIndex) => (
+                                        <View key={`${issue.id}-${issueIndex}`} style={styles.tableRow} wrap={false}>
+                                            <Text style={[styles.tableCell, styles.col1]}>{String(issueIndex + 1).padStart(2, '0')}</Text>
+                                            <Text style={[styles.tableCell, styles.col2]}>{issue.severity}</Text>
+                                            <Text style={[styles.tableCell, styles.col3]}>{issue.type}</Text>
+                                            <Text style={[styles.tableCell, styles.col4]}>{issue.description.replace(/\n/g, ' ')}</Text>
+                                        </View>
+                                    ))}
+                                    {issues.length === 0 && (
+                                        <View style={[styles.tableRow, { justifyContent: 'center', padding: 10 }]}>
+                                            <Text style={{ color: '#9CA3AF' }}>No detailed issues found.</Text>
+                                        </View>
+                                    )}
                                 </View>
                             </View>
-                        </View>
 
-                        {/* Issue List */}
-                        <View style={styles.section}>
-                            <Text style={styles.sectionTitle}>Issues</Text>
-                            <View style={styles.table}>
-                                <View style={[styles.tableRow, { backgroundColor: '#F3F4F6', borderBottomWidth: 2 }]} fixed>
-                                    <Text style={[styles.tableHeader, styles.col1]}>No.</Text>
-                                    <Text style={[styles.tableHeader, styles.col2]}>Severity</Text>
-                                    <Text style={[styles.tableHeader, styles.col3]}>Type</Text>
-                                    <Text style={[styles.tableHeader, styles.col4]}>Description</Text>
-                                </View>
-                                {issues.map((issue, issueIndex) => (
-                                    <View key={`${issue.id}-${issueIndex}`} style={styles.tableRow} wrap={false}>
-                                        <Text style={[styles.tableCell, styles.col1]}>{String(issueIndex + 1).padStart(2, '0')}</Text>
-                                        <Text style={[styles.tableCell, styles.col2]}>{issue.severity}</Text>
-                                        <Text style={[styles.tableCell, styles.col3]}>{issue.type}</Text>
-                                        <Text style={[styles.tableCell, styles.col4]}>{issue.description.replace(/\n/g, ' ')}</Text>
-                                    </View>
-                                ))}
-                                {issues.length === 0 && (
-                                    <View style={[styles.tableRow, { justifyContent: 'center', padding: 10 }]}>
-                                        <Text style={{ color: '#9CA3AF' }}>No detailed issues found.</Text>
-                                    </View>
-                                )}
-                            </View>
-                        </View>
+                            {/* Footer */}
+                            <Text style={styles.footer} fixed>
+                                Page {index + 2} · {row.screenName} · Automated Report
+                            </Text>
+                        </Page>
+                    );
+                })
+            }
 
-                        {/* Footer */}
-                        <Text style={styles.footer} fixed>
-                            Page {index + 2} · {row.screenName} · Automated Report
-                        </Text>
-                    </Page>
-                );
-            })}
+            {/* Page3: lastProject Info */}
+            <Page size="A4" style={styles.coverPage} wrap={false}>
+                {/* Background */}
+                <Image src={lastBg} style={styles.lastBg} />
+            </Page>
         </Document>
     );
 };
