@@ -52,6 +52,7 @@ export default defineConfig({
       '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
       '@': path.resolve(__dirname, './src'),
       'pako/lib/zlib/zstream': 'pako',
+      'pako/lib/zlib/zstream.js': 'pako',
     },
   },
   build: {
