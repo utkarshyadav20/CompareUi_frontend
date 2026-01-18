@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
         fontFamily: 'InstrumentSans',
         letterSpacing: '-1.5px',
         fontSize: 45,
-        fontWeight: 600,
+        fontWeight: 500,
         left: 20,
         bottom: 320,
 
