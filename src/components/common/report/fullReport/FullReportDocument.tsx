@@ -457,7 +457,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
 
                             {/* Result Summary */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Summary</Text>
+                                <Text style={styles.sectionTitle}>Result</Text>
                                 <View style={styles.grid}>
                                     <View style={styles.column}>
                                         <Text style={styles.label}>Difference</Text>
@@ -540,10 +540,19 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                                     </View>
                                 </View>
                             </View>
+                            {/* Issue Summary */}
+                            <View style={styles.section}>
+                                <Text style={styles.sectionTitle}>Issue Summary</Text>
+                                <View style={styles.grid}>
+                                    <View style={styles.column}>
+                                        <Text style={[styles.value ]}>Background color mismatch detectedBackground color mismatch detectedBackground color mismatch detectedBackground color mismatch detectedBackground color mismatch detected</Text>
+                                    </View>
+                                </View>
+                            </View>
 
                             {/* Issue List */}
                             <View style={styles.section}>
-                                <Text style={styles.sectionTitle}>Issues</Text>
+                                <Text style={styles.sectionTitle}>Issue List</Text>
                                 <View style={styles.table}>
                                     <View style={[styles.tableRow, { backgroundColor: '#F3F4F6', borderBottomWidth: 2 }]} fixed>
                                         <Text style={[styles.tableHeader, styles.col1]}>No.</Text>
