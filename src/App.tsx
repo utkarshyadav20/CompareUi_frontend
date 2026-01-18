@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { Theme, Project } from "./types";
 import svgPaths from "./imports/svg-kgk8e7ds24";
 import { HomePage } from "./pages/HomePage";
 import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 import { ProjectApi } from "./api/generated";
 import apiClient from "./api/client";
-import { mapBackendProjectToFrontend, BackendProjectDto } from "./utils/projectUtils";
+import { mapBackendProjectToFrontend, BackendProjectDto, getProjectUrl } from "./utils/projectUtils";
 
 export default function App() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
+
 
   useEffect(() => {
     // Apply theme to document
@@ -84,6 +86,9 @@ export default function App() {
       });
 
       console.log("Project created successfully on backend");
+      // Navigate to the new project
+      navigate(getProjectUrl(project));
+
     } catch (error) {
       console.error("Error creating project:", error);
       // Revert optimistic update on failure

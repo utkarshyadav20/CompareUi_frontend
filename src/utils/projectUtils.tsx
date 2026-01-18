@@ -91,3 +91,16 @@ export const mapBackendProjectToFrontend = (dto: BackendProjectDto): Project => 
         buildName: dto.buildName,
     };
 };
+
+export const getProjectUrl = (project: { type: ProjectType; id: string }) => {
+    const typeMap: Record<ProjectType, string> = {
+        "Android TV": "atv",
+        "Smart Image": "smi",
+        Website: "web",
+        Mobile: "mob",
+        "Roku TV": "rtv",
+        "Fire TV": "ftv",
+        "Smart TV": "stv",
+    };
+    return `/project/${typeMap[project.type]}/${project.id}`;
+};

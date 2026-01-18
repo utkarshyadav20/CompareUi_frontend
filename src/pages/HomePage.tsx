@@ -21,6 +21,7 @@ import {
   Smartphone,
   Tv,
 } from "lucide-react";
+import { mapBackendProjectToFrontend, BackendProjectDto, getProjectUrl } from "../utils/projectUtils";
 import { Theme, Project, ProjectType, ViewMode } from "../types";
 import { Logo } from "../components/Logo";
 import { ProjectCard } from "../components/ProjectCard";
@@ -93,18 +94,7 @@ export function HomePage({
       project.platformType.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const getProjectUrl = (project: Project) => {
-    const typeMap: Record<ProjectType, string> = {
-      "Android TV": "atv",
-      "Smart Image": "smi",
-      Website: "web",
-      Mobile: "mob",
-      "Roku TV": "rtv",
-      "Fire TV": "ftv",
-      "Smart TV": "stv",
-    };
-    return `/project/${typeMap[project.type]}/${project.id}`;
-  };
+
 
   const handleDeleteRequest = (project: Project) => {
     setProjectToDelete(project);
