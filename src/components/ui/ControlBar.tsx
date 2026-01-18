@@ -79,7 +79,7 @@ export function ControlBar({
         {/* Right side - Method, Sensitivity, Build, Start Button */}
         <div className="flex items-center gap-[20px]">
           {/* Method Dropdown */}
-          <div className="flex items-center gap-[10px]">
+          {/* <div className="flex items-center gap-[10px]">
             <p className="font-semibold text-[14px] text-black dark:text-white">
               Method :
             </p>
@@ -119,10 +119,10 @@ export function ControlBar({
                 </>
               )}
             </div>
-          </div>
+          </div> */}
 
           {/* AI Agent Toggle (If Provided) */}
-          {onAiAgentChange && (
+          {/* {onAiAgentChange && (
             <div className="flex items-center gap-2.5">
               <span className="text-black dark:text-white text-sm font-semibold">
                 AI agent :
@@ -143,7 +143,7 @@ export function ControlBar({
               </div>
             </div>
 
-          )}
+          )} */}
 
           {/* Min Score Input */}
           {onMinScoreChange && (
@@ -151,7 +151,7 @@ export function ControlBar({
               <p className="font-semibold text-[14px] text-black dark:text-white">
                 Max mismatch allowed:
               </p>
-              <div className="relative flex items-center">
+              <div className="relative flex items-center gap-2">
                 <input
                   type="number"
                   min="0"

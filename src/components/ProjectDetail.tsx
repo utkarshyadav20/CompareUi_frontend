@@ -71,7 +71,6 @@ export function ProjectDetail({
         const response = await apiClient.get('/project/builds', {
           params: { projectId: project.id }
         });
-        console.log('Fetched builds:', response.data);
         setBuilds(response.data);
         if (response.data.length > 0) {
           // Default to the first build

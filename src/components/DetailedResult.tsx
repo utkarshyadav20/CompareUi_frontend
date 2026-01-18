@@ -15,7 +15,7 @@ import {
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
 import { usePDF } from '@react-pdf/renderer';
-import { PDFReportDocument } from "./common/PDFReportDocument";
+import { PDFReportDocument } from "./common/report/detailed/PDFReportDocument";
 
 
 interface Issue {
@@ -24,6 +24,7 @@ interface Issue {
   title: string;
   description: string;
   coordinates: string;
+  serialNumber: string;
 }
 
 interface DetailedResultProps {
@@ -182,6 +183,7 @@ export function DetailedResult({
     pixelCount: number;
     title?: string;
     description?: string;
+    serialNumber?: string;
   }
 
   // Merge modelResult descriptions into resultData boxes
@@ -250,7 +252,8 @@ export function DetailedResult({
           severity: matchingBox?.severity || 'Medium',
           pixelCount: matchingBox?.pixelCount || 0,
           title: title || 'Issue',
-          description: description
+          description: description,
+          serialNumber: (index + 1).toString().padStart(2, '0')
         };
       });
 
@@ -275,7 +278,8 @@ export function DetailedResult({
     severity: box.severity,
     title: box.title || `${box.severity} difference detected`,
     description: box.description || `Density: ${(box.density * 100).toFixed(1)}%`,
-    coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`
+    coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`,
+    serialNumber: box.serialNumber || '00'
   }));
 
   // Removed manual handleDownloadPDF to avoid Buffer issues. 
@@ -296,6 +300,54 @@ export function DetailedResult({
 
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [tooltipIssueId, setTooltipIssueId] = useState<string | null>(null);
+
+  const [editingIssueId, setEditingIssueId] = useState<string | null>(null);
+  const [tempDescription, setTempDescription] = useState("");
+
+  const handleEditDescription = (id: string, currentDescription: string) => {
+    setEditingIssueId(id);
+    setTempDescription(currentDescription);
+  };
+
+  const handleSaveDescription = async (id: string) => {
+    if (!tempDescription.trim()) {
+      setEditingIssueId(null);
+      return;
+    }
+
+    try {
+      const buildIdToUse = typeof buildVersion === 'string' ? buildVersion : (buildVersion as any).buildId;
+
+      await apiClient.post(`/result/update-model-item?projectId=${projectId}&buildId=${buildIdToUse}&screenName=${testName}`, {
+        itemId: id,
+        updates: { description: tempDescription }
+      });
+
+      // Update local state to reflect changes immediately
+      if (modelResult) {
+        let currentCoords = typeof modelResult.coordsVsText === 'string'
+          ? JSON.parse(modelResult.coordsVsText)
+          : modelResult.coordsVsText;
+
+        if (Array.isArray(currentCoords)) {
+          const updatedCoords = currentCoords.map((item: any) =>
+            item.id === id ? { ...item, description: tempDescription } : item
+          );
+
+          setModelResult({
+            ...modelResult,
+            coordsVsText: updatedCoords
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error("Failed to update description:", error);
+      alert("Failed to save description");
+    } finally {
+      setEditingIssueId(null);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-black text-white font-sans">
@@ -567,6 +619,42 @@ export function DetailedResult({
                           />
                         );
                       })}
+                      {/* Render Serial Numbers on top of boxes */}
+                      {boxes.map((box) => {
+                        const isHovered = hoveredIssueId === box.id;
+                        const isAnyHovered = !!hoveredIssueId;
+                        let finalOpacity = 1;
+                        if (isAnyHovered) {
+                          finalOpacity = isHovered ? 1 : 0.2;
+                        }
+
+                        return (
+                          <g key={`serial-${box.id}`} style={{ opacity: finalOpacity, transition: 'opacity 0.2s ease', pointerEvents: 'none' }}>
+                            <rect
+                              x={box.x}
+                              y={box.y - 40}
+                              width={48}
+                              height={36}
+                              fill={box.severity === 'Major' ? 'rgb(255, 100, 103)' : box.severity === 'Medium' ? 'rgb(253, 199, 0)' : 'rgb(34, 197, 94)'}
+                              rx={4}
+                            />
+                            <text
+                              x={box.x + 24}
+                              y={box.y - 12}
+                              textAnchor="middle"
+                              fill="white"
+                              fontSize={30}
+                              fontWeight={1000}
+                              stroke="white"
+                              strokeWidth={0.8}
+                              paintOrder="stroke"
+                              fontFamily="Inter, Arial, sans-serif"
+                            >
+                              {box.serialNumber}
+                            </text>
+                          </g>
+                        )
+                      })}
                     </svg>
                   )}
 
@@ -779,6 +867,9 @@ export function DetailedResult({
                     ? 'rgb(253, 199, 0)'
                     : 'rgb(34, 197, 94)';
 
+                // Edit mode state
+                const isEditing = editingIssueId === issue.id;
+
                 return (
                   <div
                     key={issue.id}
@@ -800,13 +891,43 @@ export function DetailedResult({
                       <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
                         <div className="relative shrink-0">
                           <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-nowrap font-mono" style={{ color: titleColor }}>
+                            <span className="mr-2 opacity-80" style={{ color: titleColor }}>#{issue.serialNumber}</span>
                             {issue.title + " (" + issue.severity + ")"}
                           </p>
                         </div>
-                        <div className="relative shrink-0 w-full mb-1">
-                          <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words">
-                            {issue.description}
-                          </p>
+                        <div
+                          className={`relative shrink-0 w-full mb-1 ${isEditing ? 'border border-blue-500 rounded p-1' : ''}`}
+                          onClick={(e) => {
+                            // Only triggering edit mode if clicking logic is desired on text or container
+                            // User requirement: "when the user clicks on a discription... opens a edit box"
+                          }}
+                        >
+                          {isEditing ? (
+                            <textarea
+                              autoFocus
+                              value={tempDescription}
+                              onChange={(e) => setTempDescription(e.target.value)}
+                              onBlur={() => handleSaveDescription(issue.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSaveDescription(issue.id);
+                                }
+                              }}
+                              className="w-full bg-zinc-900 text-zinc-200 text-[14px] font-mono p-2 rounded outline-none border border-blue-500 resize-none"
+                              rows={3}
+                            />
+                          ) : (
+                            <p
+                              className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent parent click if any
+                                handleEditDescription(issue.id, issue.description);
+                              }}
+                            >
+                              {issue.description}
+                            </p>
+                          )}
                         </div>
                         {/* <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
                           <div className="relative shrink-0">
@@ -824,8 +945,6 @@ export function DetailedResult({
           </div>
         </div>
       </div>
-
-      {/* Hidden Report Container - Removed as we now generate PDF programmatically */}
-    </div >
+    </div>
   );
 }
