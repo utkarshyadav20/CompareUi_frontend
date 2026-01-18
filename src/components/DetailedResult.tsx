@@ -297,6 +297,54 @@ export function DetailedResult({
   const [hoveredIssueId, setHoveredIssueId] = useState<string | null>(null);
   const [tooltipIssueId, setTooltipIssueId] = useState<string | null>(null);
 
+  const [editingIssueId, setEditingIssueId] = useState<string | null>(null);
+  const [tempDescription, setTempDescription] = useState("");
+
+  const handleEditDescription = (id: string, currentDescription: string) => {
+    setEditingIssueId(id);
+    setTempDescription(currentDescription);
+  };
+
+  const handleSaveDescription = async (id: string) => {
+    if (!tempDescription.trim()) {
+      setEditingIssueId(null);
+      return;
+    }
+
+    try {
+      const buildIdToUse = typeof buildVersion === 'string' ? buildVersion : (buildVersion as any).buildId;
+
+      await apiClient.post(`/result/update-model-item?projectId=${projectId}&buildId=${buildIdToUse}&screenName=${testName}`, {
+        itemId: id,
+        updates: { description: tempDescription }
+      });
+
+      // Update local state to reflect changes immediately
+      if (modelResult) {
+        let currentCoords = typeof modelResult.coordsVsText === 'string'
+          ? JSON.parse(modelResult.coordsVsText)
+          : modelResult.coordsVsText;
+
+        if (Array.isArray(currentCoords)) {
+          const updatedCoords = currentCoords.map((item: any) =>
+            item.id === id ? { ...item, description: tempDescription } : item
+          );
+
+          setModelResult({
+            ...modelResult,
+            coordsVsText: updatedCoords
+          });
+        }
+      }
+
+    } catch (error) {
+      console.error("Failed to update description:", error);
+      alert("Failed to save description");
+    } finally {
+      setEditingIssueId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-sans">
       {/* Header */}
@@ -779,6 +827,9 @@ export function DetailedResult({
                     ? 'rgb(253, 199, 0)'
                     : 'rgb(34, 197, 94)';
 
+                // Edit mode state
+                const isEditing = editingIssueId === issue.id;
+
                 return (
                   <div
                     key={issue.id}
@@ -803,10 +854,39 @@ export function DetailedResult({
                             {issue.title + " (" + issue.severity + ")"}
                           </p>
                         </div>
-                        <div className="relative shrink-0 w-full mb-1">
-                          <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words">
-                            {issue.description}
-                          </p>
+                        <div
+                          className={`relative shrink-0 w-full mb-1 ${isEditing ? 'border border-blue-500 rounded p-1' : ''}`}
+                          onClick={(e) => {
+                            // Only triggering edit mode if clicking logic is desired on text or container
+                            // User requirement: "when the user clicks on a discription... opens a edit box"
+                          }}
+                        >
+                          {isEditing ? (
+                            <textarea
+                              autoFocus
+                              value={tempDescription}
+                              onChange={(e) => setTempDescription(e.target.value)}
+                              onBlur={() => handleSaveDescription(issue.id)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                  e.preventDefault();
+                                  handleSaveDescription(issue.id);
+                                }
+                              }}
+                              className="w-full bg-zinc-900 text-zinc-200 text-[14px] font-mono p-2 rounded outline-none border border-blue-500 resize-none"
+                              rows={3}
+                            />
+                          ) : (
+                            <p
+                              className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words"
+                              onClick={(e) => {
+                                e.stopPropagation(); // Prevent parent click if any
+                                handleEditDescription(issue.id, issue.description);
+                              }}
+                            >
+                              {issue.description}
+                            </p>
+                          )}
                         </div>
                         {/* <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
                           <div className="relative shrink-0">
@@ -824,8 +904,6 @@ export function DetailedResult({
           </div>
         </div>
       </div>
-
-      {/* Hidden Report Container - Removed as we now generate PDF programmatically */}
-    </div >
+    </div>
   );
 }
