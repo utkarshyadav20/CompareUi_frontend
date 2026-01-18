@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
 import { pdf } from '@react-pdf/renderer';
 import { FullReportDocument } from './common/report/fullReport/FullReportDocument';
-import { Search, Grid2X2, List, ChevronDown, Eye } from 'lucide-react';
+import { Search, Grid2X2, List, ChevronDown, Eye, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import LoaderGif from '../assets/Loader.gif';
+import Spinner from '@/assets/spiner.svg';
 
 interface Result {
   id: string;
@@ -42,6 +43,7 @@ export function ResultTab({
   const [loadedTests, setLoadedTests] = useState(10);
   const [tests, setTests] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -99,6 +101,7 @@ export function ResultTab({
 
 
   const handleFullReport = async () => {
+    setIsDownloading(true);
     try {
       console.log("Generating Full Report...");
 
@@ -135,6 +138,8 @@ export function ResultTab({
       console.log("Full report downloaded.");
     } catch (error) {
       console.error("Error generating full report:", error);
+    } finally {
+      setIsDownloading(false);
     }
   };
   return (
@@ -228,19 +233,31 @@ export function ResultTab({
           </div>
           {/* Download Full Report button */}
           <button
-            onClick={handleFullReport}
-            className={`bg-white text-black px-[16px] py-[11.798px] rounded-[6px] flex items-center gap-[9.075px] transition-colors hover:bg-white/90`}
-          >
-            <svg className="w-[14px] h-[14px]" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" />
-              <path d="M14 2v6h6" />
-              <path d="M12 18v-6" />
-              <path d="M9 15l3 3 3-3" />
-            </svg>
-            <span className="font-semibold text-[14px]">
-              Download Full Report
-            </span>
-          </button>
+  onClick={handleFullReport}
+  disabled={isDownloading}
+  className="bg-black dark:bg-white text-white dark:text-black
+    px-[16px] py-[11.798px] rounded-[7.26px]
+    flex items-center gap-[9.075px]
+    text-[14px] font-semibold
+    hover:bg-black/90 dark:hover:bg-white/90
+    transition-colors
+    disabled:opacity-60 disabled:cursor-not-allowed"
+>
+  {isDownloading ? (
+    <img
+      src={Spinner}
+      className="w-4 h-4 animate-spin"
+      alt="loading"
+    />
+  ) : (
+    <Download className="w-4 h-4" />
+  )}
+
+  <span>
+    {isDownloading ? 'Generating...' : 'Download Full Report'}
+  </span>
+</button>
+
         </div>
       </div>
 
