@@ -51,8 +51,8 @@ export default defineConfig({
       '@radix-ui/react-alert-dialog@1.1.6': '@radix-ui/react-alert-dialog',
       '@radix-ui/react-accordion@1.2.3': '@radix-ui/react-accordion',
       '@': path.resolve(__dirname, './src'),
-      'pako/lib/zlib/zstream': 'pako',
-      'pako/lib/zlib/zstream.js': 'pako',
+      'pako/lib/zlib/zstream': path.resolve(__dirname, 'node_modules/pako/lib/zlib/zstream.js'),
+      'pako/lib/zlib/zstream.js': path.resolve(__dirname, 'node_modules/pako/lib/zlib/zstream.js'),
     },
   },
   build: {

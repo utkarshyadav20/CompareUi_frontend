@@ -233,30 +233,30 @@ export function ResultTab({
           </div>
           {/* Download Full Report button */}
           <button
-  onClick={handleFullReport}
-  disabled={isDownloading}
-  className="bg-black dark:bg-white text-white dark:text-black
+            onClick={handleFullReport}
+            disabled={isDownloading}
+            className="bg-black dark:bg-white text-white dark:text-black
     px-[16px] py-[11.798px] rounded-[7.26px]
     flex items-center gap-[9.075px]
     text-[14px] font-semibold
     hover:bg-black/90 dark:hover:bg-white/90
     transition-colors
     disabled:opacity-60 disabled:cursor-not-allowed"
->
-  {isDownloading ? (
-    <img
-      src={Spinner}
-      className="w-4 h-4 animate-spin"
-      alt="loading"
-    />
-  ) : (
-    <Download className="w-4 h-4" />
-  )}
+          >
+            {isDownloading ? (
+              <img
+                src={Spinner}
+                className="w-4 h-4 animate-spin"
+                alt="loading"
+              />
+            ) : (
+              <Download className="w-4 h-4" />
+            )}
 
-  <span>
-    {isDownloading ? 'Generating...' : 'Download Full Report'}
-  </span>
-</button>
+            <span>
+              {isDownloading ? 'Generating...' : 'Download Full Report'}
+            </span>
+          </button>
 
         </div>
       </div>
