@@ -24,6 +24,7 @@ interface Issue {
   title: string;
   description: string;
   coordinates: string;
+  serialNumber: string;
 }
 
 interface DetailedResultProps {
@@ -182,6 +183,7 @@ export function DetailedResult({
     pixelCount: number;
     title?: string;
     description?: string;
+    serialNumber?: string;
   }
 
   // Merge modelResult descriptions into resultData boxes
@@ -250,7 +252,8 @@ export function DetailedResult({
           severity: matchingBox?.severity || 'Medium',
           pixelCount: matchingBox?.pixelCount || 0,
           title: title || 'Issue',
-          description: description
+          description: description,
+          serialNumber: (index + 1).toString().padStart(2, '0')
         };
       });
 
@@ -275,7 +278,8 @@ export function DetailedResult({
     severity: box.severity,
     title: box.title || `${box.severity} difference detected`,
     description: box.description || `Density: ${(box.density * 100).toFixed(1)}%`,
-    coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`
+    coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`,
+    serialNumber: box.serialNumber || '00'
   }));
 
   // Removed manual handleDownloadPDF to avoid Buffer issues. 
@@ -615,6 +619,42 @@ export function DetailedResult({
                           />
                         );
                       })}
+                      {/* Render Serial Numbers on top of boxes */}
+                      {boxes.map((box) => {
+                        const isHovered = hoveredIssueId === box.id;
+                        const isAnyHovered = !!hoveredIssueId;
+                        let finalOpacity = 1;
+                        if (isAnyHovered) {
+                          finalOpacity = isHovered ? 1 : 0.2;
+                        }
+
+                        return (
+                          <g key={`serial-${box.id}`} style={{ opacity: finalOpacity, transition: 'opacity 0.2s ease', pointerEvents: 'none' }}>
+                            <rect
+                              x={box.x}
+                              y={box.y - 40}
+                              width={48}
+                              height={36}
+                              fill={box.severity === 'Major' ? 'rgb(255, 100, 103)' : box.severity === 'Medium' ? 'rgb(253, 199, 0)' : 'rgb(34, 197, 94)'}
+                              rx={4}
+                            />
+                            <text
+                              x={box.x + 24}
+                              y={box.y - 12}
+                              textAnchor="middle"
+                              fill="white"
+                              fontSize={30}
+                              fontWeight={1000}
+                              stroke="white"
+                              strokeWidth={0.8}
+                              paintOrder="stroke"
+                              fontFamily="Inter, Arial, sans-serif"
+                            >
+                              {box.serialNumber}
+                            </text>
+                          </g>
+                        )
+                      })}
                     </svg>
                   )}
 
@@ -851,6 +891,7 @@ export function DetailedResult({
                       <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
                         <div className="relative shrink-0">
                           <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-nowrap font-mono" style={{ color: titleColor }}>
+                            <span className="mr-2 opacity-80" style={{ color: titleColor }}>#{issue.serialNumber}</span>
                             {issue.title + " (" + issue.severity + ")"}
                           </p>
                         </div>
