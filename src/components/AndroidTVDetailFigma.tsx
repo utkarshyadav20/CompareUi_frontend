@@ -73,7 +73,7 @@ export function AndroidTVDetailFigma({
     "Pixelmatch"
   );
   const [sensitivity, setSensitivity] = useState("3x");
-  const [minScore, setMinScore] = useState<number>(93); // Default 93% match
+  const [minScore, setMinScore] = useState<number>(80); // Default 93% match
   // const [selectedBuild, setSelectedBuild] = useState("v1.0.234.1"); // Removed internal state
   const [isMethodDropdownOpen, setIsMethodDropdownOpen] = useState(false);
   const [isSensitivityDropdownOpen, setIsSensitivityDropdownOpen] = useState(false);
