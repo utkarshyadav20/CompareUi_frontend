@@ -157,7 +157,7 @@ export function ControlBar({
                   min="0"
                   max="100"
                   value={minScore !== undefined ? 100 - minScore : ''}
-                  placeholder="7"
+                  placeholder="20"
                   onChange={(e) => {
                     let val = parseInt(e.target.value);
                     if (isNaN(val)) val = 0;
