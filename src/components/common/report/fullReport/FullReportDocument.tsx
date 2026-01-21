@@ -86,6 +86,7 @@ interface RowData {
     modelAnalysis: {
         id: number;
         coordsVsText: Issue[] | null;
+        summary?: string;
     };
 }
 
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
         alignItems: 'flex-start',
         marginBottom: 20,
         width: "100%",
-        
+
 
     },
     title: {
@@ -483,7 +484,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                                     </View>
                                     <View style={styles.column}>
                                         <Text style={styles.label}>Approved by</Text>
-                                        <Text style={[styles.value ]}>{"@Utkarsh Yadav"}</Text>
+                                        <Text style={[styles.value]}>{"@Utkarsh Yadav"}</Text>
                                     </View>
                                 </View>
                             </View>
@@ -545,7 +546,7 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                                 <Text style={styles.sectionTitle}>Issue Summary</Text>
                                 <View style={styles.grid}>
                                     <View style={styles.column}>
-                                        <Text style={[styles.value ]}>Background color mismatch detectedBackground color mismatch detectedBackground color mismatch detectedBackground color mismatch detectedBackground color mismatch detected</Text>
+                                        <Text style={[styles.value]}>{row.modelAnalysis?.summary || "No summary available."}</Text>
                                     </View>
                                 </View>
                             </View>

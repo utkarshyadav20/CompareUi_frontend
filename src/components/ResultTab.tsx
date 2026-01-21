@@ -127,6 +127,14 @@ export function ResultTab({
 
       const reportData = response.data;
 
+      // Filter rows to only include 'pass' and 'fail'
+      if (reportData && Array.isArray(reportData.rows)) {
+        reportData.rows = reportData.rows.filter((row: any) => {
+          const status = (row.resultStatus || '').toLowerCase();
+          return status === 'pass' || status === 'fail';
+        });
+      }
+
       const blob = await pdf(<FullReportDocument data={reportData} />).toBlob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');

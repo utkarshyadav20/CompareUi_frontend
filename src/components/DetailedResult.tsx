@@ -807,8 +807,8 @@ export function DetailedResult({
                 </span>
               )}
             </div>
-            <p className="text-sm text-zinc-400 mb-6 leading-relaxed">
-              {isProcessing ? "Analyzing differences..." : "Issues detected automatically based on visual differences."}
+            <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words">
+              {isProcessing ? "Analyzing differences..." : modelResult?.summary}
             </p>
 
             {/* SEVERITY CARDS */}
