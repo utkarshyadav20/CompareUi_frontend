@@ -1,9 +1,18 @@
-import svgPaths from "../imports/svg-kgk8e7ds24";
+import { Link } from "react-router-dom";
+import logo from "../assets/logo.png";
 
 export function Logo() {
   return (
-    <div className="h-[47px] w-[112.686px] font-bold text-[26px]">
-      Compare Ui
-    </div>
+    <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
+      <img
+        src={logo}
+        alt="Compare Ui Logo"
+        style={{ height: '36px', width: 'auto', paddingTop: '4px' }}
+        className="object-contain"
+      />
+    </Link>
   );
 }
+
+
+
