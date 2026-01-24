@@ -4,6 +4,9 @@ import { Theme, Project } from "./types";
 import svgPaths from "./imports/svg-kgk8e7ds24";
 import { HomePage } from "./pages/HomePage";
 import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
+import { LoginPage } from "./pages/Auth/Login/Login";
+import { SignupPage } from "./pages/Auth/Signup/Signup";
+
 import { ProjectApi } from "./api/generated";
 import apiClient from "./api/client";
 import { mapBackendProjectToFrontend, BackendProjectDto, getProjectUrl } from "./utils/projectUtils";
@@ -164,6 +167,14 @@ export default function App() {
       <Route
         path="/project/stv/:pid"
         element={<ProjectDetailWrapper {...projectWrapperProps} />}
+      />
+      <Route
+        path="/login"
+        element={<LoginPage />}
+      />
+      <Route
+        path="/signup"
+        element={<SignupPage />}
       />
     </Routes>
   );
