@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import './Signup.css';
 import authSideImage from '../../../assets/auth/login.png';
-import logo from '../../../assets/auth/logo.png';
+import logo from '../../../assets/auth/logo.svg';
 
 export const SignupPage = () => {
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <div className="signup-container">
             <div className="signup-banner">
@@ -17,8 +24,7 @@ export const SignupPage = () => {
                         <img src={logo} alt="Pixby Branding" className="auth-logo-image" />
                     </div>
 
-                    <h2 className="signup-title">Sign Up</h2>
-
+                   <h2 className="signup-title">Sign Up</h2>
                     <form className="signup-form">
                         <div className="form-group">
                             <label htmlFor="username">Username</label>
@@ -33,16 +39,14 @@ export const SignupPage = () => {
                         <div className="form-group">
                             <label htmlFor="password">Create password</label>
                             <div className="password-input-wrapper">
-                                <input type="password" id="password" placeholder="Enter your password" />
-                                <span className="password-toggle-icon">👁️</span>
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label htmlFor="confirm-password">Confirm password</label>
-                            <div className="password-input-wrapper">
-                                <input type="password" id="confirm-password" placeholder="Enter your password" />
-                                <span className="password-toggle-icon">👁️</span>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    placeholder="Enter your password"
+                                />
+                                <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </span>
                             </div>
                         </div>
 

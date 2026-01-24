@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Eye, EyeOff } from 'lucide-react';
 import './Login.css';
 import authSideImage from '../../../assets/auth/login.png';
-import logo from '../../../assets/auth/logo.png';
+import logo from '../../../assets/auth/logo.svg';
 
 export const LoginPage = () => {
+    const [showPassword, setShowPassword] = useState(false);
+
+    const togglePasswordVisibility = () => {
+        setShowPassword(!showPassword);
+    };
+
     return (
         <div className="login-container">
             <div className="login-banner">
@@ -28,8 +35,14 @@ export const LoginPage = () => {
                         <div className="form-group">
                             <label htmlFor="password">Password</label>
                             <div className="password-input-wrapper">
-                                <input type="password" id="password" placeholder="Enter your password" />
-                                <span className="password-toggle-icon">👁️</span>
+                                <input
+                                    type={showPassword ? "text" : "password"}
+                                    id="password"
+                                    placeholder="Enter your password"
+                                />
+                                <span className="password-toggle-icon" onClick={togglePasswordVisibility}>
+                                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                </span>
                             </div>
                         </div>
 
