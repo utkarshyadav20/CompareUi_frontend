@@ -15,7 +15,6 @@ export const LoginPage = () => {
                 <div className="form-wrapper">
                     <div className="form-header-logo">
                         <img src={logo} alt="Pixby Branding" className="auth-logo-image" />
-                        <span className="form-logo-sub">powered by <strong>Quickplay</strong></span>
                     </div>
 
                     <h2 className="login-title">Log In</h2>
