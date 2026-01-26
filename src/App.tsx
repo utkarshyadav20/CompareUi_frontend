@@ -6,6 +6,8 @@ import { HomePage } from "./pages/HomePage";
 import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 import { LoginPage } from "./pages/Auth/Login/Login";
 import { SignupPage } from "./pages/Auth/Signup/Signup";
+import { OtpPage } from "./pages/Auth/otp/otp";
+
 
 import { ProjectApi } from "./api/generated";
 import apiClient from "./api/client";
@@ -175,6 +177,10 @@ export default function App() {
       <Route
         path="/signup"
         element={<SignupPage />}
+      />
+      <Route
+        path="/otp"
+        element={<OtpPage />}
       />
     </Routes>
   );
