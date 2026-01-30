@@ -7,6 +7,9 @@ import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 import { LoginPage } from "./pages/Auth/Login/Login";
 import { SignupPage } from "./pages/Auth/Signup/Signup";
 import { OtpPage } from "./pages/Auth/otp/otp";
+import { AuthProvider } from "./context/AuthContext";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { PublicRoute } from "./routes/PublicRoute";
 
 
 import { ProjectApi } from "./api/generated";
@@ -50,7 +53,6 @@ export default function App() {
         // The API returns void/unknown in the generated code because of missing response types in Swagger?
         // But typically axios response.data contains the body. 
         // Let's assume response.data is the array of ProjectDto.
-        // We might need to cast or inspect response if generation was imperfect.
         const backendProjects = response.data as unknown as BackendProjectDto[];
 
         if (Array.isArray(backendProjects)) {
@@ -128,60 +130,69 @@ export default function App() {
   };
 
   return (
-    <Routes>
-      <Route
-        path="/"
-        element={
-          <HomePage
-            projects={projects}
-            theme={theme}
-            onThemeChange={setTheme}
-            onCreateProject={handleCreateProject}
-            onDeleteProject={handleDeleteProject}
-            isLoading={isLoading}
+    <AuthProvider>
+      <Routes>
+        {/* Protected Routes */}
+        <Route element={<ProtectedRoute />}>
+          <Route
+            path="/"
+            element={
+              <HomePage
+                projects={projects}
+                theme={theme}
+                onThemeChange={setTheme}
+                onCreateProject={handleCreateProject}
+                onDeleteProject={handleDeleteProject}
+                isLoading={isLoading}
+              />
+            }
           />
-        }
-      />
-      <Route
-        path="/project/atv/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/smi/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/web/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/mob/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/rtv/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/ftv/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/project/stv/:pid"
-        element={<ProjectDetailWrapper {...projectWrapperProps} />}
-      />
-      <Route
-        path="/login"
-        element={<LoginPage />}
-      />
-      <Route
-        path="/signup"
-        element={<SignupPage />}
-      />
-      <Route
-        path="/otp"
-        element={<OtpPage />}
-      />
-    </Routes>
+          <Route
+            path="/project/atv/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/smi/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/web/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/mob/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/rtv/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/ftv/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+          <Route
+            path="/project/stv/:pid"
+            element={<ProjectDetailWrapper {...projectWrapperProps} />}
+          />
+        </Route>
+
+        {/* Public Routes - restricted if logged in */}
+        <Route element={<PublicRoute />}>
+          <Route
+            path="/login"
+            element={<LoginPage />}
+          />
+          <Route
+            path="/signup"
+            element={<SignupPage />}
+          />
+          <Route
+            path="/otp"
+            element={<OtpPage />}
+          />
+        </Route>
+      </Routes>
+    </AuthProvider>
   );
 }

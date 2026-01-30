@@ -1,16 +1,29 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Eye, EyeOff, ChevronDown, ChevronLeft } from 'lucide-react';
-import './Otp.css';
-import authSideImage from '../../../assets/auth/login.png';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import apiClient from '../../../api/client';
+import { ChevronLeft } from 'lucide-react';
+import styles from './Otp.module.css';
 import otplogo from '../../../assets/auth/otplogo.svg';
-import bgimage from '../../../assets/auth/bg.png';
 
 export const OtpPage = () => {
-    const [showPassword, setShowPassword] = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const state = location.state as { email?: string };
+
+    const [otp, setOtp] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
     const [timeLeft, setTimeLeft] = useState(120);
     const [canResend, setCanResend] = useState(false);
+
+    useEffect(() => {
+        // Enforce navigation flow
+        if (!state?.email) {
+            navigate('/signup', { replace: true });
+        }
+    }, [state, navigate]);
 
     useEffect(() => {
         if (timeLeft <= 0) {
@@ -29,52 +42,89 @@ export const OtpPage = () => {
         return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
     };
 
-    const handleResend = (e: React.MouseEvent) => {
+    const handleResend = async (e: React.MouseEvent) => {
         e.preventDefault();
-        if (canResend) {
-            setTimeLeft(120);
-            setCanResend(false);
-            // Logic to trigger backend resend would go here
-            console.log("Resending code...");
+        if (canResend && state?.email) {
+            setError(null);
+            setSuccessMessage(null);
+            try {
+                await apiClient.post('/auth/resend-otp', { email: state.email });
+                setTimeLeft(120);
+                setCanResend(false);
+                setSuccessMessage('Code, Resent Successfully!');
+            } catch (err: any) {
+                console.error(err);
+                setError(err.response?.data?.message || 'Failed to resend code.');
+            }
         }
     };
 
-    const togglePasswordVisibility = () => {
-        setShowPassword(!showPassword);
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!state?.email) return;
+
+        setIsLoading(true);
+        setError(null);
+        setSuccessMessage(null);
+
+        try {
+            await apiClient.post('/auth/verify-otp', { email: state.email, otp });
+            // Navigate to login on success
+            navigate('/login');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.message || 'Verification failed. Invalid or expired OTP.');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
+    if (!state?.email) return null; // Or a loading spinner while redirecting
+
     return (
-        <div className="Otp-container">
+        <div className={styles.container}>
 
-            <div className="Otp-form-section">
-                <div className="form-header-logo">
-                    <img src={otplogo} alt="Pixby Branding" className="auth-logo-image" />
+            <div className={styles.formSection}>
+                <div className={styles.formHeaderLogo}>
+                    <img src={otplogo} alt="Pixby Branding" className={styles.authLogoImage} />
                 </div>
-                <div className="form-wrapper">
-                    <div data-layer="backicon" className="backicon" >
-                        <ChevronLeft className="w-[20px] h-[20px] text-[#ffffff]" />
+                <div className={styles.formWrapper}>
+                    <div data-layer="backicon" className={styles.backicon} >
+                        <ChevronLeft className="w-[20px] h-[20px] text-[#ffffff]" onClick={() => navigate(-1)} style={{ cursor: 'pointer' }} />
                     </div>
 
-                    <div className="Otp-title">
+                    <div className={styles.title}>
                         <h2>Verify your email</h2>
-                        <p className="Otp-subtitle" style={{ color: "#ffffff72", fontSize: "14px", fontWeight: "300", fontFamily: "DM Sans", textAlign: "center" }}>We have sent a verification code to your <b style={{ color: "#ffffff" }}>[EMAIL_ADDRESS]</b>.</p>
-
+                        <p className={styles.subtitle}>We have sent a verification code to your <b style={{ color: "#ffffff" }}>{state.email}</b>.</p>
                     </div>
-                    <form className="Otp-form">
 
+                    {(error || successMessage) && (
+                        <div style={{ textAlign: 'center', marginBottom: '10px' }}>
+                            {error && <div style={{ color: 'red' }}>{error}</div>}
+                            {successMessage && <div style={{ color: 'green' }}>{successMessage}</div>}
+                        </div>
+                    )}
 
-                        <div className="form-group">
-
-                            <input type="otp" id="otp" placeholder="enter otp" />
+                    <form className={styles.form} onSubmit={handleSubmit}>
+                        <div className={styles.formGroup}>
+                            <input
+                                type="text"
+                                id="otp"
+                                placeholder="Enter OTP"
+                                value={otp}
+                                onChange={(e) => setOtp(e.target.value)}
+                                required
+                            />
                         </div>
 
-
-                        <button type="submit" className="Otp-button">Verify otp</button>
+                        <button type="submit" className={styles.button} disabled={isLoading}>
+                            {isLoading ? 'Verifying...' : 'Verify OTP'}
+                        </button>
                     </form>
 
-                    <div className="Otp-footer">
+                    <div className={styles.footer}>
                         {canResend ? (
-                            <>Didn't receive? <Link to="#" onClick={handleResend} className="link">Resend code</Link></>
+                            <>Didn't receive? <Link to="#" onClick={handleResend} className={styles.link}>Resend code</Link></>
                         ) : (
                             <>Resend code in <span style={{ color: "white", fontWeight: "600" }}>{formatTime(timeLeft)}</span></>
                         )}
