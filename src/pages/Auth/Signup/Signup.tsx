@@ -13,8 +13,13 @@ export const SignupPage = () => {
         email: '',
         password: ''
     });
+    const [errors, setErrors] = useState({
+        username: '',
+        email: '',
+        password: '',
+        general: ''
+    });
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
 
@@ -24,12 +29,47 @@ export const SignupPage = () => {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.id]: e.target.value });
+        if (errors[e.target.id as keyof typeof errors]) {
+            setErrors({ ...errors, [e.target.id]: '' });
+        }
     };
+
+    const validateForm = () => {
+        let valid = true;
+        const newErrors = { username: '', email: '', password: '', general: '' };
+
+        if (!formData.username.trim()) {
+            newErrors.username = 'Username is required';
+            valid = false;
+        }
+
+        if (!formData.email.trim()) {
+            newErrors.email = 'Email is required';
+            valid = false;
+        } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+            newErrors.email = 'Please enter a valid email address';
+            valid = false;
+        }
+
+        if (!formData.password) {
+            newErrors.password = 'Password is required';
+            valid = false;
+        } else if (formData.password.length < 6) {
+            newErrors.password = 'Password must be at least 6 characters';
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!validateForm()) return;
+
         setIsLoading(true);
-        setError(null);
+        setErrors(prev => ({ ...prev, general: '' }));
 
         try {
             await apiClient.post('/auth/signup', formData);
@@ -37,7 +77,12 @@ export const SignupPage = () => {
             navigate('/otp', { state: { email: formData.email } });
         } catch (err: any) {
             console.error(err);
-            setError(err.response?.data?.message || 'Signup failed. Please try again.');
+            const msg = err.response?.data?.message || 'Signup failed. Please try again.';
+            if (msg.toLowerCase().includes('email')) {
+                setErrors(prev => ({ ...prev, email: msg }));
+            } else {
+                setErrors(prev => ({ ...prev, general: msg }));
+            }
         } finally {
             setIsLoading(false);
         }
@@ -56,8 +101,8 @@ export const SignupPage = () => {
                     </div>
 
                     <h2 className={styles.title}>Sign Up</h2>
-                    {error && <div className={styles.errorMessage} style={{ color: 'red', marginBottom: '10px' }}>{error}</div>}
-                    <form className={styles.form} onSubmit={handleSubmit}>
+                    {errors.general && <div className={styles.errorMessage}>{errors.general}</div>}
+                    <form className={styles.form} onSubmit={handleSubmit} noValidate>
                         <div className={styles.formGroup}>
                             <label htmlFor="username">Username</label>
                             <input
@@ -66,8 +111,9 @@ export const SignupPage = () => {
                                 placeholder="Enter your username"
                                 value={formData.username}
                                 onChange={handleChange}
-                                required
+                                className={errors.username ? styles.inputError : ''}
                             />
+                            {errors.username && <div className={styles.fieldErrorMessage}>{errors.username}</div>}
                         </div>
 
                         <div className={styles.formGroup}>
@@ -78,8 +124,9 @@ export const SignupPage = () => {
                                 placeholder="Enter your email"
                                 value={formData.email}
                                 onChange={handleChange}
-                                required
+                                className={errors.email ? styles.inputError : ''}
                             />
+                            {errors.email && <div className={styles.fieldErrorMessage}>{errors.email}</div>}
                         </div>
 
                         <div className={styles.formGroup}>
@@ -91,12 +138,13 @@ export const SignupPage = () => {
                                     placeholder="Enter your password"
                                     value={formData.password}
                                     onChange={handleChange}
-                                    required
+                                    className={errors.password ? styles.inputError : ''}
                                 />
                                 <span className={styles.passwordToggleIcon} onClick={togglePasswordVisibility}>
                                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                 </span>
                             </div>
+                            {errors.password && <div className={styles.fieldErrorMessage}>{errors.password}</div>}
                         </div>
 
                         <button type="submit" className={styles.button} disabled={isLoading}>

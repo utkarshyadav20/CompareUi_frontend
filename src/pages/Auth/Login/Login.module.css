@@ -6,6 +6,7 @@
   font-family: 'DM Sans', sans-serif;
   overflow: hidden;
   background: linear-gradient(279deg, #000 11.78%, #131313 81.81%);
+  position: relative; /* For absolute positioning of toast */
 }
 
 /* Left Side: Banner */
@@ -32,6 +33,7 @@
   align-items: center;
   padding: 2rem;
   overflow-y: auto;
+  position: relative;
 }
 
 .formWrapper {
@@ -107,6 +109,39 @@
 
 .formGroup input:focus {
   border-color: #FFFFFF !important;
+}
+
+.formGroup input.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldErrorMessage {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+}
+
+.errorMessage {
+  color: #ef4444;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* Error Toast Style */
+.errorToast {
+  margin-top: 1.5rem;
+  background-color: #f00000;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px; /* Slightly rounded as per image, or use 9999px for pill */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  font-size: 1rem;
 }
 
 .formGroup input::placeholder {
