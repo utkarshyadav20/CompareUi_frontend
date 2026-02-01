@@ -129,7 +129,16 @@
 
 /* Error Toast Style */
 .errorToast {
-  margin-top: 1.5rem;
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 420px;
+  margin-top: 0;
+  z-index: 10;
+  box-sizing: border-box;
+  
   background-color: #f00000;
   color: white;
   padding: 12px 24px;
@@ -140,7 +149,6 @@
   gap: 10px;
   font-weight: 500;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-  width: 100%;
   font-size: 1rem;
 }
 
