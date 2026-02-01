@@ -15,8 +15,10 @@ export const OtpPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const [timeLeft, setTimeLeft] = useState(120);
+    const [timeLeft, setTimeLeft] = useState(5);
     const [canResend, setCanResend] = useState(false);
+    const isSubmittingRef = React.useRef(false);
+    const isResendingRef = React.useRef(false);
 
     useEffect(() => {
         // Enforce navigation flow
@@ -44,25 +46,36 @@ export const OtpPage = () => {
 
     const handleResend = async (e: React.MouseEvent) => {
         e.preventDefault();
-        if (canResend && state?.email) {
-            setError(null);
-            setSuccessMessage(null);
-            try {
-                await apiClient.post('/auth/resend-otp', { email: state.email });
-                setTimeLeft(120);
-                setCanResend(false);
-                setSuccessMessage('Code, Resent Successfully!');
-            } catch (err: any) {
-                console.error(err);
-                setError(err.response?.data?.message || 'Failed to resend code.');
-            }
+        if (!canResend || !state?.email || isResendingRef.current) return;
+
+        isResendingRef.current = true;
+
+        // Optimistic update: Disable button and start timer immediately
+        setCanResend(false);
+        setTimeLeft(5);
+
+        setError(null);
+        setSuccessMessage(null);
+
+        try {
+            await apiClient.post('/auth/resend-otp', { email: state.email });
+            setSuccessMessage('Code, Resent Successfully!');
+        } catch (err: any) {
+            console.error(err);
+            setError(err.response?.data?.message || 'Failed to resend code.');
+            // Revert state if API fails
+            setTimeLeft(0);
+            setCanResend(true);
+        } finally {
+            isResendingRef.current = false;
         }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!state?.email) return;
+        if (!state?.email || isSubmittingRef.current) return;
 
+        isSubmittingRef.current = true;
         setIsLoading(true);
         setError(null);
         setSuccessMessage(null);
@@ -74,8 +87,14 @@ export const OtpPage = () => {
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || 'Verification failed. Invalid or expired OTP.');
+            isSubmittingRef.current = false; // Only reset if failed, if success we navigate away
         } finally {
             setIsLoading(false);
+            // subtle: if success, we navigated, so this component unmounts. 
+            // if we stay, strict mode might double invoke, but ref handles real clicks.
+            if (isSubmittingRef.current) {
+                isSubmittingRef.current = false;
+            }
         }
     };
 
