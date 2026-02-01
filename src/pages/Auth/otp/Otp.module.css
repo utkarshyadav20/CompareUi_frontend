@@ -1,0 +1,223 @@
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  background-image: url('../../../assets/auth/bg.png');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+  background-color: #000;
+}
+
+.backicon {
+  width: 40px; 
+  height: 40px; 
+  left: 10px;
+  top: 10px;
+  position: absolute; 
+  background: rgba(255, 255, 255, 0.10); 
+  border-radius: 47px; 
+  outline: 1px rgba(255, 255, 255, 0.10) solid; 
+  outline-offset: -1px; 
+  flex-direction: column; 
+  justify-content: center; 
+  align-items: center; 
+  gap: 10px; 
+  display: inline-flex
+}
+
+/* Add an overlay to ensure readability */
+.container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 1;
+}
+
+/* Right Side: Form Section */
+.formSection {
+  margin-top: -100px;
+  flex: 1;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow-y: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  padding: 2.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.formHeaderLogo {
+  text-align: left;
+  height: 30px !important;
+  margin-bottom: 7rem;
+  display: flex;
+  flex-direction: row;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+.formLogoMain {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.formLogoSub {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  display: flex;
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 2rem;
+  flex-direction: column;
+  gap: .5rem;
+  text-align: center;
+}
+
+.subtitle {
+  color: #ffffff72;
+  font-size: 14px;
+  font-weight: 300;
+  font-family: 'DM Sans';
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 1rem !important;
+  color: #ffffff;
+}
+
+/* Inputs */
+.formGroup input {
+  background-color: #1b1b1b;
+  color: white;
+  padding: 1rem 1rem !important;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid transparent !important;
+  transition: border-color 0.2s;
+  font-size: 1rem !important;
+  letter-spacing: .18px;
+}
+
+.formGroup input:focus {
+  border-color: #FFFFFF !important;
+}
+
+.formGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Password Toggle */
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.passwordToggleIcon {
+  position: absolute;
+  right: 1rem;
+  cursor: pointer;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.passwordToggleIcon:hover {
+  color: #FFFFFF;
+}
+
+/* Button */
+.button {
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #E5E7EB;
+}
+
+/* Footer Link */
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #676767;
+}
+
+.footer .link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer .link:hover {
+  text-decoration: underline;
+}
+
+.authLogoImage {
+  width: 305px;
+  aspect-ratio: 305/40;
+}
+
+/* Responsive */
+@media (max-width: 890px) {
+  .banner {
+    display: none;
+  }
+
+  .formSection {
+    padding: 1.5rem;
+  }
+}

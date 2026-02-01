@@ -77,7 +77,7 @@ export function ControlBar({
         </div>
 
         {/* Right side - Method, Sensitivity, Build, Start Button */}
-        <div className="flex items-center gap-[20px]">
+        <div className="flex items-center gap-[auto]" style={{ width: "100%", justifyContent: "space-between" }}>
           {/* Method Dropdown */}
           {/* <div className="flex items-center gap-[10px]">
             <p className="font-semibold text-[14px] text-black dark:text-white">
@@ -145,146 +145,148 @@ export function ControlBar({
 
           )} */}
 
-          {/* Min Score Input */}
-          {onMinScoreChange && (
-            <div className="flex items-center gap-[10px]">
-              <p className="font-semibold text-[14px] text-black dark:text-white">
-                Max mismatch allowed:
-              </p>
-              <div className="relative flex items-center gap-2">
-                <input
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={minScore !== undefined ? 100 - minScore : ''}
-                  placeholder="20"
-                  onChange={(e) => {
-                    let val = parseInt(e.target.value);
-                    if (isNaN(val)) val = 0;
-                    if (val > 100) val = 100;
-                    if (val < 0) val = 0;
-                    onMinScoreChange(100 - val);
-                  }}
-                  className="w-[60px] px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono bg-transparent outline-none text-center placeholder-[#6bdf95]/30 focus:border-[#6bdf95]/60 transition-colors"
-                />
-                <span className=" text-[#6bdf95]/50 text-xs pointer-events-none">%</span>
-              </div>
-            </div>
-          )}
-
-          {/* Sensitivity Dropdown */}
-          <div className="flex items-center gap-[10px]">
-            <p className="font-semibold text-[14px] text-black dark:text-white">
-              Sensitivity :
-            </p>
-            <div className="relative">
-              <button
-                onClick={() =>
-                  setIsSensitivityDropdownOpen(!isSensitivityDropdownOpen)
-                }
-                className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${sensitivity
-                  ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
-                  : "border border-[#6bdf95]/30 text-[#6bdf95]"
-                  } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
-              >
-                <span>{sensitivity}</span>
-                <ChevronDown className="w-[14px] h-[14px]" />
-              </button>
-              {isSensitivityDropdownOpen && (
-                <>
-                  <div
-                    className="fixed inset-0 z-[40]"
-                    onClick={() => setIsSensitivityDropdownOpen(false)}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "20px" }}>
+            {/* Min Score Input */}
+            {onMinScoreChange && (
+              <div className="flex items-center gap-[10px]">
+                <p className="font-semibold text-[14px] text-black dark:text-white">
+                  Max mismatch allowed:
+                </p>
+                <div className="relative flex items-center gap-2">
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={minScore !== undefined ? 100 - minScore : ''}
+                    placeholder="20"
+                    onChange={(e) => {
+                      let val = parseInt(e.target.value);
+                      if (isNaN(val)) val = 0;
+                      if (val > 100) val = 100;
+                      if (val < 0) val = 0;
+                      onMinScoreChange(100 - val);
+                    }}
+                    className="w-[60px] px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono bg-transparent outline-none text-center placeholder-[#6bdf95]/30 focus:border-[#6bdf95]/60 transition-colors"
                   />
-                  <div className="absolute right-0 top-[45px] w-[60px] bg-[#1e1e1e] rounded-[8px] shadow-lg z-[50] border border-white/20 overflow-hidden">
-                    {sensitivityOptions.map((t) => (
-                      <button
-                        key={t}
-                        onClick={() => {
-                          onSensitivityChange(t);
-                          setIsSensitivityDropdownOpen(false);
-                        }}
-                        className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors"
-                      >
-                        <span className="text-white text-[14px] font-mono">
-                          {t}
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+                  <span className=" text-[#6bdf95]/50 text-xs pointer-events-none">%</span>
+                </div>
+              </div>
+            )}
 
-          {/* Build Dropdown */}
-          {buildVersions && onBuildChange && (
+            {/* Sensitivity Dropdown */}
             <div className="flex items-center gap-[10px]">
               <p className="font-semibold text-[14px] text-black dark:text-white">
-                Build :
+                Sensitivity :
               </p>
-              {/* 
-                  FIX 2: Added z-index logic here. 
-                  When open, this container jumps to z-50 to ensure it sits 
-                  above the 'Start Comparing' button to its right.
-              */}
-              <div className={`relative ${isBuildDropdownOpen ? "z-50" : ""}`}>
+              <div className="relative">
                 <button
-                  onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-                  className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
+                  onClick={() =>
+                    setIsSensitivityDropdownOpen(!isSensitivityDropdownOpen)
+                  }
+                  className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${sensitivity
+                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                    : "border border-[#6bdf95]/30 text-[#6bdf95]"
+                    } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
                 >
-                  <span>
-                    {typeof selectedBuild === 'string'
-                      ? selectedBuild
-                      : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
-                    }
-                  </span>
+                  <span>{sensitivity}</span>
                   <ChevronDown className="w-[14px] h-[14px]" />
                 </button>
-                {isBuildDropdownOpen && (
+                {isSensitivityDropdownOpen && (
                   <>
                     <div
-                      className="fixed inset-0 z-[9995]"
-                      onClick={() => setIsBuildDropdownOpen(false)}
+                      className="fixed inset-0 z-[40]"
+                      onClick={() => setIsSensitivityDropdownOpen(false)}
                     />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[9999] border border-white/20 overflow-hidden">
-                      {buildVersions.length > 0 ? (
-                        buildVersions.map((build) => {
-                          const buildId = typeof build === 'string' ? build : build.buildId;
-                          const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
-                          const isSelected = typeof selectedBuild === 'string'
-                            ? selectedBuild === build
-                            : selectedBuild?.buildId === build.buildId;
-
-                          return (
-                            <button
-                              key={buildId}
-                              onClick={() => {
-                                onBuildChange(build);
-                                setIsBuildDropdownOpen(false);
-                              }}
-                              className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
-                                ? "bg-white/5"
-                                : ""
-                                }`}
-                            >
-                              <span className="text-white text-[14px] font-mono">
-                                {buildName}
-                              </span>
-                            </button>
-                          );
-                        })
-                      ) : (
-                        <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
-                          No builds found
-                        </div>
-                      )}
+                    <div className="absolute right-0 top-[45px] w-[60px] bg-[#1e1e1e] rounded-[8px] shadow-lg z-[50] border border-white/20 overflow-hidden">
+                      {sensitivityOptions.map((t) => (
+                        <button
+                          key={t}
+                          onClick={() => {
+                            onSensitivityChange(t);
+                            setIsSensitivityDropdownOpen(false);
+                          }}
+                          className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors"
+                        >
+                          <span className="text-white text-[14px] font-mono">
+                            {t}
+                          </span>
+                        </button>
+                      ))}
                     </div>
                   </>
                 )}
               </div>
             </div>
-          )}
+
+            {/* Build Dropdown */}
+            {buildVersions && onBuildChange && (
+              <div className="flex items-center gap-[10px]">
+                <p className="font-semibold text-[14px] text-black dark:text-white">
+                  Build :
+                </p>
+                {/* 
+                  FIX 2: Added z-index logic here. 
+                  When open, this container jumps to z-50 to ensure it sits 
+                  above the 'Start Comparing' button to its right.
+              */}
+                <div className={`relative ${isBuildDropdownOpen ? "z-50" : ""}`}>
+                  <button
+                    onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
+                    className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
+                  >
+                    <span>
+                      {typeof selectedBuild === 'string'
+                        ? selectedBuild
+                        : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
+                      }
+                    </span>
+                    <ChevronDown className="w-[14px] h-[14px]" />
+                  </button>
+                  {isBuildDropdownOpen && (
+                    <>
+                      <div
+                        className="fixed inset-0 z-[9995]"
+                        onClick={() => setIsBuildDropdownOpen(false)}
+                      />
+                      <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[9999] border border-white/20 overflow-hidden">
+                        {buildVersions.length > 0 ? (
+                          buildVersions.map((build) => {
+                            const buildId = typeof build === 'string' ? build : build.buildId;
+                            const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
+                            const isSelected = typeof selectedBuild === 'string'
+                              ? selectedBuild === build
+                              : selectedBuild?.buildId === build.buildId;
+
+                            return (
+                              <button
+                                key={buildId}
+                                onClick={() => {
+                                  onBuildChange(build);
+                                  setIsBuildDropdownOpen(false);
+                                }}
+                                className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
+                                  ? "bg-white/5"
+                                  : ""
+                                  }`}
+                              >
+                                <span className="text-white text-[14px] font-mono">
+                                  {buildName}
+                                </span>
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
+                            No builds found
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* Start Button */}
           <button

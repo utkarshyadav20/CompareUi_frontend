@@ -38,7 +38,7 @@ export function ProjectDetail({
   );
   const [aiAgent, setAiAgent] = useState<"Yes" | "No">("Yes");
   const [threshold, setThreshold] = useState<string>("3x");
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [baselineUrl, setBaselineUrl] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -185,8 +185,7 @@ export function ProjectDetail({
         onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
-        isProfileMenuOpen={isProfileMenuOpen}
-        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+
       />
     );
   }
@@ -218,8 +217,7 @@ export function ProjectDetail({
         onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
-        isProfileMenuOpen={isProfileMenuOpen}
-        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
         navigationItems={navigationItems}

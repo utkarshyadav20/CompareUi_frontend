@@ -5,13 +5,17 @@ base.ts
 common.ts
 configuration.ts
 docs/AppApi.md
+docs/AuthApi.md
 docs/CompareApi.md
 docs/CompareBodyDto.md
 docs/CompareScreenshotDto.md
 docs/CreateBuildDto.md
+docs/CreateUserDto.md
 docs/FigmaApi.md
 docs/ProjectApi.md
+docs/ResendOtpDto.md
 docs/ResultApi.md
 docs/ScreenshotApi.md
+docs/VerifyOtpDto.md
 git_push.sh
 index.ts

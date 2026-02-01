@@ -86,7 +86,7 @@ export function AndroidTVDetailFigma({
   const [activeTab, setActiveTab] = useState<string>("testingpanel");
   const [selectedTestId, setSelectedTestId] = useState<string | null>(null);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+
   const [theme, setTheme] = useState<Theme>("dark");
 
   /* Removed hardcoded buildVersions */
@@ -673,8 +673,7 @@ export function AndroidTVDetailFigma({
         onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
-        isProfileMenuOpen={isProfileMenuOpen}
-        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+
       />
     );
   }
@@ -763,8 +762,7 @@ export function AndroidTVDetailFigma({
         onThemeChange={setTheme}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
-        isProfileMenuOpen={isProfileMenuOpen}
-        onProfileMenuToggle={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
         navigationItems={navigationItems}

@@ -1,0 +1,202 @@
+/* Main Container: Split Screen */
+.container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  font-family: 'DM Sans', sans-serif;
+  overflow: hidden;
+  background: linear-gradient(279deg, #000 11.78%, #131313 81.81%);
+}
+
+/* Left Side: Banner */
+.banner {
+  flex: 1;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+}
+
+.authSideImage {
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Right Side: Form Section */
+.formSection {
+  flex: 1;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem;
+  overflow-y: auto;
+}
+
+.formWrapper {
+  width: 100%;
+  max-width: 420px;
+}
+
+.formHeaderLogo {
+  text-align: center;
+  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.formLogoMain {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.formLogoSub {
+  font-size: 0.75rem;
+  color: #9CA3AF;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formGroup label {
+  font-size: 1rem !important;
+  color: #ffffff;
+}
+
+/* Inputs */
+.formGroup input {
+  background-color: #1b1b1b;
+  color: white;
+  padding: 1rem 1rem !important;
+  border-radius: 6px;
+  outline: none;
+  border: 1px solid transparent !important;
+  transition: border-color 0.2s;
+  font-size: 1rem !important;
+  letter-spacing: .18px;
+}
+
+.formGroup input:focus {
+  border-color: #FFFFFF !important;
+}
+
+.formGroup input.inputError {
+  border-color: #ef4444 !important;
+}
+
+.fieldErrorMessage {
+  color: #ef4444;
+  font-size: 0.85rem;
+  margin-top: 0.1rem;
+}
+
+.errorMessage {
+  color: #ef4444;
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+
+.formGroup input::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Password Toggle */
+.passwordInputWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.passwordInputWrapper input {
+  width: 100%;
+  padding-right: 2.5rem;
+}
+
+.passwordToggleIcon {
+  position: absolute;
+  right: 1rem;
+  cursor: pointer;
+  color: #9CA3AF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.passwordToggleIcon:hover {
+  color: #FFFFFF;
+}
+
+/* Button */
+.button {
+  background-color: #FFFFFF;
+  color: #000000;
+  padding: 0.75rem;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #E5E7EB;
+}
+
+/* Footer Link */
+.footer {
+  margin-top: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #676767;
+}
+
+.footer .link {
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.footer .link:hover {
+  text-decoration: underline;
+}
+
+.authLogoImage {
+  width: 305px;
+  height: 117px;
+  aspect-ratio: 305/117;
+}
+
+/* Responsive */
+@media (max-width: 890px) {
+  .banner {
+    display: none;
+  }
+
+  .formSection {
+    padding: 1.5rem;
+  }
+}

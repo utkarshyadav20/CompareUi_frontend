@@ -41,8 +41,7 @@ interface DetailedResultProps {
   onThemeChange: (theme: Theme) => void;
   isNotificationOpen: boolean;
   onNotificationToggle: () => void;
-  isProfileMenuOpen: boolean;
-  onProfileMenuToggle: () => void;
+
 }
 
 export function DetailedResult({
@@ -59,8 +58,7 @@ export function DetailedResult({
   onThemeChange,
   isNotificationOpen,
   onNotificationToggle,
-  isProfileMenuOpen,
-  onProfileMenuToggle,
+
 }: DetailedResultProps) {
   const [activeTab, setActiveTab] = useState<
     "baseline" | "live" | "difference"
@@ -359,8 +357,7 @@ export function DetailedResult({
         onThemeChange={onThemeChange}
         isNotificationOpen={isNotificationOpen}
         onNotificationToggle={onNotificationToggle}
-        isProfileMenuOpen={isProfileMenuOpen}
-        onProfileMenuToggle={onProfileMenuToggle}
+
         hideNavigation={true}
       />
       {/* Screen Info Bar */}
