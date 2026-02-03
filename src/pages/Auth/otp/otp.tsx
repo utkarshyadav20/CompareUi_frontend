@@ -15,7 +15,7 @@ export const OtpPage = () => {
     const [error, setError] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-    const [timeLeft, setTimeLeft] = useState(5);
+    const [timeLeft, setTimeLeft] = useState(10);
     const [canResend, setCanResend] = useState(false);
     const isSubmittingRef = React.useRef(false);
     const isResendingRef = React.useRef(false);
@@ -52,7 +52,7 @@ export const OtpPage = () => {
 
         // Optimistic update: Disable button and start timer immediately
         setCanResend(false);
-        setTimeLeft(5);
+        setTimeLeft(10);
 
         setError(null);
         setSuccessMessage(null);

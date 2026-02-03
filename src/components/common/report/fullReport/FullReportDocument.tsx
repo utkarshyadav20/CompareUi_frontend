@@ -436,6 +436,18 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                     // Helper to merge model issues if needed, similar to DetailedResult but kept simple for PDF
                     // or assume prepared data. The mock data has specific issues.
 
+                    const normalizeStatus = (status: any) => {
+                        const s = (status ?? '').toString().toLowerCase();
+                        if (s === '1' || s === 'pass' || s === 'passed') return 'PASSED';
+                        if (s === '0' || s === 'fail' || s === 'failed' || s === 'error') return 'FAILED';
+                        if (s === '2' || s === 'inprogress') return 'IN PROGRESS';
+                        if (s === '3' || s === 'on hold') return 'ON HOLD';
+                        return s.toUpperCase();
+                    };
+
+                    const statusText = normalizeStatus(row.resultStatus);
+                    const isPass = statusText === 'PASSED';
+
                     return (
                         <Page key={index} size="A4" style={styles.page}>
                             {/* Header */}
@@ -448,11 +460,11 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                                 </View>
                                 <View style={[
                                     styles.status,
-                                    row.resultStatus.toLowerCase() === 'pass'
+                                    isPass
                                         ? { color: '#00C950', backgroundColor: 'rgba(0, 201, 80, 0.1)' }
                                         : {}
                                 ]}>
-                                    <Text>{row.resultStatus}</Text>
+                                    <Text>{statusText}</Text>
                                 </View>
                             </View>
 
@@ -469,9 +481,9 @@ export const FullReportDocument: React.FC<FullReportDocumentProps> = ({ data }) 
                                         <Text style={[
                                             styles.value,
                                             styles.bold,
-                                            row.resultStatus.toLowerCase() === 'pass' ? styles.pass : styles.fail
+                                            isPass ? styles.pass : styles.fail
                                         ]}>
-                                            {row.resultStatus}
+                                            {statusText}
                                         </Text>
                                     </View>
                                     <View style={styles.column}>

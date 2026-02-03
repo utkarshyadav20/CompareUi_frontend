@@ -68,7 +68,7 @@ export function BaselineImageInput({
     <div className="w-full h-full flex flex-col gap-5 p-4">
       {/* Header with title and action buttons */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b border-black/10 dark:border-white/10">
-        <h3 className="text-black dark:text-white text-[20px]">
+        <h3 className="text-[#929292] text-[12px] font-medium uppercase">
           Baselining Images
         </h3>
         <div className="flex items-center gap-3">

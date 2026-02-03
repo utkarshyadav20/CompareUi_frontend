@@ -150,6 +150,11 @@ const styles = StyleSheet.create({
         fontWeight: 600, // Reduced from bold
         textTransform: 'uppercase',
     },
+    pass: {
+        color: '#00C950',
+        fontWeight: 600,
+        textTransform: 'uppercase',
+    },
     imagesContainer: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -256,6 +261,19 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
         };
     });
 
+    // Normalize status for presentation
+    const normalizeStatus = (status: any) => {
+        const s = (status ?? '').toString().toLowerCase();
+        if (s === '1' || s === 'pass' || s === 'passed') return 'PASSED';
+        if (s === '0' || s === 'fail' || s === 'failed' || s === 'error') return 'FAILED';
+        if (s === '2' || s === 'inprogress') return 'IN PROGRESS';
+        if (s === '3' || s === 'on hold') return 'ON HOLD';
+        return s.toUpperCase();
+    };
+
+    const statusText = normalizeStatus(result.resultStatus);
+    const isPass = statusText === 'PASSED';
+
     const dimensions = result.coordinates?.dimensions || { width: 1920, height: 1080 };
     const { width: originalWidth, height: originalHeight } = dimensions;
 
@@ -287,8 +305,8 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                             {projectName} · {appName || 'No App Name'} · {modelResult?.projectType || deviceType} · {result.screenName}
                         </Text>
                     </View>
-                    <View style={styles.status}>
-                        <Text>{result.resultStatus}</Text>
+                    <View style={[styles.status, isPass ? { color: '#00C950', backgroundColor: 'rgba(0, 201, 80, 0.1)' } : {}]}>
+                        <Text>{statusText}</Text>
                     </View>
                 </View>
 
@@ -343,7 +361,7 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.label}>Test Status</Text>
-                            <Text style={[styles.value, styles.fail]}>{result.resultStatus}</Text>
+                            <Text style={[styles.value, isPass ? styles.pass : styles.fail]}>{statusText}</Text>
                         </View>
                         <View style={styles.column}>
                             <Text style={styles.label}>Total Issues Detected</Text>
