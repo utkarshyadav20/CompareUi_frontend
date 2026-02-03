@@ -812,113 +812,113 @@ export function AndroidTVDetailFigma({
 
           {/* Main Content - Two Panels */}
           <div className="flex px-[32px] pb-[25px] overflow-hidden gap-[32px]" style={{ height: 'calc(97vh - 180px)' }}>
-            <div className="flex" >
+            <div className="flex" style={{ width: '100%' }}>
               {/* Left Panel - Baselining Images */}
-            <div className="w-[384px]  border border-black flex flex-col shrink-0 overflow-hidden"style={{background:'#151515',border:'1px solid #333333',  borderRadius:'12px 0px 0px 12px'}}>
-              <BaselineImageInput
-                images={filteredBaselineImages}
-                hasImages={baselineImages.length > 0}
-                selectedImageId={selectedCardId}
-                baselineUrl={baselineUrl}
-                onBaselineUrlChange={setBaselineUrl}
-                onUrlSubmit={handleUrlSubmit}
-                onFileUpload={(e) =>
-                  handleFileChange(e, handleImageUpload, "baseline")
-                }
-                onCsvUpload={(e) =>
-                  handleFileChange(e, handleCSVUpload, "baseline")
-                }
-                loadingActivity={loadingActivity}
-                onSelectImage={setSelectedCardId}
-                onRefreshAll={handleRefreshAll}
-                onRemoveAll={handleDeleteAll}
-                onRemoveImage={(id) => {
-                  const img = baselineImages.find(i => i.id === id);
-                  if (img) handleDeleteOne(img.name);
-                }}
-                onRefreshImage={(id) => {
-                  const img = baselineImages.find(i => i.id === id);
-                  if (img) handleRefreshOne(img.name);
-                }}
-                onReplaceImage={handleReplaceImage}
-              />
-              {/* Hidden input for replace */}
-              <input
-                type="file"
-                ref={replaceInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleReplaceFileChange}
-              />
-            </div>
-
-            {/* Right Panel - Actual Build Images */}
-            <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"style={{background: '#1A1A1A',border:'1px solid #333333', borderRadius:'0px 12px 12px 0px' }}>
-              <div className="flex justify-between mb-[20px]">
-                <p className="text-[#929292] text-[12px] font-medium uppercase">
-                  Actual Build images
-                </p>
-                <button
-                  onClick={handleBrowseFolder}
-                  className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
-                >
-                  <Folder className="w-[16px] h-[16px]" />
-                  <span>Browse Folder</span>
-                </button>
+              <div className="w-[384px]  border border-black flex flex-col shrink-0 overflow-hidden" style={{ background: '#151515', border: '1px solid #333333', borderRadius: '12px 0px 0px 12px' }}>
+                <BaselineImageInput
+                  images={filteredBaselineImages}
+                  hasImages={baselineImages.length > 0}
+                  selectedImageId={selectedCardId}
+                  baselineUrl={baselineUrl}
+                  onBaselineUrlChange={setBaselineUrl}
+                  onUrlSubmit={handleUrlSubmit}
+                  onFileUpload={(e) =>
+                    handleFileChange(e, handleImageUpload, "baseline")
+                  }
+                  onCsvUpload={(e) =>
+                    handleFileChange(e, handleCSVUpload, "baseline")
+                  }
+                  loadingActivity={loadingActivity}
+                  onSelectImage={setSelectedCardId}
+                  onRefreshAll={handleRefreshAll}
+                  onRemoveAll={handleDeleteAll}
+                  onRemoveImage={(id) => {
+                    const img = baselineImages.find(i => i.id === id);
+                    if (img) handleDeleteOne(img.name);
+                  }}
+                  onRefreshImage={(id) => {
+                    const img = baselineImages.find(i => i.id === id);
+                    if (img) handleRefreshOne(img.name);
+                  }}
+                  onReplaceImage={handleReplaceImage}
+                />
+                {/* Hidden input for replace */}
+                <input
+                  type="file"
+                  ref={replaceInputRef}
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleReplaceFileChange}
+                />
               </div>
 
-              {loadingActivity === "compare" ? (
-                <div className="flex-1 flex items-center justify-center">
-                  <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
+              {/* Right Panel - Actual Build Images */}
+              <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
+                <div className="flex justify-between mb-[20px]">
+                  <p className="text-[#929292] text-[12px] font-medium uppercase">
+                    Actual Build images
+                  </p>
+                  <button
+                    onClick={handleBrowseFolder}
+                    className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
+                  >
+                    <Folder className="w-[16px] h-[16px]" />
+                    <span>Browse Folder</span>
+                  </button>
                 </div>
-              ) : actualImages.length === 0 ? (
-                <EmptyState
-                  icon={Folder}
-                  description={
-                    <>
-                      Waiting for image to receive
-                      <br />
-                      from Android build
-                    </>
-                  }
-                  action={
-                    <button
-                      onClick={handleBrowseFolder}
-                      className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
-                    >
-                      <Folder className="w-[18px] h-[18px]" />
-                    </button>
-                  }
-                />
-              ) : (
-                <>
 
-                  {/* Display Actual Images in Grid */}
-                  <ImageGrid className="grid-cols-3 gap-[15px]">
-                    {actualImages.map((image) => (
-                      <div key={image.id} className="relative group">
-                        <ImageCard
-                          id={image.id}
-                          name={image.name}
-                          url={image.url}
-                          width={image.width}
-                          height={image.height}
-                          isSelected={selectedCardId === image.id}
-                          onSelect={setSelectedCardId}
-                          className="bg-[rgba(255,255,255,0.05)]"
-                        />
-                        <button
-                          onClick={() => handleDeleteImage(image.id, "actual")}
-                          className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
-                        >
-                          <X className="w-[12px] h-[12px]" />
-                        </button>
-                      </div>
-                    ))}
-                  </ImageGrid>
-                </>
-              )}
-            </div>
+                {loadingActivity === "compare" ? (
+                  <div className="flex-1 flex items-center justify-center">
+                    <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
+                  </div>
+                ) : actualImages.length === 0 ? (
+                  <EmptyState
+                    icon={Folder}
+                    description={
+                      <>
+                        Waiting for image to receive
+                        <br />
+                        from Android build
+                      </>
+                    }
+                    action={
+                      <button
+                        onClick={handleBrowseFolder}
+                        className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
+                      >
+                        <Folder className="w-[18px] h-[18px]" />
+                      </button>
+                    }
+                  />
+                ) : (
+                  <>
+
+                    {/* Display Actual Images in Grid */}
+                    <ImageGrid className="grid-cols-3 gap-[15px]">
+                      {actualImages.map((image) => (
+                        <div key={image.id} className="relative group">
+                          <ImageCard
+                            id={image.id}
+                            name={image.name}
+                            url={image.url}
+                            width={image.width}
+                            height={image.height}
+                            isSelected={selectedCardId === image.id}
+                            onSelect={setSelectedCardId}
+                            className="bg-[rgba(255,255,255,0.05)]"
+                          />
+                          <button
+                            onClick={() => handleDeleteImage(image.id, "actual")}
+                            className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                          >
+                            <X className="w-[12px] h-[12px]" />
+                          </button>
+                        </div>
+                      ))}
+                    </ImageGrid>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </>
