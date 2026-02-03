@@ -22,4 +22,20 @@ apiClient.interceptors.request.use(
   }
 );
 
+
+// Add a response interceptor
+apiClient.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem('access_token');
+      // Optional: Clear other auth related items if any
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export default apiClient;
