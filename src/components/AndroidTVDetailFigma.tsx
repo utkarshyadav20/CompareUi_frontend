@@ -811,9 +811,10 @@ export function AndroidTVDetailFigma({
           </div>
 
           {/* Main Content - Two Panels */}
-          <div className="flex px-[32px] pb-[25px] overflow-hidden gap-[32px]" style={{ height: 'calc(100vh - 180px)' }}>
-            {/* Left Panel - Baselining Images */}
-            <div className="w-[384px] bg-white/10 border border-black flex flex-col shrink-0 overflow-hidden">
+          <div className="flex px-[32px] pb-[25px] overflow-hidden gap-[32px]" style={{ height: 'calc(97vh - 180px)' }}>
+            <div className="flex" >
+              {/* Left Panel - Baselining Images */}
+            <div className="w-[384px]  border border-black flex flex-col shrink-0 overflow-hidden"style={{background:'#151515',border:'1px solid #333333',  borderRadius:'12px 0px 0px 12px'}}>
               <BaselineImageInput
                 images={filteredBaselineImages}
                 hasImages={baselineImages.length > 0}
@@ -852,9 +853,9 @@ export function AndroidTVDetailFigma({
             </div>
 
             {/* Right Panel - Actual Build Images */}
-            <div className="flex-1 bg-white/10 border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+            <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"style={{background: '#1A1A1A',border:'1px solid #333333', borderRadius:'0px 12px 12px 0px' }}>
               <div className="flex justify-between mb-[20px]">
-                <p className="font-bold text-[20px] text-white mb-[20px]">
+                <p className="text-[#929292] text-[12px] font-medium uppercase">
                   Actual Build images
                 </p>
                 <button
@@ -917,6 +918,7 @@ export function AndroidTVDetailFigma({
                   </ImageGrid>
                 </>
               )}
+            </div>
             </div>
           </div>
         </>

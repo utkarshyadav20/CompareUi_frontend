@@ -65,7 +65,22 @@ export function ResultTab({
         const response = await apiClient.get('/result/get-results', {
           params: { projectId, buildId }
         });
-        setTests(response.data.map((r: any) => ({ ...r, id: r.imageName })));
+
+        const normalizedData = response.data.map((r: any) => {
+          let status = (r.resultStatus ?? "UNKNOWN").toString().toLowerCase();
+          if (status === "1" || status === "passed") status = "pass";
+          if (status === "0" || status === "failed") status = "fail";
+          if (status === "2") status = "inprogress";
+          if (status === "3") status = "on hold";
+
+          return {
+            ...r,
+            id: r.imageName,
+            resultStatus: status
+          };
+        });
+
+        setTests(normalizedData);
       } catch (error) {
         console.error('Failed to fetch results:', error);
       } finally {
@@ -130,8 +145,8 @@ export function ResultTab({
       // Filter rows to only include 'pass' and 'fail'
       if (reportData && Array.isArray(reportData.rows)) {
         reportData.rows = reportData.rows.filter((row: any) => {
-          const status = (row.resultStatus || '').toLowerCase();
-          return status === 'pass' || status === 'fail';
+          const status = (row.resultStatus ?? '').toString().toLowerCase();
+          return status === 'pass' || status === 'fail' || status === '1' || status === '0';
         });
       }
 

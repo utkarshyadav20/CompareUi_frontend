@@ -65,6 +65,9 @@ export function DetailedResult({
   >("baseline");
   const [isDownloading, setIsDownloading] = useState(false);
   const [generatePdf, setGeneratePdf] = useState(false);
+  const [status, setStatus] = useState<string>("UNKNOWN");
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+
   const [finalVerdict, setFinalVerdict] = useState<"approve" | "reject" | null>(
     null
   );
@@ -111,6 +114,18 @@ export function DetailedResult({
       fetchDetails();
     }
   }, [projectId, buildVersion, testName, platformType]);
+
+  useEffect(() => {
+    if (resultData?.resultStatus !== undefined) {
+      let s = resultData.resultStatus.toString();
+      if (s === "0" || s === "FAILED" || s === "fail") s = "FAILED";
+      else if (s === "1" || s === "PASSED" || s === "pass") s = "PASSED";
+      else if (s === "2") s = "INPROGRESS";
+      else if (s === "3") s = "ON HOLD";
+      else s = s.toUpperCase();
+      setStatus(s);
+    }
+  }, [resultData]);
 
   // PDF Generation Hook
   const [instance, updateInstance] = usePDF({
@@ -347,6 +362,22 @@ export function DetailedResult({
     }
   };
 
+  const handleStatusSelect = async (newStatus: string) => {
+    setStatus(newStatus);
+    setIsStatusDropdownOpen(false);
+
+    try {
+      const buildIdToUse = typeof buildVersion === 'string' ? buildVersion : (buildVersion as any).buildId;
+      await apiClient.post(`/result/update-status?projectId=${projectId}&buildId=${buildIdToUse}&screenName=${testName}`, {
+        status: newStatus
+      });
+      console.log("Status updated successfully in DB");
+    } catch (error) {
+      console.error("Failed to update status in DB:", error);
+      alert("Failed to update status in database");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-black text-white font-sans">
       {/* Header */}
@@ -372,46 +403,70 @@ export function DetailedResult({
           {/* Center: Status */}
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center gap-3">
             <span className="font-mono text-zinc-400 text-sm">Status</span>
-            {(() => {
-              const statusText = (resultData?.resultStatus || "UNKNOWN").toString();
-              const status = statusText.toLowerCase();
+            <div className="relative">
+              <button
+                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                className="focus:outline-none"
+              >
+                {(() => {
+                  const s = status.toLowerCase();
+                  let bgColor = "bg-zinc-800";
+                  let borderColor = "border-zinc-700";
+                  let dotColor = "bg-zinc-500";
+                  let textColor = "text-zinc-400";
 
-              let bgColor = "bg-zinc-800";
-              let borderColor = "border-zinc-700";
-              let dotColor = "bg-zinc-500";
-              let textColor = "text-zinc-400";
+                  if (s === 'pass' || s === 'passed') {
+                    bgColor = "bg-green-950/30";
+                    borderColor = "border-green-900/50";
+                    dotColor = "bg-green-500";
+                    textColor = "text-green-400";
+                  } else if (s === 'fail' || s === 'failed' || s === 'error') {
+                    bgColor = "bg-red-950/30";
+                    borderColor = "border-red-900/50";
+                    dotColor = "bg-red-500";
+                    textColor = "text-red-400";
+                  } else if (s === 'inprogress') {
+                    bgColor = "bg-yellow-950/30";
+                    borderColor = "border-yellow-900/50";
+                    dotColor = "bg-yellow-500";
+                    textColor = "text-yellow-400";
+                  }
 
-              if (status === 'pass') {
-                bgColor = "bg-green-950/30";
-                borderColor = "border-green-900/50";
-                dotColor = "bg-green-500";
-                textColor = "text-green-400";
-              } else if (status === 'fail' || status === 'error') {
-                bgColor = "bg-red-950/30";
-                borderColor = "border-red-900/50";
-                dotColor = "bg-red-500";
-                textColor = "text-red-400";
-              } else if (status === 'inprogress') {
-                bgColor = "bg-yellow-950/30";
-                borderColor = "border-yellow-900/50";
-                dotColor = "bg-yellow-500";
-                textColor = "text-yellow-400";
-              } else if (status === 'on hold') {
-                bgColor = "bg-zinc-800";
-                borderColor = "border-zinc-700";
-                dotColor = "bg-zinc-500";
-                textColor = "text-zinc-400";
-              }
+                  return (
+                    <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${bgColor} ${borderColor} hover:bg-white/5 transition-colors cursor-pointer`}>
+                      <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                      <span className={`font-mono text-xs font-bold ${textColor}`}>
+                        {loading ? "LOADING..." : status.toUpperCase()}
+                      </span>
+                      <ChevronDown className={`w-3 h-3 ${textColor}`} />
+                    </div>
+                  );
+                })()}
+              </button>
 
-              return (
-                <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${bgColor} ${borderColor}`}>
-                  <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
-                  <span className={`font-mono text-xs font-bold ${textColor}`}>
-                    {loading ? "LOADING..." : statusText.toUpperCase()}
-                  </span>
-                </div>
-              );
-            })()}
+              {isStatusDropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setIsStatusDropdownOpen(false)} />
+                  <div className="absolute left-1/2 -translate-x-1/2 top-[40px] w-[150px] bg-[#1a1a1a] rounded-md shadow-2xl z-50 border border-zinc-700 overflow-hidden py-1">
+                    {["PASSED", "FAILED", "INPROGRESS", "ON HOLD"].map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() => handleStatusSelect(opt)}
+                        className="w-full text-left px-4 py-2 hover:bg-white/10 text-xs font-mono font-bold text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
+                      >
+                        <div className={`w-1.5 h-1.5 rounded-full ${opt === 'PASSED' ? 'bg-green-500' :
+                          opt === 'FAILED' ? 'bg-red-500' :
+                            opt === 'INPROGRESS' ? 'bg-yellow-500' :
+                              'bg-zinc-500'
+                          }`}></div>
+                        {opt}
+                        {status === opt && <Check className="w-3 h-3 ml-auto text-white" />}
+                      </button>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Right: Controls */}
@@ -463,7 +518,7 @@ export function DetailedResult({
                               : ""
                               }`}
                           >
-                            <span className="text-white text-[14px] font-mono">
+                            <span className="text-white text-[14px] font-DMSans">
                               {buildName}
                             </span>
                           </button>
@@ -481,7 +536,7 @@ export function DetailedResult({
             <button
               onClick={handleDownloadClick}
               disabled={isDownloading}
-              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-wait"
+              className="px-3 py-2 rounded bg-black text-white border border-white text-sm font-DMSans font-regular flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-wait" style={{border: 'solid 1px white'}}
             >
               <Download className="w-4 h-4" />
               <span>{isDownloading ? 'Generating...' : 'Download Report'}</span>
@@ -489,7 +544,7 @@ export function DetailedResult({
 
             <button
               onClick={handleRaiseIssue}
-              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-mono font-bold hover:bg-zinc-200 transition-colors shadow-sm"
+              className="px-3 py-2 rounded bg-white text-black border border-white text-sm font-DMSans font-bold hover:bg-zinc-200 transition-colors shadow-sm"
             >
               Raise Issue
             </button>
@@ -729,30 +784,35 @@ export function DetailedResult({
           style={{ width: '45%', flex: '0 0 45%', minWidth: 0 }}
         >
           {/* STATS */}
-          <div className="p-6 border-b border-white/10 bg-black/40 backdrop-blur-xl">
-            <div className="grid grid-cols-2 gap-10">
-              <div>
-                <p className="text-zinc-400 text-sm font-medium mb-1 uppercase tracking-wide" style={{ fontWeight: 600 }}>
+          <div className=" border-b border-white/10 bg-black/40 backdrop-blur-xl" style={{ background: "#252525", padding: "0px", height: "13rem" }}>
+            <div className="grid grid-cols-2 gap-10" style={{ height: "100%" }}>
+              <div style={{ padding: "20px", rowGap: "1%", display: "flex", flexDirection: "column", gap: "1em", justifyContent: "space-around" }}>
+                <div>
+                  <p className="text-sm font-medium mb-1  tracking-wide" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>
                   Different Percentage
                 </p>
                 <p
                   className="text-white tracking-tight drop-shadow-lg"
-                  style={{ fontSize: 'xx-large', fontWeight: 800 }}
+                  style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
                 >
                   {differentPercentage}%
                 </p>
+                </div>
 
-                <p className="text-zinc-500 mt-6 text-sm font-medium mb-1 uppercase tracking-wide">Detected Issues</p>
+                <div>
+                  <p className="mt-6 text-sm font-medium mb-1  tracking-wide" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>Detected Issues</p>
                 <p
                   className="text-white tracking-tight"
-                  style={{ fontSize: 'xx-large', fontWeight: 800 }}
+                  style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
                 >
                   {detectedIssues}
                 </p>
               </div>
+                </div>
 
-              <div>
-                <p className="text-zinc-400 text-sm mb-3">Final Verdict</p>
+              <div style={{ background: "#00000040", padding: "20px", display: "flex", flexDirection: "column", gap: "1em", justifyContent: "space-around" }}>
+                <data value="">
+                  <p className="text-zinc-400 text-sm mb-3" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>Final Verdict</p>
                 <div className="flex gap-3">
                   <button
                     onClick={handleApprove}
@@ -773,12 +833,12 @@ export function DetailedResult({
                     <XIcon size={16} /> Reject
                   </button>
                 </div>
+                </data>
 
-                <div className="mt-6 bg-black/60 border border-white/10 rounded-md p-3 flex gap-2">
-                  <AlertTriangle className="text-yellow-500 shrink-0" size={16} />
-                  <p className="text-xs text-zinc-400 leading-relaxed">
-                    This action is final. Once submitted, the verdict cannot be
-                    changed.
+                <div className="mt-6 bg-white/80 border bg-black  rounded-md p-3 flex gap-2"style={{ color: "#ffffff60", border: 'solid 1px #ffffff40'}}>
+                  <AlertTriangle className=" shrink-0" size={16}  />
+                  <p className="text-xs leading-relaxed">
+                    This action is final. Once submitted, the verdict cannot be changed.
                   </p>
                 </div>
               </div>
