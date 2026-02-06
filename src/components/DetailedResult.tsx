@@ -25,6 +25,10 @@ interface Issue {
   description: string;
   coordinates: string;
   serialNumber: string;
+  component?: string;
+  dimension?: string;
+  actual?: string;
+  expected?: string;
 }
 
 interface DetailedResultProps {
@@ -197,6 +201,10 @@ export function DetailedResult({
     title?: string;
     description?: string;
     serialNumber?: string;
+    component?: string;
+    dimension?: string;
+    actual?: string;
+    expected?: string;
   }
 
   // Merge modelResult descriptions into resultData boxes
@@ -253,7 +261,13 @@ export function DetailedResult({
         } else {
           description = items[0].description;
         }
-        const title = uniqueTitles.join(' & ');
+
+        const component = items[0].component || '';
+        const dimension = items[0].dimension || '';
+        const actual = items[0].actual || '';
+        const expected = items[0].expected || '';
+
+        const title = component && dimension ? `${component} • ${dimension}` : (uniqueTitles.join(' & ') || 'Issue');
 
         return {
           id: id || `issue-${index}`,
@@ -266,7 +280,11 @@ export function DetailedResult({
           pixelCount: matchingBox?.pixelCount || 0,
           title: title || 'Issue',
           description: description,
-          serialNumber: (index + 1).toString().padStart(2, '0')
+          serialNumber: (index + 1).toString().padStart(2),
+          component,
+          dimension,
+          actual,
+          expected
         };
       });
 
@@ -289,12 +307,16 @@ export function DetailedResult({
   const issues: Issue[] = boxes.map((box: any) => ({
     id: box.id,
     severity: box.severity,
-    title: box.title || `${box.severity} difference detected`,
+    title: box.title || box.component || `${box.severity} difference detected`,
     description: box.description || `Density: ${(box.density * 100).toFixed(1)}%`,
     coordinates: `x: ${Math.round(box.x)}, y: ${Math.round(box.y)} • ${Math.round(box.width)}×${Math.round(box.height)}`,
-    serialNumber: box.serialNumber || '00'
+    serialNumber: box.serialNumber || '00',
+    component: box.component,
+    dimension: box.dimension,
+    actual: box.actual,
+    expected: box.expected
   }));
-
+  console.log("issues", issues);
   // Removed manual handleDownloadPDF to avoid Buffer issues. 
   // We will use PDFDownloadLink component instead for direct download.
 
@@ -536,7 +558,7 @@ export function DetailedResult({
             <button
               onClick={handleDownloadClick}
               disabled={isDownloading}
-              className="px-3 py-2 rounded bg-black text-white border border-white text-sm font-DMSans font-regular flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-wait" style={{border: 'solid 1px white'}}
+              className="px-3 py-2 rounded bg-black text-white border border-white text-sm font-DMSans font-regular flex items-center gap-2 hover:bg-zinc-200 transition-colors shadow-sm disabled:opacity-70 disabled:cursor-wait" style={{ border: 'solid 1px white' }}
             >
               <Download className="w-4 h-4" />
               <span>{isDownloading ? 'Generating...' : 'Download Report'}</span>
@@ -789,54 +811,54 @@ export function DetailedResult({
               <div style={{ padding: "20px", rowGap: "1%", display: "flex", flexDirection: "column", gap: "1em", justifyContent: "space-around" }}>
                 <div>
                   <p className="text-sm font-medium mb-1  tracking-wide" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>
-                  Different Percentage
-                </p>
-                <p
-                  className="text-white tracking-tight drop-shadow-lg"
-                  style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
-                >
-                  {differentPercentage}%
-                </p>
+                    Different Percentage
+                  </p>
+                  <p
+                    className="text-white tracking-tight drop-shadow-lg"
+                    style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
+                  >
+                    {differentPercentage}%
+                  </p>
                 </div>
 
                 <div>
                   <p className="mt-6 text-sm font-medium mb-1  tracking-wide" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>Detected Issues</p>
-                <p
-                  className="text-white tracking-tight"
-                  style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
-                >
-                  {detectedIssues}
-                </p>
-              </div>
+                  <p
+                    className="text-white tracking-tight"
+                    style={{ fontSize: 'xx-large', fontWeight: 600, fontFamily: 'Manrope, sans-serif' }}
+                  >
+                    {detectedIssues}
+                  </p>
                 </div>
+              </div>
 
               <div style={{ background: "#00000040", padding: "20px", display: "flex", flexDirection: "column", gap: "1em", justifyContent: "space-around" }}>
                 <data value="">
                   <p className="text-zinc-400 text-sm mb-3" style={{ letterSpacing: '.2px', color: '#ffffff80' }}>Final Verdict</p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleApprove}
-                    className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "approve"
-                      ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                      : "border-white/20 text-white/70 hover:border-white hover:text-white"
-                      }`}
-                  >
-                    <Check size={16} /> Approve
-                  </button>
-                  <button
-                    onClick={handleReject}
-                    className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "reject"
-                      ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
-                      : "border-white/20 text-white/70 hover:border-white hover:text-white"
-                      }`}
-                  >
-                    <XIcon size={16} /> Reject
-                  </button>
-                </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleApprove}
+                      className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "approve"
+                        ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                        : "border-white/20 text-white/70 hover:border-white hover:text-white"
+                        }`}
+                    >
+                      <Check size={16} /> Approve
+                    </button>
+                    <button
+                      onClick={handleReject}
+                      className={`px-4 py-2 rounded-md border flex gap-2 items-center transition-all ${finalVerdict === "reject"
+                        ? "bg-white text-black border-white shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                        : "border-white/20 text-white/70 hover:border-white hover:text-white"
+                        }`}
+                    >
+                      <XIcon size={16} /> Reject
+                    </button>
+                  </div>
                 </data>
 
-                <div className="mt-6 bg-white/80 border bg-black  rounded-md p-3 flex gap-2"style={{ color: "#ffffff60", border: 'solid 1px #ffffff40'}}>
-                  <AlertTriangle className=" shrink-0" size={16}  />
+                <div className="mt-6 bg-white/80 border bg-black  rounded-md p-3 flex gap-2" style={{ color: "#ffffff60", border: 'solid 1px #ffffff40' }}>
+                  <AlertTriangle className=" shrink-0" size={16} />
                   <p className="text-xs leading-relaxed">
                     This action is final. Once submitted, the verdict cannot be changed.
                   </p>
@@ -930,71 +952,92 @@ export function DetailedResult({
                 return (
                   <div
                     key={issue.id}
-                    className="content-stretch flex items-center justify-center px-[14px] py-[10px] relative w-full border-b border-white/5 last:border-0 hover:bg-white/5 transition-colors cursor-pointer"
+                    className="flex flex-col gap-4 border-b border-zinc-800 hover:bg-white/5 transition-colors cursor-pointer"
+                    style={{ paddingBottom: '13px' }}
                     onMouseEnter={() => setHoveredIssueId(issue.id)}
                     onMouseLeave={() => setHoveredIssueId(null)}
                   >
-                    <div className="content-stretch flex gap-[10px] items-start relative shrink-0 w-full">
-                      <div className="content-stretch flex gap-[8px] items-center not-italic px-0 py-[2px] relative shrink-0 text-nowrap">
+                    {/* Row 1: Serial + Severity */}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xl font-bold text-white">#{issue.serialNumber}</span>
+                      <div className="flex items-center gap-2 ml-2">
                         {isMajor ? (
-                          <AlertCircle size={12} style={{ color: iconColor }} />
+                          <AlertCircle size={18} style={{ color: 'rgb(255, 0, 0)' }} />
                         ) : (
-                          <AlertTriangle size={12} style={{ color: iconColor }} />
+                          <AlertTriangle size={18} style={{ color: iconColor }} />
                         )}
-                        {/* <div className="flex flex-col justify-center leading-[0] relative shrink-0 text-[16px]">
-                          <p className="leading-[normal] text-nowrap" style={{ color: titleColor }}>{issue.severity}</p>
-                        </div> */}
-                      </div>
-                      <div className="basis-0 content-stretch flex flex-col gap-[4px] grow items-start min-h-px min-w-px relative shrink-0">
-                        <div className="relative shrink-0">
-                          <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-nowrap font-mono" style={{ color: titleColor }}>
-                            <span className="mr-2 opacity-80" style={{ color: titleColor }}>#{issue.serialNumber}</span>
-                            {issue.title + " (" + issue.severity + ")"}
-                          </p>
-                        </div>
-                        <div
-                          className={`relative shrink-0 w-full mb-1 ${isEditing ? 'border border-blue-500 rounded p-1' : ''}`}
-                          onClick={(e) => {
-                            // Only triggering edit mode if clicking logic is desired on text or container
-                            // User requirement: "when the user clicks on a discription... opens a edit box"
-                          }}
-                        >
-                          {isEditing ? (
-                            <textarea
-                              autoFocus
-                              value={tempDescription}
-                              onChange={(e) => setTempDescription(e.target.value)}
-                              onBlur={() => handleSaveDescription(issue.id)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                  e.preventDefault();
-                                  handleSaveDescription(issue.id);
-                                }
-                              }}
-                              className="w-full bg-zinc-900 text-zinc-200 text-[14px] font-mono p-2 rounded outline-none border border-blue-500 resize-none"
-                              rows={3}
-                            />
-                          ) : (
-                            <p
-                              className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words"
-                              onClick={(e) => {
-                                e.stopPropagation(); // Prevent parent click if any
-                                handleEditDescription(issue.id, issue.description);
-                              }}
-                            >
-                              {issue.description}
-                            </p>
-                          )}
-                        </div>
-                        {/* <div className="content-stretch flex gap-[8px] items-center relative shrink-0">
-                          <div className="relative shrink-0">
-                            <p className="leading-[24px] not-italic relative shrink-0 text-[16px] text-[#52525c] text-nowrap font-mono">
-                              {issue.coordinates}
-                            </p>
-                          </div>
-                        </div> */}
+                        <span className="font-mono text-lg font-bold" style={{ color: titleColor }}>
+                          {issue.severity}
+                        </span>
                       </div>
                     </div>
+
+                    {/* Row 2: Grid for Component & Type */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-zinc-500 text-xs font-mono mb-1" style={{ color: '#697281' }}>Component</p>
+                        <p className="text-zinc-200 text-sm font-sans">{issue.component || '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-zinc-500 text-xs font-mono mb-1" style={{ color: '#697281' }}>Type</p>
+                        <p className="text-zinc-200 text-sm font-sans">{issue.dimension || '-'}</p>
+                      </div>
+                    </div>
+
+                    {/* Row 3: Description (Editable) */}
+                    <div>
+                      <p className="text-zinc-500 text-xs font-mono mb-1" style={{ color: '#697281' }}>Description</p>
+                      <div
+                        className={`relative w-full ${isEditing ? 'border border-blue-500 rounded p-1' : ''}`}
+                      >
+                        {isEditing ? (
+                          <textarea
+                            autoFocus
+                            value={tempDescription}
+                            onChange={(e) => setTempDescription(e.target.value)}
+                            onBlur={() => handleSaveDescription(issue.id)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && !e.shiftKey) {
+                                e.preventDefault();
+                                handleSaveDescription(issue.id);
+                              }
+                            }}
+                            className="w-full bg-zinc-900 text-zinc-200 text-[14px] font-sans p-2 rounded outline-none border border-blue-500 resize-none"
+                            rows={3}
+                          />
+                        ) : (
+                          <p
+                            className="text-[14px] text-zinc-200 font-sans leading-relaxed whitespace-normal break-words cursor-text hover:text-white transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEditDescription(issue.id, issue.description);
+                            }}
+                          >
+                            {issue.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Row 4: Expected */}
+                    {issue.expected && (
+                      <div>
+                        <p className="text-[14px] font-sans text-zinc-300">
+                          <span className="font-bold text-zinc-400 mr-" style={{ color: '#697281' }}>Expected : </span>
+                          {issue.expected}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Row 5: Actual */}
+                    {issue.actual && (
+                      <div>
+                        <p className="text-[14px] font-sans text-zinc-300">
+                          <span className="font-bold text-zinc-400 mr-1" style={{ color: '#697281' }}>Actual : </span>
+                          {issue.actual}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 );
               })}
