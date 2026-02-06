@@ -66,6 +66,10 @@ interface IssueData {
         id: string;
         type: string;
         description: string;
+        component?: string;
+        dimension?: string;
+        actual?: string;
+        expected?: string;
     }[];
 }
 
@@ -440,15 +444,42 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                         <View style={[styles.tableRow, { backgroundColor: '#F3F4F6', borderBottomWidth: 2 }]} fixed>
                             <Text style={[styles.tableHeader, styles.col1]}>No.</Text>
                             <Text style={[styles.tableHeader, styles.col2]}>Severity</Text>
-                            <Text style={[styles.tableHeader, styles.col3]}>Type</Text>
+                            <Text style={[styles.tableHeader, styles.col3]}>Component</Text>
                             <Text style={[styles.tableHeader, styles.col4]}>Description</Text>
                         </View>
                         {issues.map((issue, index) => (
                             <View key={`${issue.id}-${index}`} style={styles.tableRow} wrap={false}>
                                 <Text style={[styles.tableCell, styles.col1]}>{String(index + 1).padStart(2, '0')}</Text>
                                 <Text style={[styles.tableCell, styles.col2]}>{issue.severity}</Text>
-                                <Text style={[styles.tableCell, styles.col3]}>{issue.type}</Text>
-                                <Text style={[styles.tableCell, styles.col4]}>{issue.description.replace(/\n/g, ' ')}</Text>
+                                <Text style={[styles.tableCell, styles.col3]}>{issue.component }</Text>
+                                <View style={[styles.tableCell, styles.col4]}>
+                                    <Text style={{ marginBottom: 2 }}>
+                                        <Text style={styles.bold}>Issue Type: </Text>
+                                        {issue.type}
+                                    </Text>
+                                    {/* <Text style={{ marginBottom: 2 }}>
+                                        <Text style={styles.bold}>Description: </Text>
+                                        {issue.description}
+                                    </Text> */}
+                                    {issue.actual && (
+                                        <Text style={{ marginBottom: 2 }}>
+                                            <Text style={styles.bold}>Actual: </Text>
+                                            {issue.actual}
+                                        </Text>
+                                    )}
+                                    {issue.expected && (
+                                        <Text style={{ marginBottom: 2 }}>
+                                            <Text style={styles.bold}>Expected: </Text>
+                                            {issue.expected}
+                                        </Text>
+                                    )}
+                                    {/* {issue.dimension && (
+                                        <Text style={{ marginBottom: 2 }}>
+                                            <Text style={styles.bold}>Dimension: </Text>
+                                            {issue.dimension}
+                                        </Text>
+                                    )} */}
+                                </View>
                             </View>
                         ))}
                         {issues.length === 0 && (
