@@ -31,7 +31,8 @@ import { ImageGrid } from "./common/ImageGridPanel";
 import { FigmaApi } from '../api/generated';
 import { API_BASE_URL } from '../api/config';
 import apiClient from '../api/client';
-import { Buffer } from 'buffer';
+import AutomationSteps from "./automation/AutomationSteps";
+import GlobalVariables from "./automation/GlobalVariables/GlobalVariables";
 
 const mapScreenToImage = (screen: any): BaselineImage => ({
   id: screen.id ? screen.id.toString() : Date.now().toString(),
@@ -212,6 +213,7 @@ export function AndroidTVDetailFigma({
   };
 
   const [loadingActivity, setLoadingActivity] = useState<"url" | "csv" | "image" | "compare" | "screens" | null>("screens");
+  const [activeView, setActiveView] = useState<'screenshots' | 'automation' | 'variables'>('screenshots');
 
   const fetchScreens = async () => {
     setLoadingActivity("screens");
@@ -855,16 +857,55 @@ export function AndroidTVDetailFigma({
               {/* Right Panel - Actual Build Images */}
               <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
                 <div className="flex justify-between mb-[20px]">
-                  <p className="text-[#929292] text-[12px] font-medium uppercase">
-                    Actual Build images
-                  </p>
-                  <button
-                    onClick={handleBrowseFolder}
-                    className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
-                  >
-                    <Folder className="w-[16px] h-[16px]" />
-                    <span>Browse Folder</span>
-                  </button>
+                  <div className="flex flex-col gap-4 w-full">
+                    <p className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
+                      Actual images
+                    </p>
+                    <div className="flex gap-6 border-b border-white/10 w-full relative">
+                      <button
+                        onClick={() => setActiveView('screenshots')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'screenshots' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'screenshots' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Screenshots
+                      </button>
+                      <button
+                        onClick={() => setActiveView('automation')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'automation' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'automation' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Automation steps
+                      </button>
+                      <button
+                        onClick={() => setActiveView('variables')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'variables' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'variables' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Global Variables
+                      </button>
+                    </div>
+                  </div>
+                  {/* {activeView === 'screenshots' && (
+                    <button
+                      onClick={handleBrowseFolder}
+                      className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
+                    >
+                      <Folder className="w-[16px] h-[16px]" />
+                      <span>Browse Folder</span>
+                    </button>
+                  )} */}
                 </div>
 
                 {loadingActivity === "compare" ? (
@@ -892,30 +933,38 @@ export function AndroidTVDetailFigma({
                   />
                 ) : (
                   <>
+                    {activeView === 'screenshots' ? (
+                      <>
 
-                    {/* Display Actual Images in Grid */}
-                    <ImageGrid className="grid-cols-3 gap-[15px]">
-                      {actualImages.map((image) => (
-                        <div key={image.id} className="relative group">
-                          <ImageCard
-                            id={image.id}
-                            name={image.name}
-                            url={image.url}
-                            width={image.width}
-                            height={image.height}
-                            isSelected={selectedCardId === image.id}
-                            onSelect={setSelectedCardId}
-                            className="bg-[rgba(255,255,255,0.05)]"
-                          />
-                          <button
-                            onClick={() => handleDeleteImage(image.id, "actual")}
-                            className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
-                          >
-                            <X className="w-[12px] h-[12px]" />
-                          </button>
-                        </div>
-                      ))}
-                    </ImageGrid>
+                        {/* Display Actual Images in Grid */}
+                        <ImageGrid className="grid-cols-3 gap-[15px]">
+                          {actualImages.map((image) => (
+                            <div key={image.id} className="relative group">
+                              <ImageCard
+                                id={image.id}
+                                name={image.name}
+                                url={image.url}
+                                width={image.width}
+                                height={image.height}
+                                isSelected={selectedCardId === image.id}
+                                onSelect={setSelectedCardId}
+                                className="bg-[rgba(255,255,255,0.05)]"
+                              />
+                              <button
+                                onClick={() => handleDeleteImage(image.id, "actual")}
+                                className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                              >
+                                <X className="w-[12px] h-[12px]" />
+                              </button>
+                            </div>
+                          ))}
+                        </ImageGrid>
+                      </>
+                    ) : activeView === 'automation' ? (
+                      <AutomationSteps projectId={projectId} />
+                    ) : (
+                      <GlobalVariables projectId={projectId} />
+                    )}
                   </>
                 )}
               </div>
