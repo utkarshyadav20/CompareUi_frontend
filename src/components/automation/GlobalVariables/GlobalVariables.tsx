@@ -17,7 +17,7 @@ const GlobalVariables: React.FC<GlobalVariablesProps> = ({ projectId }) => {
     };
 
     return (
-        <div className="pt-4 font-inter p-[0px 16px 0px 16px]">
+        <div className="pt-4 font-inter "style={{padding:"0px 16px 0px 16px"}}>
             
             {/* Header */}
             <div className="mb-8">

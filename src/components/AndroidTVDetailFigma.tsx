@@ -975,7 +975,7 @@ export function AndroidTVDetailFigma({
                           </div>
                         </div>
                       ) : (
-                        <ImageGrid className="grid-cols-3 gap-[15px]">
+                        <ImageGrid className="grid-cols-3 gap-[15px]" >
                           {actualImages.map((image) => (
                             <div key={image.id} className="relative group">
                               <ImageCard
