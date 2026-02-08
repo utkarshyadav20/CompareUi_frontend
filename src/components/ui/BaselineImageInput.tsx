@@ -6,6 +6,10 @@ import {
   Trash2,
   Upload,
   Loader2,
+  Code,
+  Search,
+  List,
+  GripVertical,
 } from "lucide-react";
 import React, { useState } from "react";
 
@@ -32,7 +36,11 @@ interface BaselineImageInputProps {
   onRemoveImage: (id: string) => void;
   onRefreshImage?: (id: string) => void;
   onReplaceImage?: (id: string) => void;
+  onReorder?: (newImages: BaselineImage[]) => void;
   loadingActivity?: string | null;
+  isAutomationMode?: boolean;
+  searchQuery: string;
+  onSearchQueryChange: (query: string) => void;
 }
 
 export function BaselineImageInput({
@@ -50,10 +58,37 @@ export function BaselineImageInput({
   onRemoveImage,
   onRefreshImage,
   onReplaceImage,
+  onReorder,
   loadingActivity = null,
+  isAutomationMode = false,
+  searchQuery,
+  onSearchQueryChange,
 }: BaselineImageInputProps) {
   const [openImageMenuId, setOpenImageMenuId] = useState<string | null>(null);
   const [isUploadVisible, setIsUploadVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault();
+    if (draggedIndex === null || draggedIndex === index) return;
+
+    const newImages = [...images];
+    const draggedItem = newImages[draggedIndex];
+    newImages.splice(draggedIndex, 1);
+    newImages.splice(index, 0, draggedItem);
+
+    setDraggedIndex(index);
+    onReorder?.(newImages);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
+  };
 
   // Helper handling for file inputs to reset value after selection allowing same file to be selected again
   const handleFileChange = (
@@ -69,7 +104,7 @@ export function BaselineImageInput({
       {/* Header with title and action buttons */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b border-black/10 dark:border-white/10">
         <h3 className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
-          Baselining Images
+          Baseline Images
         </h3>
         <div className="flex items-center gap-3">
           {/* Upload Toggle Button - Only visible when hasImages is true */}
@@ -191,96 +226,162 @@ export function BaselineImageInput({
           </div>
         )}
 
-        {/* 4. Image List */}
+        {/* Filter and View Toggle */}
+        {hasImages && (
+          <div className="flex items-center gap-2 mb-4 px-1">
+            <div className="flex-1 flex-row relative bg-[#1A1A1A] border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder:text-gray-600 " style={{
+              display: "flex",
+              flexDirection: "row",
+              gap: "10px",
+
+            }}>
+              <Search className=" w-4 h-4 text-gray-500" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => onSearchQueryChange(e.target.value)}
+                placeholder="Filter Screen..."
+                className="w-full "
+              />
+            </div>
+            <button
+              onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')}
+              className={`p-2 rounded-lg border border-white/5 transition-colors ${viewMode === 'list' ? 'bg-white/10 text-white' : 'bg-white/5 text-gray-500 hover:text-gray-300'}`}
+            >
+              <List className="w-5 h-5" />
+            </button>
+          </div>
+        )}
+
+        {/* Image List */}
         {hasImages && (
           <div className="mt-5 space-y-3 pr-2">
-            <h3 className="text-black dark:text-white text-sm font-semibold mb-2">Uploaded Images</h3>
-            {images.map((image) => (
-              <div
-                key={image.id}
-                onClick={() => onSelectImage(image.id)}
-                className={`group rounded-[8px] shrink-0 relative border-[0.5px] cursor-pointer transition-all ${selectedImageId === image.id
-                  ? "bg-white/15 border-white/50"
-                  : "bg-white/5 border-white/20 hover:bg-white/10"
-                  }`}
-              >
-                <div className="flex flex-col gap-1 p-[6px]">
-                  {/* Header with filename and 3-dot menu */}
-                  <div className="flex items-center justify-between w-full">
-                    <p className="text-black dark:text-white text-[12px] font-bold truncate flex-1 min-w-0">
-                      {image.name}
-                    </p>
+            {images.map((image, index) => (
+              viewMode === 'grid' ? (
+                <div
+                  key={image.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => onSelectImage(image.id)}
+                  className={`group rounded-[8px] shrink-0 relative border-[0.5px] cursor-pointer transition-all ${selectedImageId === image.id
+                    ? "bg-white/15 border-white/50"
+                    : "bg-white/5 border-white/20 hover:bg-white/10"
+                    } ${draggedIndex === index ? 'opacity-50' : ''}`}
+                >
+                  <div className="flex flex-col gap-1 p-[6px]">
+                    {/* Header with filename and 3-dot menu */}
+                    <div className="flex items-center justify-between w-full">
+                      <div className="flex flex-col min-w-0 flex-1">
+                        <p className="text-black dark:text-white text-[12px] font-bold truncate">
+                          {image.name}
+                        </p>
+                        <span className="text-[10px] text-gray-500">{image.width}x{image.height}</span>
+                      </div>
 
-                    {/* 3-Dot Menu - Shown on hover */}
-                    <div className="relative hidden group-hover:block ml-2">
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setOpenImageMenuId(
-                            openImageMenuId === image.id ? null : image.id
-                          );
-                        }}
-                        className="w-4 h-4 bg-black/15 dark:bg-white/15 flex items-center justify-center rounded-[3px] hover:bg-black/25 dark:hover:bg-white/25 transition-colors"
-                      >
-                        <MoreVertical className="w-3 h-3 text-black dark:text-white" />
-                      </button>
+                      {/* 3-Dot Menu - Shown on hover */}
+                      <div className="relative hidden group-hover:block ml-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenImageMenuId(
+                              openImageMenuId === image.id ? null : image.id
+                            );
+                          }}
+                          className="w-4 h-4 bg-black/15 dark:bg-white/15 flex items-center justify-center rounded-[3px] hover:bg-black/25 dark:hover:bg-white/25 transition-colors"
+                        >
+                          <MoreVertical className="w-3 h-3 text-black dark:text-white" />
+                        </button>
 
-                      {/* Dropdown Menu */}
-                      {openImageMenuId === image.id && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-30"
-                            onClick={() => setOpenImageMenuId(null)}
-                          />
-                          <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
-                            <div className="p-1">
-                              <button
-                                onClick={() => {
-                                  onRefreshImage?.(image.id);
-                                  setOpenImageMenuId(null);
-                                }}
-                                className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
-                              >
-                                <RefreshCw className="w-3.5 h-3.5" />
-                                <span>Refresh image</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  onReplaceImage?.(image.id);
-                                  setOpenImageMenuId(null);
-                                }}
-                                className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
-                              >
-                                <Upload className="w-3.5 h-3.5" />
-                                <span>Replace image</span>
-                              </button>
-                              <button
-                                onClick={() => {
-                                  onRemoveImage(image.id);
-                                  setOpenImageMenuId(null);
-                                }}
-                                className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                                <span>Remove screen</span>
-                              </button>
+                        {/* Dropdown Menu */}
+                        {openImageMenuId === image.id && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-30"
+                              onClick={() => setOpenImageMenuId(null)}
+                            />
+                            <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
+                              <div className="p-1">
+                                <button
+                                  onClick={() => {
+                                    onRefreshImage?.(image.id);
+                                    setOpenImageMenuId(null);
+                                  }}
+                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
+                                >
+                                  <RefreshCw className="w-3.5 h-3.5" />
+                                  <span>Refresh image</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    onReplaceImage?.(image.id);
+                                    setOpenImageMenuId(null);
+                                  }}
+                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
+                                >
+                                  <Upload className="w-3.5 h-3.5" />
+                                  <span>Replace image</span>
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    onRemoveImage(image.id);
+                                    setOpenImageMenuId(null);
+                                  }}
+                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Remove screen</span>
+                                </button>
+                              </div>
                             </div>
-                          </div>
-                        </>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Image Container */}
+                    <div className="w-full rounded-[3px] overflow-hidden relative">
+                      <img
+                        src={image.url}
+                        alt={image.name}
+                        className="w-full h-auto"
+                      />
+                      {isAutomationMode && selectedImageId === image.id && (
+                        <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                          <Code className="w-8 h-8 text-white" />
+                        </div>
                       )}
                     </div>
                   </div>
-
-                  {/* Image Container */}
-                  <div className="w-full rounded-[3px] overflow-hidden">
-                    <img
-                      src={image.url}
-                      alt={image.name}
-                      className="w-full h-auto"
-                    />
-                  </div>
                 </div>
-              </div>
+              ) : (
+                <div
+                  key={image.id}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(e) => handleDragOver(e, index)}
+                  onDragEnd={handleDragEnd}
+                  onClick={() => onSelectImage(image.id)}
+                className={`flex items-center gap-3 p-3 cursor-pointer border transition-colors
+  ${selectedImageId === image.id
+      ? 'bg-[#27272A] border-[#ffffff20]'
+      : 'bg-transparent border-transparent hover:bg-white/50'
+  } ${draggedIndex === index ? 'opacity-80' : ''}`}
+  style={{
+    borderRadius: '10px',
+    backgroundColor: selectedImageId === image.id ? '#27272A' : 'transparent',
+    borderColor: selectedImageId === image.id ? '#4B5563' : 'transparent',
+    opacity: draggedIndex === index ? 0.8 : 1,
+    border: selectedImageId === image.id ? '1px solid #4B5563' : 'transparent',
+  }}
+                >
+                  <GripVertical className="w-4 h-4 text-gray-600 flex-shrink-0 cursor-grab active:cursor-grabbing" />
+                  <span className={`text-[14px] font-medium truncate ${selectedImageId === image.id ? 'text-white' : 'text-gray-400'}`}>
+                    {image.name.replace(/\.[^/.]+$/, "")}
+                  </span>
+                </div>
+              )
             ))}
           </div>
         )}

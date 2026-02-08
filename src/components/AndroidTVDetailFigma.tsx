@@ -240,6 +240,12 @@ export function AndroidTVDetailFigma({
     }
   }, [projectId]);
 
+  useEffect(() => {
+    if (!selectedCardId && baselineImages.length > 0) {
+      setSelectedCardId(baselineImages[0].id);
+    }
+  }, [selectedCardId, baselineImages]);
+
   // Fetch actual build images when selectedBuild changes
   useEffect(() => {
     if (activeTab !== "testingpanel") return;
@@ -632,9 +638,11 @@ export function AndroidTVDetailFigma({
     input.click();
   };
 
+  const [baselineSearchQuery, setBaselineSearchQuery] = useState("");
+
   // Filter baseline images based on search query
-  const filteredBaselineImages = baselineImages.filter((image) =>
-    image.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBaselineImages = baselineImages.filter((img) =>
+    img.name.toLowerCase().includes(baselineSearchQuery.toLowerCase())
   );
 
   const handleViewTest = (testId: string) => {
@@ -843,6 +851,10 @@ export function AndroidTVDetailFigma({
                     if (img) handleRefreshOne(img.name);
                   }}
                   onReplaceImage={handleReplaceImage}
+                  onReorder={setBaselineImages}
+                  isAutomationMode={activeView === 'automation'}
+                  searchQuery={baselineSearchQuery}
+                  onSearchQueryChange={setBaselineSearchQuery}
                 />
                 {/* Hidden input for replace */}
                 <input
@@ -855,9 +867,9 @@ export function AndroidTVDetailFigma({
               </div>
 
               {/* Right Panel - Actual Build Images */}
-              <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
-                <div className="flex justify-between mb-[20px]">
-                  <div className="flex flex-col gap-4 w-full">
+              <div className="flex-1  border border-black  flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
+                <div className="flex justify-between mb-[16px]">
+                  <div className="flex flex-col gap-4 w-full" style={{ padding: '16px 16px 0px 16px', borderBottom: '1px solid #ffffff20' }}>
                     <p className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
                       Actual images
                     </p>
@@ -912,31 +924,57 @@ export function AndroidTVDetailFigma({
                   <div className="flex-1 flex items-center justify-center">
                     <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
                   </div>
-                ) : actualImages.length === 0 ? (
-                  <EmptyState
-                    icon={Folder}
-                    description={
-                      <>
-                        Waiting for image to receive
-                        <br />
-                        from Android build
-                      </>
-                    }
-                    action={
-                      <button
-                        onClick={handleBrowseFolder}
-                        className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
-                      >
-                        <Folder className="w-[18px] h-[18px]" />
-                      </button>
-                    }
-                  />
                 ) : (
                   <>
                     {activeView === 'screenshots' ? (
-                      <>
-
-                        {/* Display Actual Images in Grid */}
+                      actualImages.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center p-4">
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const files = e.dataTransfer.files;
+                              if (files && files.length > 0) {
+                                const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+                                if (imageFiles.length > 0) {
+                                  imageFiles.forEach((file) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      const img = new Image();
+                                      img.onload = () => {
+                                        const newImage: BaselineImage = {
+                                          id: Date.now().toString() + Math.random(),
+                                          name: file.name,
+                                          url: evt.target?.result as string,
+                                          width: img.width,
+                                          height: img.height,
+                                        };
+                                        setActualImages((prev) => [...prev, newImage]);
+                                      };
+                                      img.src = evt.target?.result as string;
+                                    };
+                                    reader.readAsDataURL(file);
+                                  });
+                                }
+                              }
+                            }}
+                            className="w-full max-w-[600px] border-2 border-dashed border-white/10 rounded-[12px] flex flex-col items-center justify-center gap-2 transition-colors hover:bg-white/[0.04] hover:border-white/20 group cursor-pointer"
+                            style={{ height: "12rem", background: "rgba(255, 255, 255, 0.02)" }}
+                            onClick={handleBrowseFolder}
+                          >
+                            <p className="text-gray-600 font-medium text-center">
+                              Drag & drop your Screenshot folder here or{" "}<br />
+                              <span className="underline hover:text-white transition-colors" style={{ color: "#6C6C6C" }}>
+                                browse
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
                         <ImageGrid className="grid-cols-3 gap-[15px]">
                           {actualImages.map((image) => (
                             <div key={image.id} className="relative group">
@@ -959,9 +997,12 @@ export function AndroidTVDetailFigma({
                             </div>
                           ))}
                         </ImageGrid>
-                      </>
+                      )
                     ) : activeView === 'automation' ? (
-                      <AutomationSteps projectId={projectId} />
+                      <AutomationSteps
+                        projectId={projectId}
+                        selectedScreenName={baselineImages.find(img => img.id === selectedCardId)?.name}
+                      />
                     ) : (
                       <GlobalVariables projectId={projectId} />
                     )}
