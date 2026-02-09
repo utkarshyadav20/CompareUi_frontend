@@ -272,6 +272,9 @@ export function ProjectDetail({
               }}
               onRefreshImage={(id) => console.log("Refresh image", id)}
               onReplaceImage={(id) => console.log("Replace image", id)}
+              onReorder={setUploadedImages}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
             />
           </div>
 

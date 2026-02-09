@@ -13,6 +13,7 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
   const [baselineUrl, setBaselineUrl] = useState("");
   const [baselineImages, setBaselineImages] = useState<BaselineImage[]>([]);
   const [selectedImageId, setSelectedImageId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [actualImage, setActualImage] = useState<BaselineImage | null>(null);
 
@@ -87,13 +88,17 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
     console.log("CSV Upload not fully implemented in mock");
   };
 
+  const filteredBaselineImages = baselineImages.filter((img) =>
+    img.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)]">
       {/* Baselining Images Panel */}
       <div className="flex-1 bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip flex flex-col">
         {/* Using the common component which includes header and content */}
         <BaselineImageInput
-          images={baselineImages}
+          images={filteredBaselineImages}
           hasImages={baselineImages.length > 0}
           selectedImageId={selectedImageId}
           baselineUrl={baselineUrl}
@@ -109,6 +114,9 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
           }
           onRefreshImage={(id) => console.log("Refresh", id)}
           onReplaceImage={(id) => console.log("Replace", id)}
+          onReorder={setBaselineImages}
+          searchQuery={searchQuery}
+          onSearchQueryChange={setSearchQuery}
         />
       </div>
 

@@ -34,6 +34,7 @@ export function AndroidTVDetail({
   );
   const [selectedActualId, setSelectedActualId] = useState<string | null>(null);
   const [comparisonStarted, setComparisonStarted] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Helper handling for file inputs to reset value after selection allowing same file to be selected again
   const handleFileChange = (
@@ -194,13 +195,17 @@ export function AndroidTVDetail({
 
   const isPhysicalDevice = platformType === "Physical Device";
 
+  const filteredBaselineImages = baselineImages.filter((img) =>
+    img.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <div className="px-4 md:px-8 pt-0 pb-[25px] flex flex-col md:flex-row gap-0 min-h-[calc(100vh-280px)]">
       {/* Baselining Images Panel */}
       <div className="w-full md:w-[335px] bg-black/5 dark:bg-white/10 border border-black/10 dark:border-black overflow-clip shrink-0">
         <div className="p-5 flex flex-col gap-5 h-full">
           <BaselineImageInput
-            images={baselineImages}
+            images={filteredBaselineImages}
             hasImages={baselineImages.length > 0}
             selectedImageId={selectedBaselineId}
             baselineUrl={baselineUrl}
@@ -216,6 +221,9 @@ export function AndroidTVDetail({
             onRemoveImage={(id) => handleRemoveImage(id, "baseline")}
             onRefreshImage={(id) => console.log("Refresh image", id)}
             onReplaceImage={(id) => console.log("Replace image", id)}
+            onReorder={setBaselineImages}
+            searchQuery={searchQuery}
+            onSearchQueryChange={setSearchQuery}
           />
         </div>
       </div>

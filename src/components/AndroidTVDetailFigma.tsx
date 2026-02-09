@@ -31,7 +31,8 @@ import { ImageGrid } from "./common/ImageGridPanel";
 import { FigmaApi } from '../api/generated';
 import { API_BASE_URL } from '../api/config';
 import apiClient from '../api/client';
-import { Buffer } from 'buffer';
+import AutomationSteps from "./automation/AutomationSteps";
+import GlobalVariables from "./automation/GlobalVariables/GlobalVariables";
 
 const mapScreenToImage = (screen: any): BaselineImage => ({
   id: screen.id ? screen.id.toString() : Date.now().toString(),
@@ -212,6 +213,7 @@ export function AndroidTVDetailFigma({
   };
 
   const [loadingActivity, setLoadingActivity] = useState<"url" | "csv" | "image" | "compare" | "screens" | null>("screens");
+  const [activeView, setActiveView] = useState<'screenshots' | 'automation' | 'variables'>('screenshots');
 
   const fetchScreens = async () => {
     setLoadingActivity("screens");
@@ -237,6 +239,12 @@ export function AndroidTVDetailFigma({
       fetchScreens();
     }
   }, [projectId]);
+
+  useEffect(() => {
+    if (!selectedCardId && baselineImages.length > 0) {
+      setSelectedCardId(baselineImages[0].id);
+    }
+  }, [selectedCardId, baselineImages]);
 
   // Fetch actual build images when selectedBuild changes
   useEffect(() => {
@@ -630,9 +638,11 @@ export function AndroidTVDetailFigma({
     input.click();
   };
 
+  const [baselineSearchQuery, setBaselineSearchQuery] = useState("");
+
   // Filter baseline images based on search query
-  const filteredBaselineImages = baselineImages.filter((image) =>
-    image.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredBaselineImages = baselineImages.filter((img) =>
+    img.name.toLowerCase().includes(baselineSearchQuery.toLowerCase())
   );
 
   const handleViewTest = (testId: string) => {
@@ -841,6 +851,10 @@ export function AndroidTVDetailFigma({
                     if (img) handleRefreshOne(img.name);
                   }}
                   onReplaceImage={handleReplaceImage}
+                  onReorder={setBaselineImages}
+                  isAutomationMode={activeView === 'automation'}
+                  searchQuery={baselineSearchQuery}
+                  onSearchQueryChange={setBaselineSearchQuery}
                 />
                 {/* Hidden input for replace */}
                 <input
@@ -853,69 +867,145 @@ export function AndroidTVDetailFigma({
               </div>
 
               {/* Right Panel - Actual Build Images */}
-              <div className="flex-1  border border-black p-[20px] flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
-                <div className="flex justify-between mb-[20px]">
-                  <p className="text-[#929292] text-[12px] font-medium uppercase">
-                    Actual Build images
-                  </p>
-                  <button
-                    onClick={handleBrowseFolder}
-                    className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
-                  >
-                    <Folder className="w-[16px] h-[16px]" />
-                    <span>Browse Folder</span>
-                  </button>
+              <div className="flex-1  border border-black  flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
+                <div className="flex justify-between mb-[16px]">
+                  <div className="flex flex-col gap-4 w-full" style={{ padding: '16px 16px 0px 16px', borderBottom: '1px solid #ffffff20' }}>
+                    <p className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
+                      Actual images
+                    </p>
+                    <div className="flex gap-6 border-b border-white/10 w-full relative">
+                      <button
+                        onClick={() => setActiveView('screenshots')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'screenshots' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'screenshots' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Screenshots
+                      </button>
+                      <button
+                        onClick={() => setActiveView('automation')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'automation' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'automation' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Automation steps
+                      </button>
+                      <button
+                        onClick={() => setActiveView('variables')}
+                        className={`text-[14px] font-medium pb-2 transition-colors relative cursor-pointer`}
+                        style={{
+                          borderBottom: activeView === 'variables' ? '2px solid white' : '2px solid transparent',
+                          marginBottom: '-1px',
+                          color: activeView === 'variables' ? 'white' : 'rgba(255, 255, 255, 0.4)'
+                        }}
+                      >
+                        Global Variables
+                      </button>
+                    </div>
+                  </div>
+                  {/* {activeView === 'screenshots' && (
+                    <button
+                      onClick={handleBrowseFolder}
+                      className="flex items-center gap-[11px] text-[14px] text-white bg-white/10 px-[16px] py-[10px] rounded-[8px] hover:bg-white/20 transition-colors"
+                    >
+                      <Folder className="w-[16px] h-[16px]" />
+                      <span>Browse Folder</span>
+                    </button>
+                  )} */}
                 </div>
 
                 {loadingActivity === "compare" ? (
                   <div className="flex-1 flex items-center justify-center">
                     <img src={LoaderGif} alt="Loading..." style={{ height: "10rem" }} />
                   </div>
-                ) : actualImages.length === 0 ? (
-                  <EmptyState
-                    icon={Folder}
-                    description={
-                      <>
-                        Waiting for image to receive
-                        <br />
-                        from Android build
-                      </>
-                    }
-                    action={
-                      <button
-                        onClick={handleBrowseFolder}
-                        className="flex items-center gap-[11px] text-[18px] text-white hover:opacity-80 transition-opacity"
-                      >
-                        <Folder className="w-[18px] h-[18px]" />
-                      </button>
-                    }
-                  />
                 ) : (
                   <>
-
-                    {/* Display Actual Images in Grid */}
-                    <ImageGrid className="grid-cols-3 gap-[15px]">
-                      {actualImages.map((image) => (
-                        <div key={image.id} className="relative group">
-                          <ImageCard
-                            id={image.id}
-                            name={image.name}
-                            url={image.url}
-                            width={image.width}
-                            height={image.height}
-                            isSelected={selectedCardId === image.id}
-                            onSelect={setSelectedCardId}
-                            className="bg-[rgba(255,255,255,0.05)]"
-                          />
-                          <button
-                            onClick={() => handleDeleteImage(image.id, "actual")}
-                            className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                    {activeView === 'screenshots' ? (
+                      actualImages.length === 0 ? (
+                        <div className="flex-1 flex items-center justify-center p-4">
+                          <div
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                            onDrop={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              const files = e.dataTransfer.files;
+                              if (files && files.length > 0) {
+                                const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+                                if (imageFiles.length > 0) {
+                                  imageFiles.forEach((file) => {
+                                    const reader = new FileReader();
+                                    reader.onload = (evt) => {
+                                      const img = new Image();
+                                      img.onload = () => {
+                                        const newImage: BaselineImage = {
+                                          id: Date.now().toString() + Math.random(),
+                                          name: file.name,
+                                          url: evt.target?.result as string,
+                                          width: img.width,
+                                          height: img.height,
+                                        };
+                                        setActualImages((prev) => [...prev, newImage]);
+                                      };
+                                      img.src = evt.target?.result as string;
+                                    };
+                                    reader.readAsDataURL(file);
+                                  });
+                                }
+                              }
+                            }}
+                            className="w-full max-w-[600px] border-2 border-dashed border-white/10 rounded-[12px] flex flex-col items-center justify-center gap-2 transition-colors hover:bg-white/[0.04] hover:border-white/20 group cursor-pointer"
+                            style={{ height: "12rem", background: "rgba(255, 255, 255, 0.02)" }}
+                            onClick={handleBrowseFolder}
                           >
-                            <X className="w-[12px] h-[12px]" />
-                          </button>
+                            <p className="text-gray-600 font-medium text-center">
+                              Drag & drop your Screenshot folder here or{" "}<br />
+                              <span className="underline hover:text-white transition-colors" style={{ color: "#6C6C6C" }}>
+                                browse
+                              </span>
+                            </p>
+                          </div>
                         </div>
-                      ))}
-                    </ImageGrid>
+                      ) : (
+                        <ImageGrid className="grid-cols-3 gap-[15px]" >
+                          {actualImages.map((image) => (
+                            <div key={image.id} className="relative group">
+                              <ImageCard
+                                id={image.id}
+                                name={image.name}
+                                url={image.url}
+                                width={image.width}
+                                height={image.height}
+                                isSelected={selectedCardId === image.id}
+                                onSelect={setSelectedCardId}
+                                className="bg-[rgba(255,255,255,0.05)]"
+                              />
+                              <button
+                                onClick={() => handleDeleteImage(image.id, "actual")}
+                                className="absolute top-[5px] right-[5px] bg-red-500 text-white p-[6px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 z-10"
+                              >
+                                <X className="w-[12px] h-[12px]" />
+                              </button>
+                            </div>
+                          ))}
+                        </ImageGrid>
+                      )
+                    ) : activeView === 'automation' ? (
+                      <AutomationSteps
+                        projectId={projectId}
+                        selectedScreenName={baselineImages.find(img => img.id === selectedCardId)?.name}
+                      />
+                    ) : (
+                      <GlobalVariables projectId={projectId} />
+                    )}
                   </>
                 )}
               </div>

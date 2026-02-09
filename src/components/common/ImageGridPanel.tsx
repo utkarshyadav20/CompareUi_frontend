@@ -40,7 +40,7 @@ interface ImageGridProps {
 export function ImageGrid({ children, className }: ImageGridProps) {
     return (
         <div className="flex-1 overflow-y-auto scrollbar-custom">
-            <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5", className)}>
+            <div className={cn("grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5", className) } style={{ padding: "0px 16px 0px 16px" }}>
                 {children}
             </div>
         </div>
