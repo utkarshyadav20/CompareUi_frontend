@@ -457,10 +457,10 @@ export const PDFReportDocument: React.FC<PDFReportDocumentProps> = ({
                                         <Text style={styles.bold}>Issue Type: </Text>
                                         {issue.type}
                                     </Text>
-                                    {/* <Text style={{ marginBottom: 2 }}>
+                                    <Text style={{ marginBottom: 2 }}>
                                         <Text style={styles.bold}>Description: </Text>
                                         {issue.description}
-                                    </Text> */}
+                                    </Text>
                                     {issue.actual && (
                                         <Text style={{ marginBottom: 2 }}>
                                             <Text style={styles.bold}>Actual: </Text>

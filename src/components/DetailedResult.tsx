@@ -869,7 +869,7 @@ export function DetailedResult({
 
           {/* ISSUES */}
           <div className="flex-1 overflow-y-auto p-6">
-            <div className="flex items-center gap-3 mb-2">
+            {/* <div className="flex items-center gap-3 mb-2">
               <h3 className="text-xl font-semibold text-white">Issue Overview
               </h3>
               {(!modelResult || !modelResult.coordsVsText) && (
@@ -888,7 +888,7 @@ export function DetailedResult({
             </div>
             <p className="text-[14px] text-zinc-400 font-mono leading-relaxed whitespace-normal break-words">
               {isProcessing ? "Analyzing differences..." : modelResult?.summary}
-            </p>
+            </p> */}
 
             {/* SEVERITY CARDS */}
             <div className="flex gap-[10px] mb-8 overflow-x-auto pb-2">
