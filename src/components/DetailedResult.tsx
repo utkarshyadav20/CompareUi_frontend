@@ -218,74 +218,111 @@ export function DetailedResult({
         ? JSON.parse(modelResult.coordsVsText)
         : modelResult.coordsVsText;
 
-      // Create a map of original boxes for geometry lookup
-      const originalBoxMap = new Map(originalBoxes.map(b => [b.id, b]));
-
-      // Group analysis items by ID
-      const groupedItems = new Map<string, any[]>();
+      // Group analysis items by ID for quick lookup
+      const analysisMap = new Map<string, any[]>();
       if (Array.isArray(analysisItems)) {
         analysisItems.forEach((item: any) => {
           const id = item.id || 'unknown';
-          if (!groupedItems.has(id)) {
-            groupedItems.set(id, []);
+          if (!analysisMap.has(id)) {
+            analysisMap.set(id, []);
           }
-          groupedItems.get(id)!.push(item);
+          analysisMap.get(id)!.push(item);
         });
       }
 
-      // Drive from grouped items
-      boxes = Array.from(groupedItems.entries()).map(([id, items], index) => {
-        // Try to find matching box in original results
-        const matchingBox = originalBoxMap.get(id);
+      // 1. Map existing boxes to include analysis data
+      boxes = originalBoxes.flatMap(originalBox => {
+        const matchingAnalysis = analysisMap.get(originalBox.id);
 
-        // Parse ID "x-y" if geometry not found
-        let x = 0, y = 0, width = 50, height = 50;
+        if (matchingAnalysis) {
+          // Merge descriptions if multiple
+          const uniqueTitles = Array.from(new Set(matchingAnalysis.map(i => i.type))).filter(Boolean);
+          let description = '';
+          if (matchingAnalysis.length > 1) {
+            description = matchingAnalysis.map((i, idx) => `${idx + 1}. ${i.description}`).join('\n\n');
+          } else {
+            description = matchingAnalysis[0].description;
+          }
 
-        if (matchingBox) {
-          x = matchingBox.x;
-          y = matchingBox.y;
-          width = matchingBox.width;
-          height = matchingBox.height;
-        } else if (id && id.includes('-')) {
-          const [xStr, yStr] = id.split('-');
-          x = parseInt(xStr, 10) || 0;
-          y = parseInt(yStr, 10) || 0;
+          const component = matchingAnalysis[0].component || originalBox.component || '';
+          const dimension = matchingAnalysis[0].dimension || originalBox.dimension || '';
+          const actual = matchingAnalysis[0].actual || originalBox.actual || '';
+          const expected = matchingAnalysis[0].expected || originalBox.expected || '';
+
+          const title = component && dimension ? `${component} • ${dimension}` : (uniqueTitles.join(' & ') || originalBox.title || 'Issue');
+
+          return [{
+            ...originalBox,
+            description: description || originalBox.description || `Density: ${(originalBox.density * 100).toFixed(1)}%`,
+            title: title,
+            component,
+            dimension,
+            actual,
+            expected
+            // severity is kept from originalBox unless analysis overrides (usually original is truth for heatmap)
+          }];
         }
 
-        // Merge descriptions and titles
-        // Merge descriptions and titles
-        const uniqueTitles = Array.from(new Set(items.map(i => i.type))).filter(Boolean);
-        let description = '';
-        if (items.length > 1) {
-          description = items.map((i, idx) => `${idx + 1}. ${i.description}`).join('\n\n');
-        } else {
-          description = items[0].description;
+        // No analysis found for this box, skip it
+        return [];
+      });
+
+      // 2. (Optional) Handle analysis items that didn't match any original box (Hallucinated IDs?)
+      // We can append these if needed, or ignore. Let's append to be safe, parsing ID for coords.
+      analysisMap.forEach((items, id) => {
+        if (!originalBoxes.find(b => b.id === id)) {
+          // Create a fallback box
+          let x = 0, y = 0, width = 50, height = 50;
+          if (id && id.includes('-')) {
+            const [xStr, yStr] = id.split('-');
+            x = parseInt(xStr, 10) || 0;
+            y = parseInt(yStr, 10) || 0;
+          }
+
+          const uniqueTitles = Array.from(new Set(items.map(i => i.type))).filter(Boolean);
+          let description = items.length > 1
+            ? items.map((i, idx) => `${idx + 1}. ${i.description}`).join('\n\n')
+            : items[0].description;
+
+          const component = items[0].component || '';
+          const dimension = items[0].dimension || '';
+          const actual = items[0].actual || '';
+          const expected = items[0].expected || '';
+          const title = component && dimension ? `${component} • ${dimension}` : (uniqueTitles.join(' & ') || 'New Issue');
+
+          boxes.push({
+            id: id || `new-issue-${Math.random()}`,
+            x,
+            y,
+            width,
+            height,
+            density: 1, // Default
+            severity: 'Medium', // Default
+            pixelCount: 0,
+            title,
+            description,
+            serialNumber: '00', // Will be re-assigned
+            component,
+            dimension,
+            actual,
+            expected
+          });
         }
+      });
 
-        const component = items[0].component || '';
-        const dimension = items[0].dimension || '';
-        const actual = items[0].actual || '';
-        const expected = items[0].expected || '';
+      // Sort boxes by Y then X to ensure consistent top-left to bottom-right order
+      boxes.sort((a, b) => {
+        // Use a small threshold for Y to group items in the same "row"
+        const yDiff = Math.abs(a.y - b.y);
+        if (yDiff > 10) {
+          return a.y - b.y;
+        }
+        return a.x - b.x;
+      });
 
-        const title = component && dimension ? `${component} • ${dimension}` : (uniqueTitles.join(' & ') || 'Issue');
-
-        return {
-          id: id || `issue-${index}`,
-          x,
-          y,
-          width,
-          height,
-          density: matchingBox?.density || 1,
-          severity: matchingBox?.severity || 'Medium',
-          pixelCount: matchingBox?.pixelCount || 0,
-          title: title || 'Issue',
-          description: description,
-          serialNumber: (index + 1).toString().padStart(2),
-          component,
-          dimension,
-          actual,
-          expected
-        };
+      // Re-assign serial numbers based on sorted order
+      boxes.forEach((box, index) => {
+        box.serialNumber = (index + 1).toString().padStart(2, '0');
       });
 
     } catch (e) {
@@ -293,7 +330,16 @@ export function DetailedResult({
       boxes = originalBoxes; // Fallback
     }
   } else {
-    boxes = originalBoxes;
+    // If no AI result, just sort the original boxes too for consistency
+    boxes = [...originalBoxes].sort((a, b) => {
+      const yDiff = Math.abs(a.y - b.y);
+      if (yDiff > 10) return a.y - b.y;
+      return a.x - b.x;
+    });
+
+    boxes.forEach((box, index) => {
+      box.serialNumber = (index + 1).toString().padStart(2, '0');
+    });
   }
 
   const counts = coordinates.counts || { Major: 0, Medium: 0, Low: 0 };
