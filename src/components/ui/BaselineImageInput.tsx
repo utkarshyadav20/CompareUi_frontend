@@ -43,6 +43,27 @@ interface BaselineImageInputProps {
   onSearchQueryChange: (query: string) => void;
 }
 
+// Helper component for image dimensions
+function ImageDimensions({ src, className }: { src: string; className?: string }) {
+  const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null);
+
+  React.useEffect(() => {
+    const img = new Image();
+    img.src = src;
+    img.onload = () => {
+      setDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+  }, [src]);
+
+  if (!dimensions) return null;
+
+  return (
+    <span className={className}>
+      {dimensions.width}x{dimensions.height}
+    </span>
+  );
+}
+
 export function BaselineImageInput({
   images,
   hasImages,
@@ -68,6 +89,7 @@ export function BaselineImageInput({
   const [isUploadVisible, setIsUploadVisible] = useState(false);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
 
   const handleDragStart = (index: number) => {
     setDraggedIndex(index);
@@ -99,13 +121,34 @@ export function BaselineImageInput({
     e.target.value = "";
   };
 
+  // Effect to load image dimensions when selected (for header)
+  React.useEffect(() => {
+    const selectedImage = images.find(img => img.id === selectedImageId);
+    if (selectedImage) {
+      const img = new Image();
+      img.onload = () => {
+        setImageDimensions({ width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.src = selectedImage.url;
+    } else {
+      setImageDimensions(null);
+    }
+  }, [selectedImageId, images]);
+
   return (
     <div className="w-full h-full flex flex-col gap-5 p-4">
       {/* Header with title and action buttons */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b border-black/10 dark:border-white/10">
-        <h3 className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
-          Baseline Images
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
+            Baseline Images
+          </h3>
+          {imageDimensions && (
+            <span className="text-[10px] bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-gray-500 font-mono">
+              {imageDimensions.width}x{imageDimensions.height}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           {/* Upload Toggle Button - Only visible when hasImages is true */}
           {hasImages && (
@@ -277,7 +320,10 @@ export function BaselineImageInput({
                         <p className="text-black dark:text-white text-[12px] font-bold truncate">
                           {image.name}
                         </p>
-                        <span className="text-[10px] text-gray-500">{image.width}x{image.height}</span>
+                        <ImageDimensions
+                          src={image.url}
+                          className="text-[10px] text-black/20 dark:text-white/20 "
+                        />
                       </div>
 
                       {/* 3-Dot Menu - Shown on hover */}
@@ -363,18 +409,18 @@ export function BaselineImageInput({
                   onDragOver={(e) => handleDragOver(e, index)}
                   onDragEnd={handleDragEnd}
                   onClick={() => onSelectImage(image.id)}
-                className={`flex items-center gap-3 p-3 cursor-pointer border transition-colors
-  ${selectedImageId === image.id
-      ? 'bg-[#27272A] border-[#ffffff20]'
-      : 'bg-transparent border-transparent hover:bg-white/50'
-  } ${draggedIndex === index ? 'opacity-80' : ''}`}
-  style={{
-    borderRadius: '10px',
-    backgroundColor: selectedImageId === image.id ? '#27272A' : 'transparent',
-    borderColor: selectedImageId === image.id ? '#4B5563' : 'transparent',
-    opacity: draggedIndex === index ? 0.8 : 1,
-    border: selectedImageId === image.id ? '1px solid #4B5563' : 'transparent',
-  }}
+                  className={`flex items-center gap-3 p-3 cursor-pointer border transition-colors
+${selectedImageId === image.id
+                      ? 'bg-[#27272A] border-[#ffffff20]'
+                      : 'bg-transparent border-transparent hover:bg-white/50'
+                    } ${draggedIndex === index ? 'opacity-80' : ''}`}
+                  style={{
+                    borderRadius: '10px',
+                    backgroundColor: selectedImageId === image.id ? '#27272A' : 'transparent',
+                    borderColor: selectedImageId === image.id ? '#4B5563' : 'transparent',
+                    opacity: draggedIndex === index ? 0.8 : 1,
+                    border: selectedImageId === image.id ? '1px solid #4B5563' : 'transparent',
+                  }}
                 >
                   <GripVertical className="w-4 h-4 text-gray-600 flex-shrink-0 cursor-grab active:cursor-grabbing" />
                   <span className={`text-[14px] font-medium truncate ${selectedImageId === image.id ? 'text-white' : 'text-gray-400'}`}>

@@ -2,7 +2,7 @@ import { Project, ProjectType } from "../types";
 import { Smartphone } from "lucide-react";
 import svgPaths from "../imports/svg-kgk8e7ds24";
 
-import fireTvIcon from "../assets/fire-tv-icon.png";
+import fireTvIcon from "../assets/firetv logo.svg";
 import smartTvIcon from "../assets/smart-tv-icon.jpg";
 
 // Define the shape of the project object as it comes from the backend
@@ -16,7 +16,7 @@ export interface BackendProjectDto {
 
 export const getIcon = (projectType: ProjectType) => {
     if (projectType === "Fire TV") {
-        return <img src={fireTvIcon} alt="Fire TV" className="w-5 h-5 object-contain" />;
+        return <img src={fireTvIcon} alt="Fire TV" className="object-contain" style={{ width: "30px", height: "30px" }} />;
     }
     if (projectType === "Smart TV") {
         return <img src={smartTvIcon} alt="Smart TV" className="w-5 h-5 object-contain rounded-[2px]" />;
