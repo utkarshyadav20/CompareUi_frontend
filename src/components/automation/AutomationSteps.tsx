@@ -1,59 +1,123 @@
-import React, { useState } from 'react';
+
+import React, { useState, useRef } from 'react';
 import {
-    GripVertical,
-    Trash2,
-    Copy,
     Plus,
     FileCode,
-    Save,
-    ChevronDown
+    Save
 } from 'lucide-react';
 import autoSvg from '../../assets/AUTO.svg';
-
-interface Step {
-    id: string;
-    type: string;
-    action: string;
-    value: string;
-}
+import StepRow, { Step } from './StepRow';
+import { generateFullFile } from '../../utils/javaGenerator';
 
 interface AutomationStepsProps {
     projectId: string;
     selectedScreenName?: string;
+    steps: Step[];
+    onStepsChange: (steps: Step[]) => void;
 }
 
-const AutomationSteps: React.FC<AutomationStepsProps> = ({ projectId, selectedScreenName = "Homescreen" }) => {
-    const [steps, setSteps] = useState<Step[]>([]);
-    const [isAdding, setIsAdding] = useState(false);
+const AutomationSteps: React.FC<AutomationStepsProps> = ({
+    projectId,
+    selectedScreenName = "Homescreen",
+    steps,
+    onStepsChange
+}) => {
+    // Drag and Drop State
+    const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
+    const dragItem = useRef<number | null>(null);
+    const dragOverItem = useRef<number | null>(null);
 
     const handleAddFirstStep = () => {
-        setIsAdding(true);
-        setSteps([
-            { id: '1', type: 'Step', action: 'Down', value: '4x' },
-            { id: '2', type: 'Step', action: 'OK', value: '1x' },
-            { id: '3', type: 'Capture', action: 'Image', value: 'Homescreen' }
+        onStepsChange([
+            {
+                id: '1',
+                type: 'Wait',
+                action: 'visibilityOfElementLocated',
+                value: 'UI Selector',
+                locatorType: 'UI Automator',
+                isExpanded: true
+            }
         ]);
     };
 
-    const handleAddStep = () => {
-        const newStep: Step = {
-            id: Math.random().toString(36).substr(2, 9),
-            type: 'Step',
-            action: 'Select Action',
-            value: ''
-        };
-        setSteps([...steps, newStep]);
+
+    const handleUpdateStep = (id: string, updates: Partial<Step>) => {
+        onStepsChange(steps.map(step =>
+            step.id === id ? { ...step, ...updates } : step
+        ));
     };
 
-    if (!isAdding && steps.length === 0) {
+    const handleDeleteStep = (id: string) => {
+        onStepsChange(steps.filter(step => step.id !== id));
+    };
+
+    const handleDuplicateStep = (id: string) => {
+        const index = steps.findIndex(s => s.id === id);
+        if (index === -1) return;
+
+        const stepToDuplicate = steps[index];
+        const newStep = {
+            ...stepToDuplicate,
+            id: Math.random().toString(36).substr(2, 9)
+        };
+
+        const newSteps = [...steps];
+        newSteps.splice(index + 1, 0, newStep);
+        onStepsChange(newSteps);
+    };
+
+    const handleToggleExpand = (id: string) => {
+        onStepsChange(steps.map(step =>
+            step.id === id ? { ...step, isExpanded: !step.isExpanded } : step
+        ));
+    };
+
+
+    // ... (drag handlers)
+
+    // ... (render)
+
+
+    // Drag and Drop Handlers
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, position: number) => {
+        dragItem.current = position;
+        setDraggedStepId(steps[position].id);
+        // Set drag ghost image effect if needed, but default is usually fine
+    };
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>, position: number) => {
+        dragOverItem.current = position;
+
+        // Optional: Reorder on hover (smooth but tricky without library)
+        // For now, let's just highlight or wait for drop
+    };
+
+    const handleDragEnd = (e: React.DragEvent<HTMLDivElement>) => {
+        const startPos = dragItem.current;
+        const endPos = dragOverItem.current;
+
+        if (startPos !== null && endPos !== null && startPos !== endPos) {
+            const newSteps = [...steps];
+            const draggedItemContent = newSteps[startPos];
+            newSteps.splice(startPos, 1);
+            newSteps.splice(endPos, 0, draggedItemContent);
+            onStepsChange(newSteps);
+        }
+
+        dragItem.current = null;
+        dragOverItem.current = null;
+        setDraggedStepId(null);
+    };
+
+    if (steps.length === 0) {
         return (
             <div className="flex-1 flex flex-col pt-10 px-6">
                 <div className="flex justify-between items-center mb-1">
                     <h2 className="text-[20px] font-semibold text-white uppercase tracking-tight">STEPS</h2>
                     <span className="text-[12px] text-gray-500 font-medium">0 steps</span>
                 </div>
-                <p className="text-[14px] text-gray-500 mb-20">
-                    Configure the interaction for <span className="text-gray-300 font-bold">"{selectedScreenName}"</span> screenshot.
+                <p className="text-[14px] text-gray-500 mb-20" style={{ color: "#9AA3B0" }}>
+                    Configure the interaction for <span className="text-white font-bold">"{selectedScreenName}"</span> screenshot.
                 </p>
 
                 <div className="flex-1 gap-3 flex flex-col items-center justify-center -mt-20 opacity-80">
@@ -94,81 +158,29 @@ const AutomationSteps: React.FC<AutomationStepsProps> = ({ projectId, selectedSc
 
                 <div className="flex flex-col gap-3">
                     {steps.map((step, index) => (
-                        <div key={step.id} className="flex items-center gap-2 group">
-                            <div className="flex-1 flex items-center gap-3 bg-[#1A1A1A] border border-white/5 rounded-[10px] p-2 hover:border-white/10 transition-colors">
-                                <div className="cursor-grab active:cursor-grabbing text-gray-600 px-1">
-                                    <GripVertical size={16} />
-                                </div>
-
-                                <div className="flex items-center gap-2 flex-1">
-                                    {/* Type Dropdown */}
-                                    <div className="relative min-w-[100px]">
-                                        <div className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 text-[14px] text-gray-300 cursor-pointer">
-                                            {step.type}
-                                            <ChevronDown size={14} className="text-gray-500" />
-                                        </div>
-                                    </div>
-
-                                    {/* Action Dropdown */}
-                                    <div className="relative min-w-[100px]">
-                                        <div className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2 text-[14px] text-gray-300 cursor-pointer">
-                                            {step.action}
-                                            <ChevronDown size={14} className="text-gray-500" />
-                                        </div>
-                                    </div>
-
-                                    {/* Value Display/Input */}
-                                    <div className="flex-1">
-                                        <div className="bg-white/5 rounded-lg px-3 py-2 text-[14px] text-gray-300 border border-transparent focus-within:border-white/10">
-                                            {step.type === 'Capture' ? (
-                                                <span className="text-gray-300">{step.value}</span>
-                                            ) : (
-                                                <div className="relative flex items-center justify-between cursor-pointer">
-                                                    {step.value}
-                                                    <ChevronDown size={14} className="text-gray-500" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                <button className="p-2 text-gray-400 hover:text-white transition-colors">
-                                    <Trash2 size={16} />
-                                </button>
-                                <button className="p-2 text-gray-400 hover:text-white transition-colors">
-                                    <Copy size={16} />
-                                </button>
-                            </div>
+                        <div
+                            key={step.id}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, index)}
+                            onDragEnter={(e) => handleDragEnter(e, index)}
+                            onDragEnd={handleDragEnd}
+                            onDragOver={(e) => e.preventDefault()} // Essential to allow drop
+                            className={`transition-opacity duration-200 ${draggedStepId === step.id ? 'opacity-50' : 'opacity-100'}`}
+                        >
+                            <StepRow
+                                step={step}
+                                index={index}
+                                onUpdate={handleUpdateStep}
+                                onDelete={handleDeleteStep}
+                                onDuplicate={handleDuplicateStep}
+                                onToggleExpand={handleToggleExpand}
+                            />
                         </div>
                     ))}
                 </div>
             </div>
 
-            {/* Bottom Actions Bar */}
-            <div className="mt-auto p-4 flex items-center justify-between border-t border-white/5 bg-[#1A1A1A]">
-                <div className="flex-1 max-w-[500px]">
-                    <button
-                        onClick={handleAddStep}
-                        className="w-full h-10 flex items-center justify-center gap-2 rounded-[8px] border border-dashed border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/20 transition-all text-[14px] bg-white/[0.02]"
-                    >
-                        <Plus size={18} />
-                        <span>Add Step</span>
-                    </button>
-                </div>
-
-                <div className="flex items-center gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-white/5 text-gray-400 hover:text-white transition-all text-[13px] border border-white/10">
-                        <FileCode size={16} />
-                        <span>Export full java file</span>
-                    </button>
-                    <button className="flex items-center gap-2 px-6 py-2 rounded-[8px] bg-[#2A2A2A] text-white hover:bg-[#333] transition-all text-[13px] border border-white/5 shadow-lg">
-                        <Save size={16} />
-                        <span>Save</span>
-                    </button>
-                </div>
-            </div>
+            {/* Bottom Actions Bar Removed - Moved to Parent */}
         </div>
     );
 };

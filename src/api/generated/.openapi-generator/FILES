@@ -6,6 +6,7 @@ common.ts
 configuration.ts
 docs/AppApi.md
 docs/AuthApi.md
+docs/AutomationApi.md
 docs/CompareApi.md
 docs/CompareBodyDto.md
 docs/CompareScreenshotDto.md
