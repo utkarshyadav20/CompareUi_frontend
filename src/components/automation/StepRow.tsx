@@ -15,6 +15,7 @@ export interface Step {
 interface StepRowProps {
     step: Step;
     index: number;
+    selectedScreenName?: string;
     onUpdate: (id: string, updates: Partial<Step>) => void;
     onDelete: (id: string) => void;
     onDuplicate: (id: string) => void;
@@ -25,6 +26,7 @@ interface StepRowProps {
 const StepRow: React.FC<StepRowProps> = ({
     step,
     index,
+    selectedScreenName,
     onUpdate,
     onDelete,
     onDuplicate,
@@ -65,6 +67,7 @@ const StepRow: React.FC<StepRowProps> = ({
         onUpdate(step.id, {
             type: value,
             action: defaultAction,
+            value: value === 'Capture' ? (selectedScreenName || '') : '', // Default to screen name for Capture
             locatorType: value === 'Wait' ? (AUTOMATION_CONFIG.locatorTypes?.[0]?.value || '') : undefined
         });
         setShowTypeDropdown(false);
@@ -99,10 +102,12 @@ const StepRow: React.FC<StepRowProps> = ({
     const showLocator = step.type === 'Wait';
     const locatorOptions = AUTOMATION_CONFIG.locatorTypes || [];
 
+    const isDropdownOpen = showTypeDropdown || showActionDropdown || showLocatorDropdown;
+
     return (
         <div className="flex flex-col gap-0 relative">
             <div
-                className=" z-10 flex items-center gap-3  border border-white/5 rounded-[10px] p-3 hover:border-white/10 transition-colors group relative"
+                className={` ${isDropdownOpen ? 'z-50' : 'z-10'} flex items-center gap-3  border border-white/5 rounded-[10px] p-3 hover:border-white/10 transition-colors group relative`}
                 style={{ borderRadius: '10px', border: '1px solid rgba(255, 255, 255, 0.10)', backgroundColor: 'rgba(0, 0, 0, 0.20)' }}
 
             >
@@ -249,8 +254,12 @@ const StepRow: React.FC<StepRowProps> = ({
                 <div
                     className={`grid transition-[grid-template-rows,opacity,padding] duration-300 ease-in-out ${step.isExpanded ? 'grid-rows-[1fr] opacity-100 pt-2' : 'grid-rows-[0fr] opacity-0 pt-0'
                         }`}
+                    style={{
+                        gridTemplateRows: step.isExpanded ? '1fr' : '0fr',
+                        marginBottom: 0
+                    }}
                 >
-                    <div className="overflow-hidden">
+                    <div className="overflow-hidden min-h-0">
                         <div className="flex flex-col relative">
                             <div
                                 className="bg-[#111] rounded-[10px]"
@@ -261,7 +270,6 @@ const StepRow: React.FC<StepRowProps> = ({
                                     alignItems: 'flex-start',
                                     alignSelf: 'stretch',
                                     marginLeft: '50px', // Offset for the line
-                                    marginTop: '10px'
                                 }}
                             >
                                 <div className="flex flex-col gap-3 w-full">

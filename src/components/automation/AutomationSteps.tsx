@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
     Plus,
     FileCode,
@@ -26,6 +26,17 @@ const AutomationSteps: React.FC<AutomationStepsProps> = ({
     const [draggedStepId, setDraggedStepId] = useState<string | null>(null);
     const dragItem = useRef<number | null>(null);
     const dragOverItem = useRef<number | null>(null);
+
+    // Auto-scroll ref
+    const stepsEndRef = useRef<HTMLDivElement>(null);
+    const prevStepsLength = useRef(steps.length);
+
+    useEffect(() => {
+        if (steps.length > prevStepsLength.current) {
+            stepsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+        prevStepsLength.current = steps.length;
+    }, [steps.length]);
 
     const handleAddFirstStep = () => {
         onStepsChange([
@@ -170,6 +181,7 @@ const AutomationSteps: React.FC<AutomationStepsProps> = ({
                             <StepRow
                                 step={step}
                                 index={index}
+                                selectedScreenName={selectedScreenName}
                                 onUpdate={handleUpdateStep}
                                 onDelete={handleDeleteStep}
                                 onDuplicate={handleDuplicateStep}
@@ -177,6 +189,7 @@ const AutomationSteps: React.FC<AutomationStepsProps> = ({
                             />
                         </div>
                     ))}
+                    <div ref={stepsEndRef} />
                 </div>
             </div>
 
