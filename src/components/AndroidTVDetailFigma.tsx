@@ -16,7 +16,8 @@ import {
     Maximize2,
     Plus,
     FileCode,
-    Save
+    Save,
+    Terminal
 } from "lucide-react";
 // import imgFrame21 from "figma:asset/4162ceeb80530f8f205313a378469f2d23a67359.png";
 import svgPaths from "../imports/svg-yp1cueaie8";
@@ -41,7 +42,7 @@ import apiClient from '../api/client';
 import AutomationSteps from "./automation/AutomationSteps";
 import { Step } from "./automation/StepRow";
 import GlobalVariables, { Variable } from "./automation/GlobalVariables/GlobalVariables";
-import { generateFullFile } from '../utils/javaGenerator';
+import { generateFullFile, generateRunnerFile, generateCompareAppFile } from '../utils/javaGenerator';
 
 const mapScreenToImage = (screen: any): BaselineImage => ({
     id: screen.id ? screen.id.toString() : Date.now().toString(),
@@ -101,10 +102,12 @@ export function AndroidTVDetailFigma({
     // Global Variables State with Defaults
     const [serverVariables, setServerVariables] = useState<Variable[]>([
         { id: 1, name: 'ANDROID_TV_UDID', value: '' },
-        { id: 2, name: 'APK_Path', value: '' },
-        { id: 3, name: 'Package_name', value: '' },
+        { id: 2, name: 'APK_PATH', value: '' },
+        { id: 3, name: 'PACKAGE_NAME', value: '' },
         { id: 4, name: 'APPIUM_URL', value: '' },
-        { id: 5, name: 'SS_CAPTURE_FOLDER', value: '' }
+        { id: 5, name: 'SS_CAPTURE_FOLDER', value: '' },
+        { id: 6, name: 'ADB_PATH', value: '' },
+        { id: 7, name: 'APPIUM_JS_PATH', value: '' }
     ]);
 
     const [theme, setTheme] = useState<Theme>("dark");
@@ -363,6 +366,79 @@ export function AndroidTVDetailFigma({
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    };
+
+    const handleRunAutomation = async () => {
+        try {
+            await handleSaveAutomation(); // Save changes first
+
+            // Convert to format needed for file generation
+            const pages = Object.entries(allSteps).map(([name, screenSteps]) => ({
+                name,
+                steps: screenSteps
+            }));
+
+            const fullCode = generateFullFile(pages);
+            const runnerCode = generateRunnerFile(pages);
+            const compareAppCode = generateCompareAppFile(pages);
+
+            const filePath = '../src/test/java/com/framework/flows/GrayTVAutomation.java';
+            const runnerPath = '../src/test/java/Runner/AndroidTVOnlyRunner.java';
+            const compareAppPath = '../src/test/java/Runner/CompareApp.java';
+
+            // 1. Prepare Config from Global Variables
+            const getValue = (key: string) => serverVariables.find(v => v.name === key)?.value || "";
+
+            // Helper to get filename from path (handles both / and \)
+            const extractFilename = (pathStr: string) => pathStr.split(/[/\\]/).pop() || "";
+
+            const apkPath = getValue('APK_PATH');
+            const apkFilename = extractFilename(apkPath);
+
+            // Map to container paths based on universal config
+            const containerApkPath = apkPath ? `/app/input/${apkFilename}` : "";
+            const containerOutputPath = "/app/output";
+
+            const configData = {
+                ANDROID_TV_UDID: getValue('ANDROID_TV_UDID'),
+                APK_PATH: containerApkPath,
+                PACKAGE_NAME: getValue('PACKAGE_NAME'),
+                APPIUM_URL: getValue('APPIUM_URL'),
+                SS_CAPTURE_FOLDER: containerOutputPath,
+                ADB_PATH: getValue('ADB_PATH'),
+                APPIUM_JS_PATH: getValue('APPIUM_JS_PATH')
+            };
+
+            const configPath = '../src/test/resources/config.json';
+
+            // 2. Save Files
+            const saveFile = async (path: string, content: string) => {
+                const response = await fetch('http://localhost:4000/api/save-file', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filePath: path, content })
+                });
+                if (!response.ok) throw new Error(await response.text());
+            };
+
+            await saveFile(configPath, JSON.stringify(configData, null, 4));
+            await saveFile(filePath, fullCode);
+            await saveFile(runnerPath, runnerCode);
+            await saveFile(compareAppPath, compareAppCode);
+
+
+            // 2. Trigger Run
+            const runResponse = await fetch('http://localhost:4000/api/run-tv-automation', {
+                method: 'POST'
+            });
+            if (!runResponse.ok) throw new Error(await runResponse.text());
+
+            alert('🚀 Automation run triggered successfully!');
+
+        } catch (error: any) {
+            console.error('Failed to run automation:', error);
+            alert(`❌ Error running automation: ${error.message || error}`);
+        }
     };
 
     useEffect(() => {
@@ -1152,7 +1228,7 @@ export function AndroidTVDetailFigma({
                                                     {activeView === 'automation' && (
                                                         <button
                                                             onClick={handleAddStep}
-                                                            className="w-full h-10 flex items-center justify-center gap-2 rounded-[8px] border border-dashed border-white/10 text-gray-500 hover:text-gray-300 hover:border-white/20 transition-all text-[14px] bg-white/[0.02]"
+                                                            className="w-full h-10 flex items-center justify-center gap-2 rounded-[8px] border border-dashed border-white/10 text-gray-500 hover:text-gray-300 hover:border-white transition-all text-[14px] bg-white/[0.02] cursor-pointer"
                                                         >
                                                             <Plus size={18} />
                                                             <span>Add Step</span>
@@ -1162,15 +1238,22 @@ export function AndroidTVDetailFigma({
 
                                                 <div className="flex items-center gap-3 ml-4">
                                                     <button
+                                                        onClick={handleRunAutomation}
+                                                        className="flex items-center gap-2 px-4 py-2 rounded-[8px]  bg-white/5 text-gray-400 hover:bg-emerald-500 transition-all text-[13px] border border-emerald-500 hover:border-white shadow-lg shadow-emerald-900/20 cursor-pointer"
+                                                    >
+                                                        <Terminal size={16} />
+                                                        <span>Run Automation</span>
+                                                    </button>
+                                                    <button
                                                         onClick={handleExportJava}
-                                                        className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-white/5 text-gray-400 hover:text-white transition-all text-[13px] border border-white/10"
+                                                        className="flex items-center gap-2 px-4 py-2 rounded-[8px] bg-white/5 text-gray-400 hover:text-white transition-all text-[13px] border border-white/10 hover:border-white cursor-pointer"
                                                     >
                                                         <FileCode size={16} />
                                                         <span>Export full java file</span>
                                                     </button>
                                                     <button
                                                         onClick={() => handleSaveAutomation()}
-                                                        className="flex items-center gap-2 px-6 py-2 rounded-[8px] bg-[#2A2A2A] text-white hover:bg-[#333] transition-all text-[13px] border border-white/5 shadow-lg">
+                                                        className="flex items-center gap-2 px-6 py-2 rounded-[8px] bg-[#2A2A2A] text-white hover:bg-[#333] transition-all text-[13px] border border-white/5 hover:border-white shadow-lg cursor-pointer">
                                                         <Save size={16} />
                                                         <span>Save</span>
                                                     </button>
