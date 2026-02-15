@@ -102,10 +102,12 @@ import java.time.Duration;
 
 public class ${className} {
 
+    private static AndroidDriver driver;
+
     @BeforeClass 
     private static void setup(){
         AppLauncher.launchApp();
-        AndroidDriver driver = DriverManager.getDriver();
+        driver = DriverManager.getDriver();
     }
     // ---------- COMMON HELPERS ----------
     private static final Channel channel = Channel.KWTX;
