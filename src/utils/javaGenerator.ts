@@ -24,7 +24,8 @@ export const generateJavaCode = (page: PageFlow): string => {
                     // Condition-based waits
                     let waitSelector = '';
                     const locatorType = step.locatorType;
-                    const val = step.value;
+                    // Replace double quotes with single quotes inside the value
+                    const val = (step.value || '').replace(/"/g, "'");
 
                     if (locatorType === 'UI Automator') {
                         // User inputs the full matcher in the text area

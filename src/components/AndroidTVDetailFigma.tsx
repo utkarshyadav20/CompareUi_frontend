@@ -301,13 +301,21 @@ export function AndroidTVDetailFigma({
             [curr.name]: curr.value
         }), {});
 
-        console.log('Saving automation with steps:', allSteps);
+        // Filter AND Order allSteps based on baselineImages
+        const filteredAutomationCode: Record<string, Step[]> = {};
+        baselineImages.forEach(img => {
+            if (allSteps[img.name]) {
+                filteredAutomationCode[img.name] = allSteps[img.name];
+            }
+        });
+
+        console.log('Saving automation with steps:', filteredAutomationCode);
 
         try {
             await apiClient.post('/automation/save', {
                 projectId,
                 buildId,
-                automationCode: allSteps, // Send full structure
+                automationCode: filteredAutomationCode, // Send filtered structure
                 variables: variablesObj
             });
             alert("Automation saved successfully!");
