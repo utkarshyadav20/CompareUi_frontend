@@ -9,8 +9,6 @@ export const generateJavaCode = (page: PageFlow): string => {
     const methodName = page.name.replace(/\s+/g, '') || 'fullAppFlow';
 
     let code = `    public static String ${methodName}() throws Exception {\n\n`;
-    code += `        AppLauncher.launchApp();\n`;
-    code += `        AndroidDriver driver = DriverManager.getDriver();\n`;
     code += `        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));\n\n`;
 
     page.steps.forEach((step) => {
@@ -104,6 +102,11 @@ import java.time.Duration;
 
 public class ${className} {
 
+    @BeforeClass 
+    private static void setup(){
+        AppLauncher.launchApp();
+        AndroidDriver driver = DriverManager.getDriver();
+    }
     // ---------- COMMON HELPERS ----------
     private static final Channel channel = Channel.KWTX;
     
