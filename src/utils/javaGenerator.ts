@@ -18,7 +18,7 @@ export const generateJavaCode = (page: PageFlow): string => {
                 // Time-based waits
                 if (step.action === 'ms' || step.action === 'sec') {
                     const unit = step.action === 'ms' ? '' : ' * 1000';
-                    code += `        Thread.sleep(${step.value}${unit});\n`;
+                    code += `        Thread.sleep(${step.value || 0}${unit});\n`;
                 } else {
                     // Condition-based waits
                     let waitSelector = '';
@@ -133,6 +133,7 @@ export const generateRunnerFile = (pages: PageFlow[]): string => {
 
 import com.framework.core.Appinstaller;
 import com.framework.core.AppiumServerManager;
+import com.framework.core.AppLauncher;
 import com.framework.core.DriverManager;
 import com.framework.config.ConfigLoader;
 import com.framework.flows.GrayTVAutomation;
@@ -210,6 +211,7 @@ export const generateCompareAppFile = (pages: PageFlow[]): string => {
 
 import com.framework.core.Appinstaller;
 import com.framework.core.AppiumServerManager;
+import com.framework.core.AppLauncher;
 import com.framework.core.DriverManager;
 import com.framework.flows.GrayTVAutomation;
 import com.framework.utils.ChromePopupHandler;

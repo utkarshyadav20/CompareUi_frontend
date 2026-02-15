@@ -10,6 +10,8 @@ export const AUTOMATION_CONFIG = {
             { label: 'elementToBeClickable', value: 'elementToBeClickable' },
             { label: 'presenceOfElementLocated', value: 'presenceOfElementLocated' },
             { label: 'invisibilityOfElementLocated', value: 'invisibilityOfElementLocated' },
+            { label: 'Milliseconds (ms)', value: 'ms' },
+            { label: 'Seconds (sec)', value: 'sec' },
         ],
         'Capture': [
             { label: 'Image', value: 'Image' },

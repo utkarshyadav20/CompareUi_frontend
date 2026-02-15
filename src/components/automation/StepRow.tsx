@@ -68,7 +68,7 @@ const StepRow: React.FC<StepRowProps> = ({
             type: value,
             action: defaultAction,
             value: value === 'Capture' ? (selectedScreenName || '') : '', // Default to screen name for Capture
-            locatorType: value === 'Wait' ? (AUTOMATION_CONFIG.locatorTypes?.[0]?.value || '') : undefined
+            locatorType: (value === 'Wait') ? (AUTOMATION_CONFIG.locatorTypes?.[0]?.value || '') : undefined
         });
         setShowTypeDropdown(false);
     };
@@ -99,7 +99,7 @@ const StepRow: React.FC<StepRowProps> = ({
         return locator ? locator.label : value || 'Select Locator';
     }
 
-    const showLocator = step.type === 'Wait';
+    const showLocator = step.type === 'Wait' && step.action !== 'ms' && step.action !== 'sec';
     const locatorOptions = AUTOMATION_CONFIG.locatorTypes || [];
 
     const isDropdownOpen = showTypeDropdown || showActionDropdown || showLocatorDropdown;
@@ -218,6 +218,16 @@ const StepRow: React.FC<StepRowProps> = ({
                             className="bg-white/5 hover:bg-white/10 rounded-lg px-3 py-2 text-[14px] text-gray-300 transition-colors border border-transparent focus:border-white/20 focus:outline-none w-[120px]"
                         />
                     )}
+
+                    {step.type === 'Wait' && (step.action === 'ms' || step.action === 'sec') && (
+                        <input
+                            type="number"
+                            value={step.value}
+                            onChange={(e) => onUpdate(step.id, { value: e.target.value })}
+                            placeholder={step.action === 'ms' ? "Milliseconds" : "Seconds"}
+                            className="bg-white/5 hover:bg-white/10 rounded-lg px-3 py-2 text-[14px] text-gray-300 transition-colors border border-transparent focus:border-white/20 focus:outline-none w-[120px]"
+                        />
+                    )}
                 </div>
 
                 {/* Actions */}
@@ -249,8 +259,8 @@ const StepRow: React.FC<StepRowProps> = ({
                     </button>
                 </div>
             </div>
-            {/* Expanded UI Selector Section with Smooth Transition - Only for Wait */}
-            {step.type === 'Wait' && (
+            {/* Expanded UI Selector Section with Smooth Transition - Only for Wait relative locators */}
+            {step.type === 'Wait' && step.action !== 'ms' && step.action !== 'sec' && (
                 <div
                     className={`grid transition-[grid-template-rows,opacity,padding] duration-300 ease-in-out ${step.isExpanded ? 'grid-rows-[1fr] opacity-100 pt-2' : 'grid-rows-[0fr] opacity-0 pt-0'
                         }`}
