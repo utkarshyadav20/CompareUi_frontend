@@ -259,6 +259,9 @@ export function AndroidTVDetailFigma({
     // Derived build ID for dependencies
     const currentBuildId = typeof selectedBuild === 'string' ? selectedBuild : selectedBuild?.buildId;
 
+    // State for fetched screen order
+    const [fetchedScreenOrder, setFetchedScreenOrder] = useState<string[]>([]);
+
     // Fetch automation code when build changes
     useEffect(() => {
         const fetchAutomation = async () => {
@@ -268,7 +271,7 @@ export function AndroidTVDetailFigma({
                 const response = await apiClient.get('/automation/fetch', {
                     params: { projectId, buildId: currentBuildId }
                 });
-                const { automationCode, variables } = response.data;
+                const { automationCode, variables, screenOrder } = response.data;
                 if (automationCode) {
                     setAllSteps(automationCode);
                 }
@@ -278,12 +281,46 @@ export function AndroidTVDetailFigma({
                         value: variables[v.name] || v.value
                     })));
                 }
+                if (screenOrder && Array.isArray(screenOrder)) {
+                    setFetchedScreenOrder(screenOrder);
+                }
             } catch (error) {
                 console.log('No automation code found or failed to fetch', error);
             }
         };
         fetchAutomation();
     }, [projectId, currentBuildId]);
+
+    // Sync baselineImages order with automationCode keys order (persists reorder on refresh)
+    useEffect(() => {
+        // Only run if both data sources are available
+        if (baselineImages.length === 0 || fetchedScreenOrder.length === 0) return;
+
+        // Create a map for order index specific to screenOrder
+        const orderMap = new Map(fetchedScreenOrder.map((name, index) => [name, index]));
+
+        // Check if the current baselineImages are already in the order defined by automationCode
+        // We only care about the relative order of images that EXIST in automationCode.
+        // Images NOT in automationCode will be at the end, in their current relative order.
+
+        const sortedImages = [...baselineImages].sort((a, b) => {
+            const indexA = orderMap.has(a.name) ? orderMap.get(a.name)! : Number.MAX_SAFE_INTEGER;
+            const indexB = orderMap.has(b.name) ? orderMap.get(b.name)! : Number.MAX_SAFE_INTEGER;
+
+            // If both are not in automation code (MAX_SAFE_INTEGER), keep original relative order
+            // JavaScript sort is stable for equal values, so returning 0 keeps them.
+            return indexA - indexB;
+        });
+
+        // Create semantic string to compare order
+        const currentOrderStr = baselineImages.map(img => img.name).join('|');
+        const newOrderStr = sortedImages.map(img => img.name).join('|');
+
+        if (currentOrderStr !== newOrderStr) {
+            console.log("Restoring screen order from automation code...");
+            setBaselineImages(sortedImages);
+        }
+    }, [allSteps, baselineImages.length]); // Depend on length to avoid loop on object reference change, but re-run if list changes
 
     const handleSaveAutomation = async () => {
         let buildId: string | undefined = undefined;
@@ -316,7 +353,8 @@ export function AndroidTVDetailFigma({
                 projectId,
                 buildId,
                 automationCode: filteredAutomationCode, // Send filtered structure
-                variables: variablesObj
+                variables: variablesObj,
+                screenOrder: baselineImages.map(img => img.name)
             });
             alert("Automation saved successfully!");
         } catch (error) {
@@ -358,11 +396,13 @@ export function AndroidTVDetailFigma({
             console.error("Failed to save before export:", error);
         }
 
-        // Convert allSteps record to PageFlow dictionary
-        const pages = Object.entries(allSteps).map(([name, screenSteps]) => ({
-            name,
-            steps: screenSteps
-        }));
+        // Convert allSteps record to PageFlow dictionary, preserving order from baselineImages
+        const pages = baselineImages
+            .filter(img => allSteps[img.name]) // Only include screens with steps
+            .map(img => ({
+                name: img.name,
+                steps: allSteps[img.name]
+            }));
 
         const javaCode = generateFullFile(pages);
         const blob = new Blob([javaCode], { type: 'text/plain' });
@@ -380,11 +420,13 @@ export function AndroidTVDetailFigma({
         try {
             await handleSaveAutomation(); // Save changes first
 
-            // Convert to format needed for file generation
-            const pages = Object.entries(allSteps).map(([name, screenSteps]) => ({
-                name,
-                steps: screenSteps
-            }));
+            // Convert to format needed for file generation, preserving order
+            const pages = baselineImages
+                .filter(img => allSteps[img.name])
+                .map(img => ({
+                    name: img.name,
+                    steps: allSteps[img.name]
+                }));
 
             const fullCode = generateFullFile(pages);
             const runnerCode = generateRunnerFile(pages);
