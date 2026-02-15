@@ -9,6 +9,7 @@ export const generateJavaCode = (page: PageFlow): string => {
     const methodName = page.name.replace(/\s+/g, '') || 'fullAppFlow';
 
     let code = `    public static String ${methodName}() throws Exception {\n\n`;
+    code += `        AndroidDriver driver = DriverManager.getDriver();\n`;
     code += `        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));\n\n`;
 
     page.steps.forEach((step) => {
@@ -68,8 +69,6 @@ export const generateJavaCode = (page: PageFlow): string => {
         }
     });
 
-    code += `\n        AppLauncher.closeApp();\n`;
-    code += `        DriverManager.quitDriver();\n`;
     code += `        return "${page.name.replace(/\s+/g, '')}.png";\n`;
     code += `    }`;
 
@@ -95,7 +94,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.testng.annotations.BeforeClass;
 import org.testng.Assert;
 
 import java.io.File;
@@ -103,13 +101,6 @@ import java.time.Duration;
 
 public class ${className} {
 
-    private static AndroidDriver driver;
-
-    @BeforeClass 
-    public static void setup(){
-        AppLauncher.launchApp();
-        driver = DriverManager.getDriver();
-    }
     // ---------- COMMON HELPERS ----------
     private static final Channel channel = Channel.KWTX;
     
@@ -185,6 +176,8 @@ public class AndroidTVOnlyRunner {
         } else {
              System.out.println("No APK path provided. Skipping installation.");
         }
+        
+        AppLauncher.launchApp();
     }
 
     @AfterClass
@@ -192,6 +185,8 @@ public class AndroidTVOnlyRunner {
     public void teardown(@org.testng.annotations.Optional("") String apkPath, 
                          @org.testng.annotations.Optional("com.quickplay.app.graymedia.kwtx") String packageName) throws Exception {
         String udid = DriverManager.getUdid();
+        AppLauncher.closeApp();
+        DriverManager.quitDriver();
         AppiumServerManager.stopServer();
         System.out.println("Cleanup completed");
     }
@@ -273,6 +268,8 @@ public class CompareApp {
         } else {
              System.out.println("No APK path provided. Skipping installation.");
         }
+        
+        AppLauncher.launchApp();
     }
 
 `;
@@ -340,6 +337,8 @@ public class CompareApp {
     public void teardown(@org.testng.annotations.Optional("") String apkPath, 
                          @org.testng.annotations.Optional("com.quickplay.app.graymedia.kwtx") String packageName) throws Exception {
         String udid = DriverManager.getUdid();
+        AppLauncher.closeApp();
+        DriverManager.quitDriver();
         AppiumServerManager.stopServer();
         // Appinstaller.uninstall(udid, packageName);
         System.out.println("Cleanup completed");
