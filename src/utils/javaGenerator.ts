@@ -95,6 +95,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.testng.annotations.BeforeClass;
 import org.testng.Assert;
 
 import java.io.File;
@@ -105,7 +106,7 @@ public class ${className} {
     private static AndroidDriver driver;
 
     @BeforeClass 
-    private static void setup(){
+    public static void setup(){
         AppLauncher.launchApp();
         driver = DriverManager.getDriver();
     }
