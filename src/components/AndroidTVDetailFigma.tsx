@@ -445,12 +445,11 @@ export function AndroidTVDetailFigma({
             const apkFilename = extractFilename(apkPath);
 
             // Map to container paths based on universal config
-            const containerApkPath = apkPath ? `/app/input/${apkFilename}` : "";
             const containerOutputPath = "/app/output";
 
             const configData = {
                 ANDROID_TV_UDID: getValue('ANDROID_TV_UDID'),
-                APK_PATH: containerApkPath,
+                APK_PATH: apkPath,
                 PACKAGE_NAME: getValue('PACKAGE_NAME'),
                 APPIUM_URL: getValue('APPIUM_URL'),
                 SS_CAPTURE_FOLDER: containerOutputPath,
