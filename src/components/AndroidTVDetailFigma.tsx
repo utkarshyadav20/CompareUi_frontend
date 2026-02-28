@@ -34,10 +34,9 @@ import { ProjectHeader } from "./ProjectHeader";
 import { Project, Theme } from "../types";
 import { PROJECT_NAVIGATION_ITEMS } from "../constants";
 import { ImageCard } from "./common/ImageCard";
-import { EmptyState } from "./common/EmptyState";
 import { ImageGrid } from "./common/ImageGridPanel";
 import { FigmaApi } from '../api/generated';
-import { API_BASE_URL } from '../api/config';
+import { API_BASE_URL, Automation_url } from '../api/config';
 import apiClient from '../api/client';
 import AutomationSteps from "./automation/AutomationSteps";
 import { Step } from "./automation/StepRow";
@@ -463,7 +462,7 @@ export function AndroidTVDetailFigma({
 
             // 2. Save Files
             const saveFile = async (path: string, content: string) => {
-                const response = await fetch('http://localhost:4000/api/save-file', {
+                const response = await fetch(`${Automation_url}/api/save-file`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filePath: path, content })
@@ -478,8 +477,13 @@ export function AndroidTVDetailFigma({
 
 
             // 2. Trigger Run
-            const runResponse = await fetch('http://localhost:4000/api/run-tv-automation', {
-                method: 'POST'
+            const runResponse = await fetch(`${Automation_url}/api/run-tv-automation`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    udid: configData.ANDROID_TV_UDID,
+                    appiumUrl: configData.APPIUM_URL
+                })
             });
             if (!runResponse.ok) throw new Error(await runResponse.text());
 
