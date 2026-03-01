@@ -1,8 +1,9 @@
 {
-      "name": "Create Page in Angular",
+      "name": "Pixby",
       "version": "0.1.0",
       "private": true,
       "dependencies": {
+            "@fontsource/inconsolata": "^5.2.8",
             "@fontsource/instrument-sans": "^5.2.8",
             "@radix-ui/react-accordion": "^1.2.3",
             "@radix-ui/react-alert-dialog": "^1.1.6",

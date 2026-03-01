@@ -424,6 +424,10 @@
 }
 
 @layer utilities {
+  .font-code {
+    font-family: "Inconsolata", "Consolas", monospace;
+  }
+
   .pointer-events-none {
     pointer-events: none;
   }
