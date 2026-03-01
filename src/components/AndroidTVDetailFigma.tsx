@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { uploadToCloudinary } from '../utils/cloudinary';
+import { uploadToGCS } from '../utils/gcsStorage';
 import {
     Search,
     Grid2X2,
@@ -166,9 +166,9 @@ export function AndroidTVDetailFigma({
             try {
                 await Promise.all(Array.from(files).map(async (file) => {
                     try {
-                        // 1. Upload to Cloudinary
-                        const imageUrl = await uploadToCloudinary(file);
-                        console.log(`Uploaded ${file.name} to Cloudinary: ${imageUrl}`);
+                        // 1. Upload to GCS
+                        const imageUrl = await uploadToGCS(file);
+                        console.log(`Uploaded ${file.name} to GCS: ${imageUrl}`);
 
                         // 2. Create/Update screen in Backend
                         let buildId: string | undefined = undefined;
@@ -631,9 +631,9 @@ export function AndroidTVDetailFigma({
                 // We proceed even if delete fails, assuming we want to overwrite or add the new one
             }
 
-            // 2. Upload new image to Cloudinary
-            const imageUrl = await uploadToCloudinary(file);
-            console.log(`Uploaded new image to Cloudinary: ${imageUrl}`);
+            // 2. Upload new image to GCS
+            const imageUrl = await uploadToGCS(file);
+            console.log(`Uploaded new image to GCS: ${imageUrl}`);
 
             // 3. Create new manual screen with filename as screenName
             await apiClient.post('/figma/upload-screen', {
@@ -957,10 +957,10 @@ export function AndroidTVDetailFigma({
                         const response = await fetch(imageUrl);
                         const blob = await response.blob();
                         const file = new File([blob], img.name, { type: blob.type });
-                        imageUrl = await uploadToCloudinary(file);
-                        console.log(`Uploaded ${img.name} to Cloudinary: ${imageUrl}`);
+                        imageUrl = await uploadToGCS(file);
+                        console.log(`Uploaded ${img.name} to GCS: ${imageUrl}`);
                     } catch (uploadError) {
-                        console.error(`Failed to upload ${img.name} to Cloudinary:`, uploadError);
+                        console.error(`Failed to upload ${img.name} to GCS:`, uploadError);
                         // Fallback? Or throw? Throwing stops the comparison which is probably correct.
                         throw new Error(`Failed to upload image ${img.name}`);
                     }

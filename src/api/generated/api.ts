@@ -710,6 +710,96 @@ export class AutomationApi extends BaseAPI {
 
 
 /**
+ * CloudStorageApi - axios parameter creator
+ */
+export const CloudStorageApiAxiosParamCreator = function (configuration?: Configuration) {
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        cloudStorageControllerGetSignedUrl: async (options: RawAxiosRequestConfig = {}): Promise<RequestArgs> => {
+            const localVarPath = `/storage/signed-url`;
+            // use dummy base URL string because the URL constructor only accepts absolute URLs.
+            const localVarUrlObj = new URL(localVarPath, DUMMY_BASE_URL);
+            let baseOptions;
+            if (configuration) {
+                baseOptions = configuration.baseOptions;
+            }
+
+            const localVarRequestOptions = { method: 'POST', ...baseOptions, ...options};
+            const localVarHeaderParameter = {} as any;
+            const localVarQueryParameter = {} as any;
+
+
+    
+            setSearchParams(localVarUrlObj, localVarQueryParameter);
+            let headersFromBaseOptions = baseOptions && baseOptions.headers ? baseOptions.headers : {};
+            localVarRequestOptions.headers = {...localVarHeaderParameter, ...headersFromBaseOptions, ...options.headers};
+
+            return {
+                url: toPathString(localVarUrlObj),
+                options: localVarRequestOptions,
+            };
+        },
+    }
+};
+
+/**
+ * CloudStorageApi - functional programming interface
+ */
+export const CloudStorageApiFp = function(configuration?: Configuration) {
+    const localVarAxiosParamCreator = CloudStorageApiAxiosParamCreator(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        async cloudStorageControllerGetSignedUrl(options?: RawAxiosRequestConfig): Promise<(axios?: AxiosInstance, basePath?: string) => AxiosPromise<void>> {
+            const localVarAxiosArgs = await localVarAxiosParamCreator.cloudStorageControllerGetSignedUrl(options);
+            const localVarOperationServerIndex = configuration?.serverIndex ?? 0;
+            const localVarOperationServerBasePath = operationServerMap['CloudStorageApi.cloudStorageControllerGetSignedUrl']?.[localVarOperationServerIndex]?.url;
+            return (axios, basePath) => createRequestFunction(localVarAxiosArgs, globalAxios, BASE_PATH, configuration)(axios, localVarOperationServerBasePath || basePath);
+        },
+    }
+};
+
+/**
+ * CloudStorageApi - factory interface
+ */
+export const CloudStorageApiFactory = function (configuration?: Configuration, basePath?: string, axios?: AxiosInstance) {
+    const localVarFp = CloudStorageApiFp(configuration)
+    return {
+        /**
+         * 
+         * @param {*} [options] Override http request option.
+         * @throws {RequiredError}
+         */
+        cloudStorageControllerGetSignedUrl(options?: RawAxiosRequestConfig): AxiosPromise<void> {
+            return localVarFp.cloudStorageControllerGetSignedUrl(options).then((request) => request(axios, basePath));
+        },
+    };
+};
+
+/**
+ * CloudStorageApi - object-oriented interface
+ */
+export class CloudStorageApi extends BaseAPI {
+    /**
+     * 
+     * @param {*} [options] Override http request option.
+     * @throws {RequiredError}
+     */
+    public cloudStorageControllerGetSignedUrl(options?: RawAxiosRequestConfig) {
+        return CloudStorageApiFp(this.configuration).cloudStorageControllerGetSignedUrl(options).then((request) => request(this.axios, this.basePath));
+    }
+}
+
+
+
+/**
  * CompareApi - axios parameter creator
  */
 export const CompareApiAxiosParamCreator = function (configuration?: Configuration) {
