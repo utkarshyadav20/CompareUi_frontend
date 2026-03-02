@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Folder } from 'lucide-react';
 
 export interface Variable {
     id: number;
@@ -18,65 +19,56 @@ const GlobalVariables: React.FC<GlobalVariablesProps> = ({ projectId, variables,
     };
 
     return (
-        <div className="pt-4 font-inter " style={{ padding: "0px 16px 0px 16px" }}>
+        <div className="flex-1 flex flex-col h-full w-full">
+            {/* Scrollable Variables List */}
+            <div className="flex-1 overflow-y-auto px-6 pb-8 pt-4 custom-scrollbar">
+                <div className="flex flex-col gap-6">
+                    {variables.map((v) => (
+                        <div key={v.id} className="flex items-center gap-4 group">
 
-            {/* Header */}
-            <div className="mb-8">
-                <p className="text-[14px]  font-['DM_Sans']" style={{ color: "#A3A3A3", fontSize: "14px", fontStyle: "normal", fontWeight: 400, lineHeight: "20px" }}>
-                    These are mandatory values to be set before running the execution
-                </p>
-            </div>
 
-            {/* Variables */}
-            <div className="flex flex-col gap-5">
-                {variables.map((v) => (
-                    <div key={v.id} className="flex items-end gap-3">
 
-                        {/* Number Badge */}
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", height: "54px", paddingTop: "14px" }}>
-                            <div className="w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-full 
-                                        bg-white/10 text-[11px] font-semibold text-gray-500 mb-[11px]">
-                                {v.id}
-                            </div>
-                        </div>
-
-                        {/* Variable Name */}
-                        <div className="flex flex-col gap-2">
+                            {/* Variable Name Container - Fixed Width */}
+                            <div className="flex flex-col gap-2 w-[225px] shrink-0">
                             <span className="text-xs text-[#A3A3A3] font-medium font-['DM_Sans']" style={{ color: "#A3A3A3", fontSize: "12px", fontStyle: "normal", fontWeight: 500, lineHeight: "20px" }}>
-                                Variables Name
-                            </span>
+                                    Variables Name
+                                </span>
 
                             <div className=" h-10 flex items-center px-4 
                                             rounded-lg bg-white/5 text-[16px] font-code" style={{ width: "220px", color: "#ffffffff" }}>
-                                {v.name}
+                                    {v.name}
+                                </div>
                             </div>
-                        </div>
 
                         {/* Value */}
                         <div className="flex flex-col gap-2 flex-1">
                             <span className="text-xs text-[#A3A3A3] font-medium font-['DM_Sans']" style={{ color: "#A3A3A3", fontSize: "12px", fontStyle: "normal", fontWeight: 500, lineHeight: "20px" }}>
-                                Value
-                            </span>
-
-                            <input
-                                type="text"
-                                value={v.value}
-                                onChange={(e) => handleValueChange(v.id, e.target.value)}
-                                className="
-                                    h-10 px-5 rounded-lg
-                                    bg-white/[0.03]
-                                    border border-white/10
-                                    text-white text-[13px]
-                                    outline-none
-                                    transition-all duration-200
-                                    focus:border-white/20
-                                    focus:bg-white/5
-                                "
-                            />
+                                    Value
+                                </span>
+                                <div className="relative">
+                                    <input
+                                        type="text"
+                                        value={v.value}
+                                        onChange={(e) => handleValueChange(v.id, e.target.value)}
+                                        className="
+                                            h-10 w-full px-5 rounded-lg
+                                            bg-white/[0.03]
+                                            border border-white/10
+                                            text-white text-[13px]
+                                            outline-none
+                                            transition-all duration-200
+                                            focus:border-white/20
+                                            focus:bg-white/5
+                                            pr-10
+                                        "
+                                        placeholder={`Enter ${v.name}...`}
+                                    />
+                                    
+                                </div>
+                            </div>
                         </div>
-
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
         </div>
     );
