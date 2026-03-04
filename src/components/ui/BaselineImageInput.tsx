@@ -143,11 +143,6 @@ export function BaselineImageInput({
           <h3 className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
             Baseline Images
           </h3>
-          {imageDimensions && (
-            <span className="text-[10px] bg-black/5 dark:bg-white/5 px-1.5 py-0.5 rounded text-gray-500 font-mono">
-              {imageDimensions.width}x{imageDimensions.height}
-            </span>
-          )}
         </div>
         <div className="flex items-center gap-3">
           {/* Upload Toggle Button - Only visible when hasImages is true */}
