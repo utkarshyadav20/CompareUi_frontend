@@ -486,7 +486,15 @@ export function AndroidTVDetailFigma({
             });
             if (!runResponse.ok) throw new Error(await runResponse.text());
 
-            alert('🚀 Automation run triggered successfully!');
+            // By awaiting the text, we force the browser to wait until the backend 
+            // completely finishes the automation and closes the stream connection.
+            const automationLogs = await runResponse.text();
+            console.log("Automation Logs:", automationLogs);
+
+            alert('🚀 Automation run completed successfully! Downloading screenshots...');
+
+            // 3. Automatically download screenshots after successful automation run
+            window.location.href = `${Automation_url}/api/download-screenshots`;
 
         } catch (error: any) {
             console.error('Failed to run automation:', error);
