@@ -118,8 +118,6 @@ export function ResultTab({
   const handleFullReport = async () => {
     setIsDownloading(true);
     try {
-      console.log("Generating Full Report...");
-
       let buildId = '';
       let currentBuildName = '';
 
@@ -158,7 +156,6 @@ export function ResultTab({
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-      console.log("Full report downloaded.");
     } catch (error) {
       console.error("Error generating full report:", error);
     } finally {

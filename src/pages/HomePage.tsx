@@ -90,7 +90,7 @@ export function HomePage({
 
   const filteredProjects = projects.filter(
     (project) =>
-      project.platform.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.projectName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       project.platformType.toLowerCase().includes(searchQuery.toLowerCase())
   );
 

@@ -7,8 +7,8 @@ import { NotificationPanel } from "./NotificationPanel";
 import { SmartImageDetail } from "./SmartImageDetail";
 import { AndroidTVDetail } from "./AndroidTVDetail";
 import { AndroidTVDetailFigma } from "./AndroidTVDetailFigma";
-import { TestComparisonToast } from "./TestComparisonToast";
 import { BaselineImageInput } from "./ui/BaselineImageInput";
+import { showToast } from "../utils/toast";
 import { ControlBar } from "./ui/ControlBar";
 import { BrowserPreview } from "./common/BrowserPreview";
 import { EmptyState } from "./common/EmptyState";
@@ -59,7 +59,6 @@ export function ProjectDetail({
 
   const [websiteUrl, setWebsiteUrl] = useState("");
   /* Removed duplicate websiteUrl declaration */
-  const [showComparisonToast, setShowComparisonToast] = useState(false);
 
   // Build State
   const [builds, setBuilds] = useState<any[]>([]);
@@ -75,8 +74,6 @@ export function ProjectDetail({
         if (response.data.length > 0) {
           // Default to the first build
           setSelectedBuild(response.data[0]);
-        } else {
-          console.log('No builds found for project:', project.id);
         }
       } catch (error) {
         console.error('Failed to fetch builds:', error);
@@ -118,7 +115,6 @@ export function ProjectDetail({
     const file = event.target.files?.[0];
     if (!file) return;
     // CSV upload logic would go here
-    console.log("CSV file uploaded:", file.name);
   };
 
   const handleUrlSubmit = () => {
@@ -177,7 +173,7 @@ export function ProjectDetail({
         testId={selectedTestId}
         testName={testCase?.name || "Detail Screen"}
         projectId={project.id}
-        projectName={project.platform}
+        projectName={project.projectName}
         platformType={project.type}
         onBack={handleBackToResults}
         buildVersion="v12.224"
@@ -195,14 +191,13 @@ export function ProjectDetail({
     return (
       <AndroidTVDetailFigma
         projectId={project.id}
-        projectName={project.platform}
-        platformType={project.platformType}
+        projectName={project.projectName}
+        platformType={project.type}
         onBack={onBack}
         project={project}
         buildVersions={builds}
         selectedBuild={selectedBuild}
         onBuildChange={setSelectedBuild}
-        onStartComparison={() => setShowComparisonToast(true)}
       />
     );
   }
@@ -234,7 +229,12 @@ export function ProjectDetail({
           onSensitivityChange={setThreshold}
           aiAgent={aiAgent}
           onAiAgentChange={setAiAgent}
-          onStartComparison={() => setShowComparisonToast(true)}
+          onStartComparison={() => showToast({
+            type: 'neutral',
+            title: 'UI comparison started',
+            message: 'New test generated and running in background to view click on below',
+            onViewReport: () => setActiveTab('result')
+          })}
           buildVersions={builds}
           selectedBuild={selectedBuild}
           onBuildChange={setSelectedBuild}
@@ -259,7 +259,7 @@ export function ProjectDetail({
               onFileUpload={handleFileUpload}
               onCsvUpload={handleCsvUpload}
               onSelectImage={setSelectedImageId}
-              onRefreshAll={() => console.log("Refresh all images")}
+              onRefreshAll={() => { }}
               onRemoveAll={() => {
                 setUploadedImages([]);
                 setSelectedImageId(null);
@@ -270,8 +270,8 @@ export function ProjectDetail({
                 );
                 if (selectedImageId === id) setSelectedImageId(null);
               }}
-              onRefreshImage={(id) => console.log("Refresh image", id)}
-              onReplaceImage={(id) => console.log("Replace image", id)}
+              onRefreshImage={() => { }}
+              onReplaceImage={() => { }}
               onReorder={setUploadedImages}
               searchQuery={searchQuery}
               onSearchQueryChange={setSearchQuery}
@@ -313,7 +313,7 @@ export function ProjectDetail({
       {activeTab === "result" && (
         <ResultTab
           projectId={project.id}
-          projectName={project.platform}
+          projectName={project.projectName}
           projectType={project.type}
           buildVersion={selectedBuild?.buildName || ""}
           selectedBuild={selectedBuild}
@@ -323,25 +323,10 @@ export function ProjectDetail({
         />
       )}
 
-      {/* Notification Panel */}
       <NotificationPanel
         isOpen={isNotificationOpen}
         onClose={() => setIsNotificationOpen(false)}
       />
-
-      {/* Test Comparison Toast */}
-      {showComparisonToast && (
-        <TestComparisonToast
-          onClose={() => setShowComparisonToast(false)}
-          onViewReport={() => {
-            console.log("View full report clicked");
-            setShowComparisonToast(false);
-            // Navigate to results tab or open results modal
-            // You might want to switch activeTab to 'result' here if needed
-            setActiveTab("result");
-          }}
-        />
-      )}
     </div>
   );
 }

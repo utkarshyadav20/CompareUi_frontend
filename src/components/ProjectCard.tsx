@@ -19,7 +19,7 @@ export interface ProjectCardProps extends Project {
 
 export function ProjectCard({
   id,
-  platform,
+  projectName,
   platformType,
   status,
   iconBg,
@@ -82,7 +82,7 @@ export function ProjectCard({
             {icon}
           </div>
           <div className="flex-1">
-            <div className="text-black dark:text-white">{platform}</div>
+            <div className="text-black dark:text-white">{projectName}</div>
             <div className="text-black/75 dark:text-white/75 text-xs">
               {platformType}
             </div>
@@ -160,7 +160,7 @@ export function ProjectCard({
             {icon}
           </div>
           <div>
-            <div className="text-black dark:text-white">{platform}</div>
+            <div className="text-black dark:text-white font-bold">{projectName}</div>
             <div className="text-black/75 dark:text-white/75 text-xs">
               {platformType}
             </div>

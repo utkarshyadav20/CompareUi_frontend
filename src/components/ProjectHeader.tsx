@@ -67,7 +67,7 @@ export function ProjectHeader({
               </div>
               <div>
                 <div className="text-black dark:text-white">
-                  {project.platform}
+                  {project.projectName}
                 </div>
                 <div className="text-black/70 dark:text-white/70 text-xs">
                   {project.platformType}

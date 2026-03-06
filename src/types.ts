@@ -14,7 +14,7 @@ export type Theme = "light" | "dark" | "system";
 
 export interface Project {
   id: string;
-  platform: string;
+  projectName: string;
   platformType: string;
   status: ProjectStatus;
   iconBg: string;

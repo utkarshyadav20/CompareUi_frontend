@@ -80,7 +80,7 @@ export const mapBackendProjectToFrontend = (dto: BackendProjectDto): Project => 
 
     return {
         id: dto.projectId,
-        platform: dto.projectName,
+        projectName: dto.projectName,
         // Backend doesn't store explicit "Emulator" vs "Physical Device" yet, so we generalize
         platformType: frontendType,
         status: "running", // Default status as backend doesn't seem to have status yet
