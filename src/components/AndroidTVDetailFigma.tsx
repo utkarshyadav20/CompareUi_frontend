@@ -1106,7 +1106,7 @@ export function AndroidTVDetailFigma({
                             </div>
 
                             {/* Right Panel - Actual Build Images */}
-                            <div className="flex-1  border border-black  flex flex-col overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
+                            <div className="flex-1  border border-black  flex flex-col overflow-hidden scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent" style={{ background: '#1A1A1A', border: '1px solid #333333', borderRadius: '0px 12px 12px 0px' }}>
                                 <div className="flex justify-between mb-[16px]">
                                     <div className="flex flex-col gap-4 w-full" style={{ padding: '16px 16px 0px 16px', borderBottom: '1px solid #ffffff20' }}>
                                         <p className="text-[12px] font-medium uppercase" style={{ color: '#929292' }}>
