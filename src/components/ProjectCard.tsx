@@ -6,10 +6,12 @@ import {
   MoreVertical,
   Trash2,
   Plus,
+  Loader2,
 } from "lucide-react";
 
 import { Project, ViewMode } from "../types";
 import { NewBuildForm } from "./NewBuildForm";
+import { generateAndHandleFullReport } from "../utils/projectUtils";
 
 export interface ProjectCardProps extends Project {
   onClick: () => void;
@@ -30,9 +32,26 @@ export function ProjectCard({
   onClick,
   viewMode,
   onDelete,
+  hasBuild,
+  buildName,
+  buildId,
 }: ProjectCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNewBuildOpen, setIsNewBuildOpen] = useState(false);
+  const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+
+  const handleViewReport = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!id || !buildId || isGeneratingReport) return;
+    try {
+      setIsGeneratingReport(true);
+      await generateAndHandleFullReport({ projectId: id, buildId, buildName, action: 'open' });
+    } catch (error) {
+      console.error("Error generating full report:", error);
+    } finally {
+      setIsGeneratingReport(false);
+    }
+  };
 
   // Common Menu Component
   const MenuDropdown = () => (
@@ -102,7 +121,7 @@ export function ProjectCard({
                 </div>
               </div>
             )}
-            {status === "completed" && (
+            {status === "completed" && hasBuild && (
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <CircleCheckBig className="w-3.5 h-3.5 text-green-500/50" />
@@ -120,8 +139,24 @@ export function ProjectCard({
             )}
           </div>
 
+          {status === "completed" && hasBuild && (
+            <button
+              className="bg-black/10 dark:bg-white/10 px-4 py-1.5 rounded-md text-black h-10 dark:text-white text-sm font-semibold hover:bg-black/15 dark:hover:bg-white/15 transition-colors cursor-pointer flex items-center gap-2"
+              onClick={handleViewReport}
+            >
+              {isGeneratingReport ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "View Full Report"
+              )}
+            </button>
+          )}
+
           <div className="text-black/50 dark:text-white/50 text-xs min-w-[80px]">
-            {timestamp}
+            {hasBuild && buildName ? `${buildName} • ` : ""}{timestamp}
           </div>
 
           <div className="relative">
@@ -190,40 +225,47 @@ export function ProjectCard({
             </div>
           </div>
         )}
-        {status === "completed" && (
-          <div className="flex items-center justify-between">
+        {status === "completed" && hasBuild && (
+          <div className="flex items-center justify-between mt-4">
             <div className="flex items-center gap-6">
               <div>
-                <div className="text-black dark:text-white text-sm mb-1">
+                <div className="text-black dark:text-white text-[13px] font-bold mb-1">
                   Passed
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CircleCheckBig className="w-3.5 h-3.5 text-green-500/50" />
-                  <span className="text-black dark:text-white">{passed}</span>
+                  <CircleCheckBig className="w-3.5 h-3.5 text-green-500" />
+                  <span className="text-black dark:text-white text-s font-semibold">{passed}</span>
                 </div>
               </div>
               <div>
-                <div className="text-black dark:text-white text-sm mb-1">
+                <div className="text-black dark:text-white text-[13px] font-bold mb-1">
                   Failed
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <CircleX className="w-3.5 h-3.5 text-red-500/50" />
-                  <span className="text-black dark:text-white">{failed}</span>
+                  <CircleX className="w-3.5 h-3.5 text-red-500" />
+                  <span className="text-black dark:text-white text-s font-semibold">{failed}</span>
                 </div>
               </div>
             </div>
             <button
-              className="bg-black/10 dark:bg-white/10 px-5 py-1.5 rounded-lg text-black dark:text-white text-sm hover:bg-black/15 dark:hover:bg-white/15 transition-colors"
-              onClick={(e) => e.stopPropagation()}
+              className="bg-black/10 dark:bg-white/10 px-4 py-1.5 rounded-md text-black h-10 dark:text-white text-sm font-semibold hover:bg-black/15 dark:hover:bg-white/15 transition-colors cursor-pointer flex items-center gap-2"
+              onClick={handleViewReport}
             >
-              View Full Report
+              {isGeneratingReport ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "View Full Report"
+              )}
             </button>
           </div>
         )}
       </div>
 
       <div className="text-black/50 dark:text-white/50 text-xs">
-        {timestamp}
+        {hasBuild && buildName ? `${buildName} • ` : ""}{timestamp}
       </div>
       <NewBuildForm
         isOpen={isNewBuildOpen}

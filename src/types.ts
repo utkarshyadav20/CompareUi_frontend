@@ -9,7 +9,7 @@ export type ProjectType =
   | "Smart TV";
 
 export type EnvironmentType = "Emulator" | "Physical Device";
-export type ProjectStatus = "running" | "completed" | "failed";
+export type ProjectStatus = "running" | "completed" | "failed" | "idle";
 export type Theme = "light" | "dark" | "system";
 
 export interface Project {
@@ -24,4 +24,6 @@ export interface Project {
   timestamp: string;
   type: ProjectType;
   buildName?: string;
+  hasBuild?: boolean;
+  buildId?: string;
 }

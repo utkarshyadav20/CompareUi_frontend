@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { pdf } from '@react-pdf/renderer';
-import { FullReportDocument } from './common/report/fullReport/FullReportDocument';
 import { Search, Grid2X2, List, ChevronDown, Eye, Download } from 'lucide-react';
 import apiClient from '../api/client';
 import LoaderGif from '../assets/Loader.gif';
+import { generateAndHandleFullReport } from '../utils/projectUtils';
 import Spinner from '@/assets/spiner.svg';
 
 interface Result {
@@ -134,28 +133,12 @@ export function ResultTab({
         return;
       }
 
-      const response = await apiClient.get('/result/build-report', {
-        params: { projectId, buildId }
+      await generateAndHandleFullReport({
+        projectId,
+        buildId,
+        buildName: currentBuildName,
+        action: 'download'
       });
-
-      const reportData = response.data;
-
-      // Filter rows to only include 'pass' and 'fail'
-      if (reportData && Array.isArray(reportData.rows)) {
-        reportData.rows = reportData.rows.filter((row: any) => {
-          const status = (row.resultStatus ?? '').toString().toLowerCase();
-          return status === 'pass' || status === 'fail' || status === '1' || status === '0';
-        });
-      }
-
-      const blob = await pdf(<FullReportDocument data={reportData} />).toBlob();
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Full_Report_${currentBuildName}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
     } catch (error) {
       console.error("Error generating full report:", error);
     } finally {
