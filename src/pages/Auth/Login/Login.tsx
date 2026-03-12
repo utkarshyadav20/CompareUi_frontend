@@ -137,9 +137,21 @@ export const LoginPage = () => {
 
                     {/* Styled Toast Notification */}
                     {errors.general && (
-                        <div className={styles.errorToast}>
-                            <CircleAlert size={20} color="white" />
-                            <span>{errors.general}</span>
+                        <div className={styles.errorToast} style={errors.general.includes('pending approval') ? { flexDirection: 'column', padding: '16px 24px' } : {}}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <CircleAlert size={20} color="white" />
+                                <span>{errors.general}{' '}
+                                    {errors.general.includes('pending approval') && (
+                                        <Link
+                                            to={`/approve?email=${encodeURIComponent(formData.email)}`}
+                                            state={{ email: formData.email }}
+                                            style={{ color: '#ffffff', textDecoration: 'underline', fontWeight: 600, marginTop: '8px' }}
+                                        >
+                                            Resend Approval Request
+                                        </Link>
+                                    )}
+                                </span>
+                            </div>
                         </div>
                     )}
                 </div>

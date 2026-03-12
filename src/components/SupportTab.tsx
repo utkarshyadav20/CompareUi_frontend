@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { MessageSquare, Send, ThumbsUp, Bug, Lightbulb, AlertCircle } from 'lucide-react';
+import { showToast } from '../utils/toast';
 
 interface Ticket {
   id: string;
@@ -49,8 +50,8 @@ export function SupportTab() {
 
   const handleSubmit = () => {
     if (!title.trim() || !description.trim()) return;
-    
-    alert(`${selectedType === 'bug' ? 'Bug' : 'Suggestion'} submitted successfully!`);
+
+    showToast({ type: 'success', title: 'Success', message: `${selectedType === 'bug' ? 'Bug' : 'Suggestion'} submitted successfully!` });
     setTitle('');
     setDescription('');
   };
@@ -139,22 +140,20 @@ export function SupportTab() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedType('bug')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-[8px] border transition-colors ${
-                      selectedType === 'bug'
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-[8px] border transition-colors ${selectedType === 'bug'
                         ? 'bg-red-500/20 border-red-500/50 text-red-500'
                         : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <Bug className="w-4 h-4" />
                     <span>Bug Report</span>
                   </button>
                   <button
                     onClick={() => setSelectedType('suggestion')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-[8px] border transition-colors ${
-                      selectedType === 'suggestion'
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-[8px] border transition-colors ${selectedType === 'suggestion'
                         ? 'bg-yellow-500/20 border-yellow-500/50 text-yellow-500'
                         : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
-                    }`}
+                      }`}
                   >
                     <Lightbulb className="w-4 h-4" />
                     <span>Suggestion</span>
@@ -170,11 +169,10 @@ export function SupportTab() {
                     <button
                       key={p}
                       onClick={() => setPriority(p)}
-                      className={`flex-1 px-4 py-2 rounded-[8px] border text-[14px] capitalize transition-colors ${
-                        priority === p
+                      className={`flex-1 px-4 py-2 rounded-[8px] border text-[14px] capitalize transition-colors ${priority === p
                           ? getPriorityColor(p) + ' border-current'
                           : 'bg-white/5 border-white/10 text-white/50 hover:bg-white/10'
-                      }`}
+                        }`}
                     >
                       {p}
                     </button>

@@ -71,7 +71,6 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
 
   const handleUrlSubmit = () => {
     if (!baselineUrl.trim()) return;
-    console.log("Submitting Figma URL:", baselineUrl);
     // Mock add
     const mockImage: BaselineImage = {
       id: Date.now().toString(),
@@ -85,7 +84,6 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
   };
 
   const handleCsvUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("CSV Upload not fully implemented in mock");
   };
 
   const filteredBaselineImages = baselineImages.filter((img) =>
@@ -107,13 +105,13 @@ export function SmartImageDetail({ projectId }: SmartImageDetailProps) {
           onFileUpload={(e) => handleFileUpload(e, "baseline")}
           onCsvUpload={handleCsvUpload}
           onSelectImage={setSelectedImageId}
-          onRefreshAll={() => console.log("Refresh All")}
+          onRefreshAll={() => { }}
           onRemoveAll={() => setBaselineImages([])}
           onRemoveImage={(id) =>
             setBaselineImages((prev) => prev.filter((img) => img.id !== id))
           }
-          onRefreshImage={(id) => console.log("Refresh", id)}
-          onReplaceImage={(id) => console.log("Replace", id)}
+          onRefreshImage={() => { }}
+          onReplaceImage={() => { }}
           onReorder={setBaselineImages}
           searchQuery={searchQuery}
           onSearchQueryChange={setSearchQuery}

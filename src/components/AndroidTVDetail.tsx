@@ -4,6 +4,7 @@ import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
 import { ImageCard } from "./common/ImageCard";
 import { EmptyState } from "./common/EmptyState";
 import { ImageGridPanel, ImageGrid } from "./common/ImageGridPanel";
+import { showToast } from "../utils/toast";
 
 interface AndroidTVDetailProps {
   projectId: string;
@@ -94,8 +95,6 @@ export function AndroidTVDetail({
   const handleCsvUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-    // CSV upload logic would go here
-    console.log("CSV file uploaded:", file.name);
   };
 
   const handleUrlSubmit = () => {
@@ -110,15 +109,16 @@ export function AndroidTVDetail({
     };
     setBaselineImages((prev) => [...prev, mockImage]);
     setSelectedBaselineId(mockImage.id);
-    console.log("Submitting Figma URL:", baselineUrl);
   };
 
   const handleBrowseFolder = () => {
     // Note: Real folder browsing requires File System Access API
     // This is a simulation showing the concept
-    alert(
-      "Note: Real folder browsing requires File System Access API which has limited browser support. In production, you would use a backend service or Electron app to access file system."
-    );
+    showToast({
+      type: 'neutral',
+      title: 'Note',
+      message: 'Real folder browsing requires File System Access API which has limited browser support. In production, you would use a backend service or Electron app to access file system.'
+    });
 
     // Simulate folder selection with mock images
     const mockImages: ImageData[] = [
@@ -151,7 +151,6 @@ export function AndroidTVDetail({
   };
 
   const handleRefresh = (type: "baseline" | "actual") => {
-    console.log(`Refreshing ${type} images`);
     // Refresh logic here
   };
 
@@ -219,8 +218,8 @@ export function AndroidTVDetail({
             onRefreshAll={() => handleRefresh("baseline")}
             onRemoveAll={() => handleClearAll("baseline")}
             onRemoveImage={(id) => handleRemoveImage(id, "baseline")}
-            onRefreshImage={(id) => console.log("Refresh image", id)}
-            onReplaceImage={(id) => console.log("Replace image", id)}
+            onRefreshImage={() => { }}
+            onReplaceImage={() => { }}
             onReorder={setBaselineImages}
             searchQuery={searchQuery}
             onSearchQueryChange={setSearchQuery}

@@ -24,7 +24,6 @@ import svgPaths from "../imports/svg-yp1cueaie8";
 import LoaderGif from "../assets/Loader.gif";
 import { ResultTab } from "./ResultTab";
 import { DetailedResult } from "./DetailedResult";
-import { TestComparisonToast } from "./TestComparisonToast";
 import { ActivityTab } from "./ActivityTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
@@ -42,6 +41,7 @@ import AutomationSteps from "./automation/AutomationSteps";
 import { Step } from "./automation/StepRow";
 import GlobalVariables, { Variable } from "./automation/GlobalVariables/GlobalVariables";
 import { generateFullFile, generateRunnerFile, generateCompareAppFile } from '../utils/javaGenerator';
+import { showToast } from '../utils/toast';
 
 const mapScreenToImage = (screen: any): BaselineImage => ({
     id: screen.id ? screen.id.toString() : Date.now().toString(),
@@ -117,7 +117,7 @@ export function AndroidTVDetailFigma({
     // Use the passed project prop, but ensure we have fallback defaults if needed (though prop is required)
     const project: Project = projectProp || {
         id: projectId,
-        platform: projectName,
+        projectName: projectName,
         platformType: platformType,
         status: "running",
         iconBg: "bg-transparent",
@@ -163,12 +163,12 @@ export function AndroidTVDetailFigma({
 
         if (type === "baseline") {
             setLoadingActivity("image");
+            let failedUploads = 0;
             try {
                 await Promise.all(Array.from(files).map(async (file) => {
                     try {
                         // 1. Upload to GCS
                         const imageUrl = await uploadToGCS(file);
-                        console.log(`Uploaded ${file.name} to GCS: ${imageUrl}`);
 
                         // 2. Create/Update screen in Backend
                         let buildId: string | undefined = undefined;
@@ -182,20 +182,22 @@ export function AndroidTVDetailFigma({
                             imageUrl: imageUrl,
                             buildId: buildId
                         });
-
-                        console.log(`Saved screen ${file.name} to backend`);
                     } catch (err) {
                         console.error(`Failed to upload ${file.name}`, err);
-                        // Optionally alert user or show toast
+                        failedUploads++;
                     }
                 }));
 
                 // 3. Refresh list
                 await fetchScreens();
-                alert('Images uploaded successfully!');
+                if (failedUploads > 0) {
+                    showToast({ type: 'error', title: 'Upload Incomplete', message: 'Some images failed to upload.' });
+                } else {
+                    showToast({ type: 'success', title: 'Success', message: 'Images uploaded successfully!' });
+                }
             } catch (error) {
                 console.error("Batch upload failed", error);
-                alert("Some images failed to upload.");
+                showToast({ type: 'error', title: 'Upload Failed', message: 'An unexpected error occurred during batch upload.' });
             } finally {
                 setLoadingActivity(null);
             }
@@ -222,7 +224,7 @@ export function AndroidTVDetailFigma({
         }
     };
 
-    // Helper to map UI platform type to Backend Project Type
+    // Helper to map UI project type to Backend Project Type
     const getApiProjectType = (type: string) => {
         const lower = type.toLowerCase();
         if (lower.includes('android tv')) return 'android tv';
@@ -284,7 +286,7 @@ export function AndroidTVDetailFigma({
                     setFetchedScreenOrder(screenOrder);
                 }
             } catch (error) {
-                console.log('No automation code found or failed to fetch', error);
+                console.error('No automation code found or failed to fetch', error);
             }
         };
         fetchAutomation();
@@ -316,18 +318,17 @@ export function AndroidTVDetailFigma({
         const newOrderStr = sortedImages.map(img => img.name).join('|');
 
         if (currentOrderStr !== newOrderStr) {
-            console.log("Restoring screen order from automation code...");
             setBaselineImages(sortedImages);
         }
     }, [allSteps, baselineImages.length]); // Depend on length to avoid loop on object reference change, but re-run if list changes
 
-    const handleSaveAutomation = async () => {
+    const handleSaveAutomation = async (showSuccessIndicator = true) => {
         let buildId: string | undefined = undefined;
         if (typeof selectedBuild === 'string') buildId = selectedBuild;
         else if (selectedBuild?.buildId) buildId = selectedBuild.buildId;
 
         if (!projectId || !buildId) {
-            alert("Project ID or Build ID missing");
+            showToast({ type: 'error', title: 'Missing Info', message: 'Project ID or Build ID missing' });
             return;
         }
 
@@ -345,7 +346,7 @@ export function AndroidTVDetailFigma({
             }
         });
 
-        console.log('Saving automation with steps:', filteredAutomationCode);
+        showToast({ type: 'neutral', title: 'Saving', message: 'Saving automation progress...' });
 
         try {
             await apiClient.post('/automation/save', {
@@ -355,10 +356,13 @@ export function AndroidTVDetailFigma({
                 variables: variablesObj,
                 screenOrder: baselineImages.map(img => img.name)
             });
-            alert("Automation saved successfully!");
+            if (showSuccessIndicator) {
+                showToast({ type: 'success', title: 'Success', message: 'Automation saved successfully!' });
+            }
         } catch (error) {
             console.error("Failed to save automation:", error);
-            alert("Failed to save automation.");
+            showToast({ type: 'error', title: 'Error', message: 'Failed to save automation.' });
+            throw error; // Throw to prevent chaining if save fails
         }
     };
 
@@ -390,9 +394,11 @@ export function AndroidTVDetailFigma({
     const handleExportJava = async () => {
         // Save first
         try {
-            await handleSaveAutomation();
+            await handleSaveAutomation(false);
+            showToast({ type: 'success', title: 'Exporting', message: 'Exporting full java file...' });
         } catch (error) {
             console.error("Failed to save before export:", error);
+            return;
         }
 
         // Convert allSteps record to PageFlow dictionary, preserving order from baselineImages
@@ -417,7 +423,8 @@ export function AndroidTVDetailFigma({
 
     const handleRunAutomation = async () => {
         try {
-            await handleSaveAutomation(); // Save changes first
+            await handleSaveAutomation(false); // Save changes first
+            showToast({ type: 'neutral', title: 'Automation Started', message: 'Preparing automation execution...' });
 
             // Convert to format needed for file generation, preserving order
             const pages = baselineImages
@@ -486,11 +493,18 @@ export function AndroidTVDetailFigma({
             });
             if (!runResponse.ok) throw new Error(await runResponse.text());
 
-            alert('🚀 Automation run triggered successfully!');
+            // By awaiting the text, we force the browser to wait until the backend 
+            // completely finishes the automation and closes the stream connection.
+            const automationLogs = await runResponse.text();
+
+            showToast({ type: 'success', title: 'Automation Complete', message: 'Downloading screenshots...' });
+
+            // 3. Automatically download screenshots after successful automation run
+            window.location.href = `${Automation_url}/api/download-screenshots`;
 
         } catch (error: any) {
             console.error('Failed to run automation:', error);
-            alert(`❌ Error running automation: ${error.message || error}`);
+            showToast({ type: 'error', title: 'Automation Failed', message: error.message || String(error) });
         }
     };
 
@@ -575,7 +589,6 @@ export function AndroidTVDetailFigma({
             if (updatedScreen) {
                 const updatedImage = mapScreenToImage(updatedScreen);
                 setBaselineImages(prev => prev.map(img => img.name === screenName ? updatedImage : img));
-                console.log(`Refreshed screen: ${screenName}`);
             }
         } catch (error) {
             console.error(`Failed to refresh screen ${screenName}:`, error);
@@ -585,19 +598,10 @@ export function AndroidTVDetailFigma({
 
     const handleRefreshAll = async () => {
         try {
-            const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
-            const apiProjectType = getApiProjectType(platformType);
-            const response = await figmaApi.figmaControllerUpdateAllScreens(projectId, apiProjectType);
-            const updatedScreens = (response.data as unknown) as any[];
-
-            if (updatedScreens && Array.isArray(updatedScreens)) {
-                const mappedImages: BaselineImage[] = updatedScreens.map(mapScreenToImage);
-                setBaselineImages(mappedImages);
-                console.log('Refreshed all screens');
-            }
+            await Promise.all(baselineImages.map(img => handleRefreshOne(img.name)));
         } catch (error) {
-            console.error('Failed to refresh all screens:', error);
-            alert('Failed to refresh all screens');
+            console.error('Failed to refresh all screens', error);
+            showToast({ type: 'error', title: 'Error', message: 'Failed to refresh all screens' });
         }
     };
 
@@ -625,7 +629,6 @@ export function AndroidTVDetailFigma({
 
             try {
                 await figmaApi.figmaControllerDeleteScreen(projectId, apiProjectType, imageToReplace.name);
-                console.log(`Deleted old screen: ${imageToReplace.name}`);
             } catch (err) {
                 console.warn('Failed to delete old screen (might not exist or other error), proceeding with upload...', err);
                 // We proceed even if delete fails, assuming we want to overwrite or add the new one
@@ -633,7 +636,6 @@ export function AndroidTVDetailFigma({
 
             // 2. Upload new image to GCS
             const imageUrl = await uploadToGCS(file);
-            console.log(`Uploaded new image to GCS: ${imageUrl}`);
 
             // 3. Create new manual screen with filename as screenName
             await apiClient.post('/figma/upload-screen', {
@@ -643,15 +645,13 @@ export function AndroidTVDetailFigma({
                 imageUrl: imageUrl
             });
 
-            console.log(`Created new screen: ${file.name}`);
-
             // 4. Refresh list
             await fetchScreens();
-            alert('Image replaced successfully.');
+            showToast({ type: 'success', title: 'Success', message: 'Image replaced successfully.' });
 
         } catch (error) {
             console.error('Failed to replace image:', error);
-            alert('Failed to replace image.');
+            showToast({ type: 'error', title: 'Error', message: 'Failed to replace image.' });
         } finally {
             setLoadingActivity(null);
             setReplacingImageId(null);
@@ -669,10 +669,9 @@ export function AndroidTVDetailFigma({
             const apiProjectType = getApiProjectType(platformType);
             await figmaApi.figmaControllerDeleteScreen(projectId, apiProjectType, screenName);
             setBaselineImages(prev => prev.filter(img => img.name !== screenName));
-            console.log(`Deleted screen: ${screenName}`);
         } catch (error) {
             console.error(`Failed to delete screen ${screenName}:`, error);
-            alert(`Failed to delete screen ${screenName}`);
+            showToast({ type: 'error', title: 'Error', message: `Failed to delete screen ${screenName}` });
         }
     };
 
@@ -684,10 +683,9 @@ export function AndroidTVDetailFigma({
             const apiProjectType = getApiProjectType(platformType);
             await figmaApi.figmaControllerDeleteAllScreens(projectId, apiProjectType);
             setBaselineImages([]);
-            console.log('Deleted all screens');
         } catch (error) {
             console.error('Failed to delete all screens:', error);
-            alert('Failed to delete all screens');
+            showToast({ type: 'error', title: 'Error', message: 'Failed to delete all screens' });
         }
     };
 
@@ -759,13 +757,13 @@ export function AndroidTVDetailFigma({
                         build_id: buildId
                     });
                     await fetchScreens();
-                    alert('Images imported successfully from CSV.');
+                    showToast({ type: 'success', title: 'Success', message: 'Images imported successfully from CSV.' });
                 } else {
-                    alert('No valid screens found in CSV.');
+                    showToast({ type: 'error', title: 'Error', message: 'No valid screens found in CSV.' });
                 }
             } catch (error) {
                 console.error('Failed to upload screens:', error);
-                alert('Failed to upload screens from CSV.');
+                showToast({ type: 'error', title: 'Error', message: 'Failed to upload screens from CSV.' });
             } finally {
                 setLoadingActivity(null);
             }
@@ -781,7 +779,7 @@ export function AndroidTVDetailFigma({
 
         // Basic Figma URL validation
         if (!baselineUrl.includes('figma.com') || !baselineUrl.includes('node-id')) {
-            alert("Invalid Figma URL. Please ensure it contains 'node-id' to point to a specific frame.");
+            showToast({ type: 'error', title: 'Invalid URL', message: "Invalid Figma URL. Please ensure it contains 'node-id' to point to a specific frame." });
             return;
         }
 
@@ -818,17 +816,15 @@ export function AndroidTVDetailFigma({
                 throw new Error("Failed to extract image");
             }
 
-            console.log(`Added Figma screen: ${screenName} -> ${imageUrl}`);
-
             // 2. Refresh list and clear input
             await fetchScreens();
             setBaselineUrl("");
-            alert("Figma screen added successfully!");
+            showToast({ type: 'success', title: 'Success', message: 'Figma screen added successfully!' });
 
         } catch (error: any) {
             console.error("Failed to add Figma screen:", error);
             const msg = error.response?.data?.message || "Failed to add Figma screen. Check console.";
-            alert(msg);
+            showToast({ type: 'error', title: 'Figma Error', message: msg });
         } finally {
             setLoadingActivity(null);
         }
@@ -894,7 +890,6 @@ export function AndroidTVDetailFigma({
     );
 
     const handleViewTest = (testId: string) => {
-        console.log("Setting selectedTestId:", testId);
         setSelectedTestId(testId);
     };
 
@@ -921,7 +916,7 @@ export function AndroidTVDetailFigma({
                 testId={selectedTestId}
                 testName={testCase?.name || selectedTestId || "Detail Screen"}
                 projectId={projectId}
-                projectName={projectName || project.platform}
+                projectName={projectName || project.projectName}
                 platformType={getApiProjectType(platformType)}
                 onBack={handleBackToResults}
                 buildVersion={typeof selectedBuild === 'string' ? selectedBuild : selectedBuild?.buildId || "v12.224"}
@@ -937,14 +932,19 @@ export function AndroidTVDetailFigma({
     }
 
     const handleStartComparison = async () => {
-        console.log("Start Comparison clicked. Actual Images:", actualImages.length);
         if (actualImages.length === 0) {
-            alert("Please upload at least one actual build image to compare.");
+            showToast({ type: 'error', title: 'Missing Images', message: "Please upload at least one actual build image to compare." });
             return;
         }
 
-        setShowComparisonToast(true);
-        // if (onStartComparison) onStartComparison(); // Optional: keep if parent needs to know
+        if (onStartComparison) onStartComparison();
+
+        showToast({
+            type: 'neutral',
+            title: 'UI comparison started',
+            message: 'New test generated and running in background to view click on below',
+            onViewReport: () => setActiveTab('result')
+        });
 
         setLoadingActivity("compare");
         try {
@@ -958,7 +958,6 @@ export function AndroidTVDetailFigma({
                         const blob = await response.blob();
                         const file = new File([blob], img.name, { type: blob.type });
                         imageUrl = await uploadToGCS(file);
-                        console.log(`Uploaded ${img.name} to GCS: ${imageUrl}`);
                     } catch (uploadError) {
                         console.error(`Failed to upload ${img.name} to GCS:`, uploadError);
                         // Fallback? Or throw? Throwing stops the comparison which is probably correct.
@@ -972,10 +971,6 @@ export function AndroidTVDetailFigma({
                 };
             }));
 
-            // Use selectedBuild id if available, otherwise undefined (backend creates new one)
-            // If selectedBuild is just a string (mock), ignore it? Or pass it?
-            // The prop `selectedBuild` might be an object or string. logic in ResultTab handled both.
-            // Let's assume for now if it has .buildId use it.
             let buildIdParam = undefined;
             if (selectedBuild && typeof selectedBuild === 'object' && selectedBuild.buildId) {
                 buildIdParam = selectedBuild.buildId;
@@ -985,9 +980,6 @@ export function AndroidTVDetailFigma({
             const queryParams = new URLSearchParams({
                 projectId,
                 projectType: getApiProjectType(platformType),
-                // Send sensitivity as is or parsed? User requested "pass sensitivity in payload". 
-                // Backend `compare.controller.ts` line 27: `queryDto.sensitivity ? parseInt(queryDto.sensitivity) : undefined`.
-                // parseInt("3x") returns 3. So passing "3x" string is fine.
                 sensitivity: sensitivity.replace('x', ''),
                 minScore: minScore ? minScore.toString() : '93',
             });
@@ -999,13 +991,12 @@ export function AndroidTVDetailFigma({
                 screenshots: screenshotsPayload
             });
 
-            alert("Comparison completed successfully!");
             setActiveTab("result");
             // Optionally refresh builds list if a callback exists
             // onBuildRefresh?.(); 
         } catch (error) {
             console.error("Comparison failed:", error);
-            alert("Comparison failed. Check console for details.");
+            showToast({ type: 'error', title: 'Comparison Failed', message: 'Check console for details.' });
         } finally {
             setLoadingActivity(null);
         }
@@ -1275,7 +1266,7 @@ export function AndroidTVDetailFigma({
 
                                         {/* Sticky Footer for Automation and Global Variables */}
                                         {(activeView === 'automation' || activeView === 'variables') && (
-                                            <div className="mt-auto p-4 flex items-center justify-between border-t border-white/5 bg-[#1A1A1A] z-10 shrink-0">
+                                            <div className="mt-auto p-4 flex items-center justify-between border-t border-white/5 bg-[#1A1A1A] z-0 shrink-0">
                                                 <div className="flex-1 max-w-[500px]">
                                                     {/* Only show Add Step if in Automation Steps tab */}
                                                     {activeView === 'automation' && (
@@ -1305,7 +1296,7 @@ export function AndroidTVDetailFigma({
                                                         <span>Export full java file</span>
                                                     </button>
                                                     <button
-                                                        onClick={() => handleSaveAutomation()}
+                                                        onClick={() => handleSaveAutomation(true)}
                                                         className="flex items-center gap-2 px-6 py-2 rounded-[8px] bg-[#2A2A2A] text-white hover:bg-[#333] transition-all text-[13px] border border-white/5 hover:border-white shadow-lg cursor-pointer">
                                                         <Save size={16} />
                                                         <span>Save</span>
@@ -1333,17 +1324,6 @@ export function AndroidTVDetailFigma({
                         Content for {activeTab} tab coming soon...
                     </p>
                 </div>
-            )}
-            {/* Test Comparison Toast */}
-            {showComparisonToast && (
-                <TestComparisonToast
-                    onClose={() => setShowComparisonToast(false)}
-                    onViewReport={() => {
-                        console.log("View full report clicked (local)");
-                        setShowComparisonToast(false);
-                        setActiveTab("result");
-                    }}
-                />
             )}
         </div>
     );

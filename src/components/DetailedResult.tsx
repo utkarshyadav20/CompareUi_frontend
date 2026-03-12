@@ -16,6 +16,7 @@ import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
 import { usePDF } from '@react-pdf/renderer';
 import { PDFReportDocument } from "./common/report/detailed/PDFReportDocument";
+import { showToast } from "../utils/toast";
 
 
 interface Issue {
@@ -362,13 +363,12 @@ export function DetailedResult({
     actual: box.actual,
     expected: box.expected
   }));
-  console.log("issues", issues);
   // Removed manual handleDownloadPDF to avoid Buffer issues. 
   // We will use PDFDownloadLink component instead for direct download.
 
 
   const handleRaiseIssue = () => {
-    alert("Raise Issue clicked.");
+    showToast({ type: 'neutral', title: 'Action Triggered', message: 'Raise Issue clicked.' });
   };
 
   const handleApprove = () => {
@@ -424,7 +424,7 @@ export function DetailedResult({
 
     } catch (error) {
       console.error("Failed to update description:", error);
-      alert("Failed to save description");
+      showToast({ type: 'error', title: 'Error', message: 'Failed to save description' });
     } finally {
       setEditingIssueId(null);
     }
@@ -439,10 +439,9 @@ export function DetailedResult({
       await apiClient.post(`/result/update-status?projectId=${projectId}&buildId=${buildIdToUse}&screenName=${testName}`, {
         status: newStatus
       });
-      console.log("Status updated successfully in DB");
     } catch (error) {
       console.error("Failed to update status in DB:", error);
-      alert("Failed to update status in database");
+      showToast({ type: 'error', title: 'Error', message: 'Failed to update status in database' });
     }
   };
 

@@ -72,9 +72,23 @@ export const SignupPage = () => {
         setErrors(prev => ({ ...prev, general: '' }));
 
         try {
-            await apiClient.post('/auth/signup', formData);
-            // Navigate to OTP page with email
-            navigate('/otp', { state: { email: formData.email } });
+            const response = await apiClient.post('/auth/signup', formData);
+            if (response.data?.isVerifiedButNotApproved) {
+                navigate(`/approve?email=${encodeURIComponent(formData.email)}`, {
+                    state: {
+                        email: formData.email,
+                        message: response.data?.message,
+                        approval_sent_at: response.data?.approval_sent_at
+                    }
+                });
+            } else {
+                navigate('/otp', {
+                    state: {
+                        email: formData.email,
+                        message: response.data?.message
+                    }
+                });
+            }
         } catch (err: any) {
             console.error(err);
             const msg = err.response?.data?.message || 'Signup failed. Please try again.';

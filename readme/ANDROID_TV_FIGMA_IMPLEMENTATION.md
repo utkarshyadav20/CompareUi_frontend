@@ -191,7 +191,7 @@ if (project.type === "Android TV") {
   return (
     <AndroidTVDetailFigma
       projectId={project.id}
-      projectName={project.platform}
+      projectName={project.projectName}
       platformType={project.platformType}
       onBack={onBack}
     />

@@ -56,7 +56,7 @@ export function NewProjectForm({
     };
 
     onCreateProject({
-      platform: projectName,
+      projectName: projectName,
       platformType: platformTypeMap[selectedType],
       status: "running",
       iconBg: iconBgMap[selectedType],

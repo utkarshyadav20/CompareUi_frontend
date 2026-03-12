@@ -6,6 +6,7 @@ import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 import { LoginPage } from "./pages/Auth/Login/Login";
 import { SignupPage } from "./pages/Auth/Signup/Signup";
 import { OtpPage } from "./pages/Auth/otp/otp";
+import { ApprovePage } from "./pages/Auth/Approve/Approve";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { PublicRoute } from "./routes/PublicRoute";
 import { useAuth } from "./context/AuthContext";
@@ -13,6 +14,8 @@ import { useAuth } from "./context/AuthContext";
 import { ProjectApi } from "./api/generated";
 import apiClient from "./api/client";
 import { mapBackendProjectToFrontend, BackendProjectDto, getProjectUrl } from "./utils/projectUtils";
+import { TestComparisonToast } from "./components/TestComparisonToast";
+import { ToastOptions, showToast } from "./utils/toast";
 
 export const AppContent = () => {
     const [theme, setTheme] = useState<Theme>("dark");
@@ -20,6 +23,15 @@ export const AppContent = () => {
     const [isLoading, setIsLoading] = useState(true);
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
+    const [toastOptions, setToastOptions] = useState<ToastOptions | null>(null);
+
+    useEffect(() => {
+        const handleShowToast = (e: CustomEvent<ToastOptions>) => {
+            setToastOptions(e.detail);
+        };
+        window.addEventListener('show-toast', handleShowToast as EventListener);
+        return () => window.removeEventListener('show-toast', handleShowToast as EventListener);
+    }, []);
 
     useEffect(() => {
         // Apply theme to document
@@ -90,12 +102,11 @@ export const AppContent = () => {
             const projectApi = new ProjectApi(undefined, undefined, apiClient);
             await projectApi.projectControllerCreate({
                 projectId: projectId,
-                projectName: newProject.platform,
+                projectName: newProject.projectName,
                 projectType: newProject.type.toLowerCase(),
                 buildName: newProject.buildName,
             });
 
-            console.log("Project created successfully on backend");
             // Navigate to the new project
             navigate(getProjectUrl(project));
 
@@ -103,7 +114,7 @@ export const AppContent = () => {
             console.error("Error creating project:", error);
             // Revert optimistic update on failure
             setProjects((prev) => prev.filter((p) => p.id !== projectId));
-            alert("Failed to create project on backend. Please try again.");
+            showToast({ type: 'error', title: 'Error', message: 'Failed to create project on backend. Please try again.' });
         }
     };
 
@@ -114,12 +125,11 @@ export const AppContent = () => {
         try {
             // Use direct axios call since the generated SDK method might be missing
             await apiClient.delete(`/project/${projectId}`);
-            console.log("Project deleted successfully on backend");
         } catch (error) {
             console.error("Failed to delete project:", error);
             // Revert optimistic update? Complicated since we don't have the full object easily here.
             // Ideally we should refresh or handle error better.
-            alert("Failed to delete project on backend. Please try refreshing.");
+            showToast({ type: 'error', title: 'Error', message: 'Failed to delete project on backend. Please try refreshing.' });
         }
     };
 
@@ -131,67 +141,83 @@ export const AppContent = () => {
     };
 
     return (
-        <Routes>
-            {/* Protected Routes */}
-            <Route element={<ProtectedRoute />}>
-                <Route
-                    path="/"
-                    element={
-                        <HomePage
-                            projects={projects}
-                            theme={theme}
-                            onThemeChange={setTheme}
-                            onCreateProject={handleCreateProject}
-                            onDeleteProject={handleDeleteProject}
-                            isLoading={isLoading}
-                        />
-                    }
-                />
-                <Route
-                    path="/project/atv/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/smi/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/web/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/mob/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/rtv/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/ftv/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-                <Route
-                    path="/project/stv/:pid"
-                    element={<ProjectDetailWrapper {...projectWrapperProps} />}
-                />
-            </Route>
+        <>
+            <Routes>
+                {/* Protected Routes */}
+                <Route element={<ProtectedRoute />}>
+                    <Route
+                        path="/"
+                        element={
+                            <HomePage
+                                projects={projects}
+                                theme={theme}
+                                onThemeChange={setTheme}
+                                onCreateProject={handleCreateProject}
+                                onDeleteProject={handleDeleteProject}
+                                isLoading={isLoading}
+                            />
+                        }
+                    />
+                    <Route
+                        path="/project/atv/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/smi/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/web/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/mob/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/rtv/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/ftv/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                    <Route
+                        path="/project/stv/:pid"
+                        element={<ProjectDetailWrapper {...projectWrapperProps} />}
+                    />
+                </Route>
 
-            {/* Public Routes - restricted if logged in */}
-            <Route element={<PublicRoute />}>
-                <Route
-                    path="/login"
-                    element={<LoginPage />}
+                {/* Public Routes - restricted if logged in */}
+                <Route element={<PublicRoute />}>
+                    <Route
+                        path="/login"
+                        element={<LoginPage />}
+                    />
+                    <Route
+                        path="/signup"
+                        element={<SignupPage />}
+                    />
+                    <Route
+                        path="/otp"
+                        element={<OtpPage />}
+                    />
+                    <Route
+                        path="/approve"
+                        element={<ApprovePage />}
+                    />
+                </Route>
+            </Routes>
+            {toastOptions && (
+                <TestComparisonToast
+                    type={toastOptions.type}
+                    title={toastOptions.title}
+                    message={toastOptions.message}
+                    onViewReport={toastOptions.onViewReport}
+                    dismissDelay={toastOptions.duration}
+                    onClose={() => setToastOptions(null)}
                 />
-                <Route
-                    path="/signup"
-                    element={<SignupPage />}
-                />
-                <Route
-                    path="/otp"
-                    element={<OtpPage />}
-                />
-            </Route>
-        </Routes>
+            )}
+        </>
     );
 }
