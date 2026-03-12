@@ -6,6 +6,7 @@ import { ProjectDetailWrapper } from "./pages/ProjectDetailWrapper";
 import { LoginPage } from "./pages/Auth/Login/Login";
 import { SignupPage } from "./pages/Auth/Signup/Signup";
 import { OtpPage } from "./pages/Auth/otp/otp";
+import { ApprovePage } from "./pages/Auth/Approve/Approve";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { PublicRoute } from "./routes/PublicRoute";
 import { useAuth } from "./context/AuthContext";
@@ -200,6 +201,10 @@ export const AppContent = () => {
                     <Route
                         path="/otp"
                         element={<OtpPage />}
+                    />
+                    <Route
+                        path="/approve"
+                        element={<ApprovePage />}
                     />
                 </Route>
             </Routes>

@@ -8,12 +8,12 @@ import otplogo from '../../../assets/auth/otplogo.svg';
 export const OtpPage = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const state = location.state as { email?: string };
+    const state = location.state as { email?: string, message?: string, needsApproval?: boolean };
 
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [successMessage, setSuccessMessage] = useState<string | null>(null);
+    const [successMessage, setSuccessMessage] = useState<string | null>(state?.message || null);
 
     const [timeLeft, setTimeLeft] = useState(10);
     const [canResend, setCanResend] = useState(false);
@@ -59,7 +59,7 @@ export const OtpPage = () => {
 
         try {
             await apiClient.post('/auth/resend-otp', { email: state.email });
-            setSuccessMessage('Code, Resent Successfully!');
+            setSuccessMessage('Code, sent successfully!');
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || 'Failed to resend code.');
@@ -81,9 +81,20 @@ export const OtpPage = () => {
         setSuccessMessage(null);
 
         try {
-            await apiClient.post('/auth/verify-otp', { email: state.email, otp });
-            // Navigate to login on success
-            navigate('/login');
+            const response = await apiClient.post('/auth/verify-otp', { email: state.email, otp });
+            if (response.data?.accountApproved) {
+                // Navigate to login on success
+                navigate('/login');
+            } else {
+                // Email verified, but needs admin approval
+                navigate(`/approve?email=${encodeURIComponent(state.email)}`, {
+                    state: {
+                        email: state.email,
+                        message: 'Email verified! Click below to request account approval.',
+                        approval_sent_at: response.data?.approval_sent_at
+                    }
+                });
+            }
         } catch (err: any) {
             console.error(err);
             setError(err.response?.data?.message || 'Verification failed. Invalid or expired OTP.');
