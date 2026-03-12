@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
-import loader from '../assets/loader.gif';
+import loader from '../assets/Loader.gif';
 
 export const PublicRoute = () => {
     const { isAuthenticated, isLoading } = useAuth();
