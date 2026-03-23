@@ -173,7 +173,7 @@ public class AndroidTVOnlyRunner {
         
         if (apkPath != null && !apkPath.isEmpty() && !apkPath.equals("null")) {
              System.out.println("Installing APK from: " + apkPath);
-             Appinstaller.install(udid, apkPath);
+            //  Appinstaller.install(udid, apkPath);
         } else {
              System.out.println("No APK path provided. Skipping installation.");
         }
