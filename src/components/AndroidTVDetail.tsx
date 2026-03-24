@@ -4,6 +4,7 @@ import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
 import { ImageCard } from "./common/ImageCard";
 import { EmptyState } from "./common/EmptyState";
 import { ImageGridPanel, ImageGrid } from "./common/ImageGridPanel";
+import { ConfirmationModal } from "./common/ConfirmationModal";
 import { showToast } from "../utils/toast";
 
 interface AndroidTVDetailProps {
@@ -36,6 +37,8 @@ export function AndroidTVDetail({
   const [selectedActualId, setSelectedActualId] = useState<string | null>(null);
   const [comparisonStarted, setComparisonStarted] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false);
+  const [imageToRemove, setImageToRemove] = useState<{ id: string, type: "baseline" | "actual" } | null>(null);
 
   // Helper handling for file inputs to reset value after selection allowing same file to be selected again
   const handleFileChange = (
@@ -180,6 +183,20 @@ export function AndroidTVDetail({
     setOpenImageMenuId(null);
   };
 
+  const promptRemoveImage = (id: string, type: "baseline" | "actual") => {
+    setImageToRemove({ id, type });
+    setShowRemoveConfirm(true);
+    setOpenImageMenuId(null);
+  };
+
+  const handleConfirmRemove = () => {
+    if (imageToRemove) {
+      handleRemoveImage(imageToRemove.id, imageToRemove.type);
+      setImageToRemove(null);
+      setShowRemoveConfirm(false);
+    }
+  };
+
   const handleStartComparison = () => {
     setComparisonStarted(true);
     if (onStartComparison) {
@@ -217,7 +234,7 @@ export function AndroidTVDetail({
             onSelectImage={setSelectedBaselineId}
             onRefreshAll={() => handleRefresh("baseline")}
             onRemoveAll={() => handleClearAll("baseline")}
-            onRemoveImage={(id) => handleRemoveImage(id, "baseline")}
+            onRemoveImage={(id) => promptRemoveImage(id, "baseline")}
             onRefreshImage={() => { }}
             onReplaceImage={() => { }}
             onReorder={setBaselineImages}
@@ -323,7 +340,7 @@ export function AndroidTVDetail({
                                     </button>
                                     <button
                                       onClick={() =>
-                                        handleRemoveImage(image.id, "actual")
+                                        promptRemoveImage(image.id, "actual")
                                       }
                                       className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
                                     >
@@ -373,6 +390,19 @@ export function AndroidTVDetail({
           </ImageGridPanel>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={showRemoveConfirm}
+        onClose={() => setShowRemoveConfirm(false)}
+        onConfirm={handleConfirmRemove}
+        title="Remove Screen"
+        description={
+          <span>
+            Are you sure to remove the screen? Removing this screen will also delete it from the <span className="text-white font-bold text-base">result tab</span>.
+          </span>
+        }
+        confirmText="Remove"
+        variant="danger"
+      />
     </div>
   );
 }
