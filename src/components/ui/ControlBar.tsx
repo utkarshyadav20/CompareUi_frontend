@@ -1,5 +1,10 @@
-import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "./dropdown-menu";
 
 export interface ControlBarProps {
   // Shared Props
@@ -45,9 +50,7 @@ export function ControlBar({
   buildVersions,
   isLoading = false,
 }: ControlBarProps) {
-  const [isMethodDropdownOpen, setIsMethodDropdownOpen] = useState(false);
-  const [isSensitivityDropdownOpen, setIsSensitivityDropdownOpen] = useState(false);
-  const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
+  // Removed manual open state triggers for dropdowns
 
   // Helper for sensitivity options
   const sensitivityOptions = ["1x", "2x", "3x", "4x", "5x"];
@@ -173,48 +176,35 @@ export function ControlBar({
               </div>
             )}
 
-            {/* Sensitivity Dropdown */}
             <div className="flex items-center gap-[10px]">
               <p className="font-semibold text-[14px] text-black dark:text-white">
                 Sensitivity :
               </p>
               <div className="relative">
-                <button
-                  onClick={() =>
-                    setIsSensitivityDropdownOpen(!isSensitivityDropdownOpen)
-                  }
-                  className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${sensitivity
-                    ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
-                    : "border border-[#6bdf95]/30 text-[#6bdf95]"
-                    } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors`}
-                >
-                  <span>{sensitivity}</span>
-                  <ChevronDown className="w-[14px] h-[14px]" />
-                </button>
-                {isSensitivityDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[40]"
-                      onClick={() => setIsSensitivityDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 top-[45px] w-[60px] bg-[#1e1e1e] rounded-[8px] shadow-lg z-[50] border border-white/20 overflow-hidden">
-                      {sensitivityOptions.map((t) => (
-                        <button
-                          key={t}
-                          onClick={() => {
-                            onSensitivityChange(t);
-                            setIsSensitivityDropdownOpen(false);
-                          }}
-                          className="w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors"
-                        >
-                          <span className="text-white text-[14px] font-mono">
-                            {t}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  </>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`w-[60px] px-[10px] py-[10px] rounded-[4px] border ${sensitivity
+                        ? "bg-black/10 dark:bg-white/10 border-black/10 dark:border-white/10 text-black dark:text-white"
+                        : "border border-[#6bdf95]/30 text-[#6bdf95]"
+                        } text-[14px] font-mono flex items-center justify-between hover:bg-black/15 dark:hover:bg-white/10 transition-colors outline-none`}
+                    >
+                      <span>{sensitivity}</span>
+                      <ChevronDown className="w-[14px] h-[14px]" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8} className="min-w-[80px]">
+                    {sensitivityOptions.map((t) => (
+                      <DropdownMenuItem
+                        key={t}
+                        onSelect={() => onSensitivityChange(t)}
+                        className="font-mono justify-center"
+                      >
+                        {t}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -229,60 +219,43 @@ export function ControlBar({
                   When open, this container jumps to z-50 to ensure it sits 
                   above the 'Start Comparing' button to its right.
               */}
-                <div className={`relative ${isBuildDropdownOpen ? "z-50" : ""}`}>
-                  <button
-                    onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-                    className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors"
-                  >
-                    <span>
-                      {typeof selectedBuild === 'string'
-                        ? selectedBuild
-                        : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
-                      }
-                    </span>
-                    <ChevronDown className="w-[14px] h-[14px]" />
-                  </button>
-                  {isBuildDropdownOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-[9995]"
-                        onClick={() => setIsBuildDropdownOpen(false)}
-                      />
-                      <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[9999] border border-white/20 overflow-hidden">
-                        {buildVersions.length > 0 ? (
-                          buildVersions.map((build) => {
-                            const buildId = typeof build === 'string' ? build : build.buildId;
-                            const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
-                            const isSelected = typeof selectedBuild === 'string'
-                              ? selectedBuild === build
-                              : selectedBuild?.buildId === build.buildId;
-
-                            return (
-                              <button
-                                key={buildId}
-                                onClick={() => {
-                                  onBuildChange(build);
-                                  setIsBuildDropdownOpen(false);
-                                }}
-                                className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
-                                  ? "bg-white/5"
-                                  : ""
-                                  }`}
-                              >
-                                <span className="text-white text-[14px] font-mono">
-                                  {buildName}
-                                </span>
-                              </button>
-                            );
-                          })
-                        ) : (
-                          <div className="px-[16px] py-[12px] text-white/50 text-[14px] font-mono">
-                            No builds found
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                <div className="relative">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className="px-[10px] py-[10px] rounded-[4px] border border-[#6bdf95]/30 text-[#6bdf95] text-[14px] font-mono flex items-center gap-[8px] hover:bg-[#6bdf95]/10 transition-colors outline-none"
+                      >
+                        <span>
+                          {typeof selectedBuild === 'string'
+                            ? selectedBuild
+                            : (selectedBuild?.buildName || (selectedBuild ? `Build ${selectedBuild.buildId}` : 'Select Build'))
+                          }
+                        </span>
+                        <ChevronDown className="w-[14px] h-[14px]" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="min-w-[150px]">
+                      {buildVersions.length > 0 ? (
+                        buildVersions.map((build) => {
+                          const buildId = typeof build === 'string' ? build : build.buildId;
+                          const buildName = typeof build === 'string' ? build : (build.buildName || `Build ${build.buildId}`);
+                          return (
+                            <DropdownMenuItem
+                              key={buildId}
+                              onSelect={() => onBuildChange(build)}
+                              className="font-mono"
+                            >
+                              {buildName}
+                            </DropdownMenuItem>
+                          );
+                        })
+                      ) : (
+                        <DropdownMenuItem disabled className="font-mono opacity-50">
+                          No builds found
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
             )}

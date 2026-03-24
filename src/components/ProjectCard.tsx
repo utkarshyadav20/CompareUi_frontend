@@ -8,10 +8,19 @@ import {
   Plus,
   Loader2,
 } from "lucide-react";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
 import { Project, ViewMode } from "../types";
 import { NewBuildForm } from "./NewBuildForm";
 import { generateAndHandleFullReport } from "../utils/projectUtils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
 export interface ProjectCardProps extends Project {
   onClick: () => void;
@@ -39,6 +48,47 @@ export function ProjectCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNewBuildOpen, setIsNewBuildOpen] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+
+  const { contextSafe } = useGSAP({ scope: cardRef });
+
+  const onMouseEnter = contextSafe(() => {
+    gsap.to(cardRef.current, {
+      scale: 1.02,
+      backgroundColor: "rgba(0, 0, 0, 0.08)",
+      borderColor: "rgba(0, 0, 0, 0.2)",
+      boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)",
+      duration: 0.3,
+      ease: "power2.out"
+    });
+    
+    // If dark mode is active (handled by class-based selection in tailwind or CSS)
+    if (document.documentElement.classList.contains('dark')) {
+      gsap.to(cardRef.current, {
+        backgroundColor: "rgba(255, 255, 255, 0.15)",
+        borderColor: "rgba(255, 255, 255, 0.2)",
+        boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3)",
+      });
+    }
+  });
+
+  const onMouseLeave = contextSafe(() => {
+    gsap.to(cardRef.current, {
+      scale: 1,
+      backgroundColor: "rgba(0, 0, 0, 0.05)",
+      borderColor: "rgba(0, 0, 0, 0.1)",
+      boxShadow: "none",
+      duration: 0.3,
+      ease: "power2.inOut"
+    });
+
+    if (document.documentElement.classList.contains('dark')) {
+      gsap.to(cardRef.current, {
+        backgroundColor: "rgba(255, 255, 255, 0.1)",
+        borderColor: "rgba(255, 255, 255, 0.1)",
+      });
+    }
+  });
 
   const handleViewReport = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -54,45 +104,16 @@ export function ProjectCard({
   };
 
   // Common Menu Component
-  const MenuDropdown = () => (
-    <>
-      <div className="fixed inset-0 z-10" onClick={(e) => {
-        e.stopPropagation();
-        setIsMenuOpen(false);
-      }} />
-      <div className="absolute right-0 top-full mt-2 min-w-[200px] bg-white dark:bg-[#191919] border border-black/10 dark:border-white/10 rounded-lg shadow-xl z-20 overflow-hidden py-1">
-        <button
-          className="w-full px-4 py-2.5 text-left text-sm text-black dark:text-white hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMenuOpen(false);
-            setIsNewBuildOpen(true);
-          }}
-        >
-          <Plus className="w-4 h-4" />
-          Create New Build
-        </button>
-        <button
-          className="w-full px-4 py-2.5 text-left text-sm text-red-500 hover:bg-black/5 dark:hover:bg-white/5 transition-colors whitespace-nowrap flex items-center gap-2 cursor-pointer"
-          onClick={(e) => {
-            e.stopPropagation();
-            setIsMenuOpen(false);
-            onDelete?.();
-          }}
-        >
-          <Trash2 className="w-4 h-4" />
-          Delete Project
-        </button>
-      </div>
-
-    </>
-  );
+  // Removed manual MenuDropdown component in favor of the official DropdownMenu
 
   if (viewMode === "list") {
     return (
       <div
-        className="bg-black/5 dark:bg-white/10 rounded-lg px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-black/10 dark:hover:bg-white/15 transition-colors border border-black/10 dark:border-white/10"
+        ref={cardRef}
+        className="bg-black/5 dark:bg-white/10 rounded-lg px-6 py-4 flex items-center justify-between cursor-pointer border border-black/10 dark:border-white/10"
         onClick={onClick}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
         <div className="flex items-center gap-4 flex-1">
           <div
@@ -160,16 +181,38 @@ export function ProjectCard({
           </div>
 
           <div className="relative">
-            <button
-              className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                setIsMenuOpen(!isMenuOpen);
-              }}
-            >
-              <MoreVertical className="w-4 h-4 text-black dark:text-white" />
-            </button>
-            {isMenuOpen && <MenuDropdown />}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors outline-none"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <MoreVertical className="w-4 h-4 text-black dark:text-white" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" sideOffset={8}>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.stopPropagation();
+                    setIsNewBuildOpen(true);
+                  }}
+                  className="gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Create New Build
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onSelect={(e) => {
+                    e.stopPropagation();
+                    onDelete?.();
+                  }}
+                  className="text-red-500 focus:text-red-500 gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete Project
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <NewBuildForm
@@ -184,8 +227,11 @@ export function ProjectCard({
 
   return (
     <div
-      className="bg-black/5 dark:bg-white/10 rounded-lg px-6 py-5 flex flex-col justify-between h-[169px] cursor-pointer hover:bg-black/10 dark:hover:bg-white/15 transition-colors border border-black/10 dark:border-white/10"
+      ref={cardRef}
+      className="bg-black/5 dark:bg-white/10 rounded-lg px-6 py-5 flex flex-col justify-between h-[169px] cursor-pointer border border-black/10 dark:border-white/10"
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -202,16 +248,38 @@ export function ProjectCard({
           </div>
         </div>
         <div className="relative">
-          <button
-            className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsMenuOpen(!isMenuOpen);
-            }}
-          >
-            <MoreVertical className="w-4 h-4 text-black dark:text-white" />
-          </button>
-          {isMenuOpen && <MenuDropdown />}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="w-[34px] h-[34px] border border-black/10 dark:border-white/10 rounded-full flex items-center justify-center hover:bg-black/5 dark:hover:bg-white/5 transition-colors outline-none"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="w-4 h-4 text-black dark:text-white" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" sideOffset={8}>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.stopPropagation();
+                  setIsNewBuildOpen(true);
+                }}
+                className="gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Create New Build
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onSelect={(e) => {
+                  e.stopPropagation();
+                  onDelete?.();
+                }}
+                className="text-red-500 focus:text-red-500 gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Project
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
 

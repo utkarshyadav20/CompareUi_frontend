@@ -19,6 +19,9 @@ import { ActivityTab } from "./ActivityTab";
 import { ResultTab } from "./ResultTab";
 import { SettingsTab } from "./SettingsTab";
 import { DetailedResult } from "./DetailedResult";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
 interface ProjectDetailProps {
   project: Project;
@@ -33,6 +36,30 @@ export function ProjectDetail({
   theme,
   onThemeChange,
 }: ProjectDetailProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLDivElement>(null);
+  const controlBarRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out", duration: 0.8 } });
+    
+    tl.fromTo(headerRef.current, 
+      { y: -30, opacity: 0 }, 
+      { y: 0, opacity: 1, duration: 1 }
+    )
+    .fromTo(controlBarRef.current, 
+      { y: 20, opacity: 0 }, 
+      { y: 0, opacity: 1 }, 
+      "-=0.6"
+    )
+    .fromTo(contentRef.current, 
+      { scale: 0.98, opacity: 0 }, 
+      { scale: 1, opacity: 1, duration: 0.6 }, 
+      "-=0.4"
+    );
+  }, []);
+
   const [selectedMethod, setSelectedMethod] = useState<"Pixelmatch" | "Noise">(
     "Noise"
   );
@@ -203,125 +230,129 @@ export function ProjectDetail({
   }
 
   return (
-    <div className="min-h-screen bg-white dark:bg-black text-black dark:text-white">
+    <div ref={containerRef} className="min-h-screen bg-white dark:bg-black text-black dark:text-white overflow-hidden">
       {/* Header */}
-      <ProjectHeader
-        project={project}
-        onBack={onBack}
-        theme={theme}
-        onThemeChange={onThemeChange}
-        isNotificationOpen={isNotificationOpen}
-        onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
-
-        activeTab={activeTab}
-        onTabChange={(tab) => setActiveTab(tab)}
-        navigationItems={navigationItems}
-      />
+      <div ref={headerRef} className="opacity-0">
+        <ProjectHeader
+          project={project}
+          onBack={onBack}
+          theme={theme}
+          onThemeChange={onThemeChange}
+          isNotificationOpen={isNotificationOpen}
+          onNotificationToggle={() => setIsNotificationOpen(!isNotificationOpen)}
+          activeTab={activeTab}
+          onTabChange={(tab) => setActiveTab(tab)}
+          navigationItems={navigationItems}
+        />
+      </div>
 
       {/* Controls Bar - Show only on overview/testingpanel tab */}
       {(activeTab === "overview" || activeTab === "testingpanel") && (
-        <ControlBar
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          selectedMethod={selectedMethod}
-          onMethodChange={setSelectedMethod}
-          sensitivity={threshold}
-          onSensitivityChange={setThreshold}
-          aiAgent={aiAgent}
-          onAiAgentChange={setAiAgent}
-          onStartComparison={() => showToast({
-            type: 'neutral',
-            title: 'UI comparison started',
-            message: 'New test generated and running in background to view click on below',
-            onViewReport: () => setActiveTab('result')
-          })}
-          buildVersions={builds}
-          selectedBuild={selectedBuild}
-          onBuildChange={setSelectedBuild}
-        />
+        <div ref={controlBarRef} className="opacity-0">
+          <ControlBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            selectedMethod={selectedMethod}
+            onMethodChange={setSelectedMethod}
+            sensitivity={threshold}
+            onSensitivityChange={setThreshold}
+            aiAgent={aiAgent}
+            onAiAgentChange={setAiAgent}
+            onStartComparison={() => showToast({
+              type: 'neutral',
+              title: 'UI comparison started',
+              message: 'New test generated and running in background to view click on below',
+              onViewReport: () => setActiveTab('result')
+            })}
+            buildVersions={builds}
+            selectedBuild={selectedBuild}
+            onBuildChange={setSelectedBuild}
+          />
+        </div>
       )}
 
       {/* Main Content - Conditional rendering based on activeTab */}
-      {(activeTab === "overview" || activeTab === "testingpanel") &&
-        project.type === "Smart Image" ? (
-        <SmartImageDetail projectId={project.id} />
-      ) : activeTab === "overview" || activeTab === "testingpanel" ? (
-        <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-280px)]">
-          {/* Baselining Images */}
-          <div className="w-full lg:w-[400px] bg-black/5 dark:bg-white/10 rounded-lg p-5 flex flex-col gap-5 border border-black/10 dark:border-white/10 max-h-[600px] lg:max-h-full">
-            <BaselineImageInput
-              images={filteredImages}
-              hasImages={uploadedImages.length > 0}
-              selectedImageId={selectedImageId}
-              baselineUrl={baselineUrl}
-              onBaselineUrlChange={setBaselineUrl}
-              onUrlSubmit={handleUrlSubmit}
-              onFileUpload={handleFileUpload}
-              onCsvUpload={handleCsvUpload}
-              onSelectImage={setSelectedImageId}
-              onRefreshAll={() => { }}
-              onRemoveAll={() => {
-                setUploadedImages([]);
-                setSelectedImageId(null);
-              }}
-              onRemoveImage={(id) => {
-                setUploadedImages((prev) =>
-                  prev.filter((img) => img.id !== id)
-                );
-                if (selectedImageId === id) setSelectedImageId(null);
-              }}
-              onRefreshImage={() => { }}
-              onReplaceImage={() => { }}
-              onReorder={setUploadedImages}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
-            />
+      <div ref={contentRef} className="opacity-0">
+        {(activeTab === "overview" || activeTab === "testingpanel") &&
+          project.type === "Smart Image" ? (
+          <SmartImageDetail projectId={project.id} />
+        ) : activeTab === "overview" || activeTab === "testingpanel" ? (
+          <div className="px-4 md:px-8 py-6 flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-280px)]">
+            {/* Baselining Images */}
+            <div className="w-full lg:w-[400px] bg-black/5 dark:bg-white/10 rounded-lg p-5 flex flex-col gap-5 border border-black/10 dark:border-white/10 max-h-[600px] lg:max-h-full">
+              <BaselineImageInput
+                images={filteredImages}
+                hasImages={uploadedImages.length > 0}
+                selectedImageId={selectedImageId}
+                baselineUrl={baselineUrl}
+                onBaselineUrlChange={setBaselineUrl}
+                onUrlSubmit={handleUrlSubmit}
+                onFileUpload={handleFileUpload}
+                onCsvUpload={handleCsvUpload}
+                onSelectImage={setSelectedImageId}
+                onRefreshAll={() => { }}
+                onRemoveAll={() => {
+                  setUploadedImages([]);
+                  setSelectedImageId(null);
+                }}
+                onRemoveImage={(id) => {
+                  setUploadedImages((prev) =>
+                    prev.filter((img) => img.id !== id)
+                  );
+                  if (selectedImageId === id) setSelectedImageId(null);
+                }}
+                onRefreshImage={() => { }}
+                onReplaceImage={() => { }}
+                onReorder={setUploadedImages}
+                searchQuery={searchQuery}
+                onSearchQueryChange={setSearchQuery}
+              />
+            </div>
+
+            {/* Right Panel - Website Preview or Actual Build Images */}
+            {project.type === "Website" ? (
+              <BrowserPreview
+                url={websiteUrl}
+                onUrlChange={setWebsiteUrl}
+                status="connected"
+              />
+            ) : (
+              <EmptyState
+                icon={RefreshCw}
+                title="Receiving..."
+                description={
+                  <>
+                    Waiting for image to receive
+                    <br />
+                    from Android build
+                  </>
+                }
+                action={
+                  <button className="flex items-center gap-2 text-black dark:text-white hover:opacity-80 transition-opacity underline">
+                    Refresh
+                  </button>
+                }
+                className="bg-black/5 dark:bg-white/10 rounded-lg border border-black/10 dark:border-white/10 min-h-[400px]"
+              />
+            )}
           </div>
+        ) : null}
 
-          {/* Right Panel - Website Preview or Actual Build Images */}
-          {project.type === "Website" ? (
-            <BrowserPreview
-              url={websiteUrl}
-              onUrlChange={setWebsiteUrl}
-              status="connected"
-            />
-          ) : (
-            <EmptyState
-              icon={RefreshCw}
-              title="Receiving..."
-              description={
-                <>
-                  Waiting for image to receive
-                  <br />
-                  from Android build
-                </>
-              }
-              action={
-                <button className="flex items-center gap-2 text-black dark:text-white hover:opacity-80 transition-opacity underline">
-                  Refresh
-                </button>
-              }
-              className="bg-black/5 dark:bg-white/10 rounded-lg border border-black/10 dark:border-white/10 min-h-[400px]"
-            />
-          )}
-        </div>
-      ) : null}
-
-
-      {activeTab === "settings" && <SettingsTab />}
-      {activeTab === "activity" && <ActivityTab />}
-      {activeTab === "result" && (
-        <ResultTab
-          projectId={project.id}
-          projectName={project.projectName}
-          projectType={project.type}
-          buildVersion={selectedBuild?.buildName || ""}
-          selectedBuild={selectedBuild}
-          buildVersions={builds}
-          onBuildChange={setSelectedBuild}
-          onViewTest={handleViewTest}
-        />
-      )}
+        {activeTab === "settings" && <SettingsTab />}
+        {activeTab === "activity" && <ActivityTab />}
+        {activeTab === "result" && (
+          <ResultTab
+            projectId={project.id}
+            projectName={project.projectName}
+            projectType={project.type}
+            buildVersion={selectedBuild?.buildName || ""}
+            selectedBuild={selectedBuild}
+            buildVersions={builds}
+            onBuildChange={setSelectedBuild}
+            onViewTest={handleViewTest}
+          />
+        )}
+      </div>
 
       <NotificationPanel
         isOpen={isNotificationOpen}

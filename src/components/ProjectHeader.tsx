@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 import { ProfileMenu } from "./ProfileMenu";
 import { Theme, Project } from "../types";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
 
 interface ProjectHeaderProps {
   project?: Project;
@@ -43,6 +46,52 @@ export function ProjectHeader({
   navigationItems,
   hideNavigation = false,
 }: ProjectHeaderProps) {
+  const navRef = useRef<HTMLElement>(null);
+  const indicatorRef = useRef<HTMLDivElement>(null);
+  const hoverRef = useRef<HTMLDivElement>(null);
+
+  useGSAP(() => {
+    // Ensure DOM is ready and target exists
+    if (activeTab && navRef.current && indicatorRef.current) {
+        const activeElement = navRef.current.querySelector(
+          `[data-tab="${activeTab}"]`
+        ) as HTMLElement;
+        if (activeElement) {
+          gsap.to(indicatorRef.current, {
+            x: activeElement.offsetLeft,
+            width: activeElement.offsetWidth,
+            duration: 0.5,
+            ease: "power3.inOut",
+          });
+        }
+    }
+  }, { dependencies: [activeTab, navigationItems], scope: navRef });
+
+  const handleTabHover = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (navRef.current && hoverRef.current) {
+      const target = e.currentTarget;
+      if (target) {
+        gsap.to(hoverRef.current, {
+          x: target.offsetLeft,
+          width: target.offsetWidth,
+          opacity: 1,
+          duration: 0.3,
+          ease: "power3.out"
+        });
+      }
+    }
+  };
+
+  const handleNavLeave = () => {
+    if (hoverRef.current) {
+      gsap.to(hoverRef.current, {
+        opacity: 0,
+        duration: 0.3,
+        ease: "power3.in"
+      });
+    }
+  };
+
   return (
     <header className="relative z-[100] bg-white dark:bg-black border-b border-black/10 dark:border-white/10" style={{ zIndex: 1001 }}>
       <div className="px-4 md:px-8 py-4 flex items-center justify-between">
@@ -92,24 +141,42 @@ export function ProjectHeader({
       </div>
 
       {!hideNavigation && navigationItems && (
-        <nav className="px-8 border-b border-black/20 dark:border-white/20 flex items-center gap-1 overflow-x-auto">
-          {navigationItems.map((item) => (
-            <button
-              key={item.label}
-              onClick={() =>
-                onTabChange?.(item.label.toLowerCase().replace(" ", ""))
-              }
-              className={`px-5 py-2.5 transition-colors relative whitespace-nowrap ${activeTab === item.label.toLowerCase().replace(" ", "")
-                ? "text-black dark:text-white"
-                : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
-                }`}
-            >
-              {item.label}
-              {activeTab === item.label.toLowerCase().replace(" ", "") && (
-                <div className="absolute bottom-0 left-0 right-0 h-[1px] bg-black dark:bg-white" />
-              )}
-            </button>
-          ))}
+        <nav
+          ref={navRef}
+          onMouseLeave={handleNavLeave}
+          className="px-8 border-b border-black/20 dark:border-white/20 flex items-center gap-1 overflow-x-auto relative min-h-[46px] scrollbar-hide"
+        >
+          {/* Hover highlight background */}
+          <div
+            ref={hoverRef}
+            className={`absolute h-[32px] rounded-md pointer-events-none opacity-0 z-0 ${theme === 'dark' ? 'bg-white/5' : 'bg-black/5'}`}
+            style={{ width: 0 }}
+          />
+
+          {navigationItems.map((item) => {
+            const tabId = item.label.toLowerCase().replace(" ", "");
+            return (
+              <button
+                key={item.label}
+                data-tab={tabId}
+                onMouseEnter={handleTabHover}
+                onClick={() =>
+                  onTabChange?.(tabId)
+                }
+                className={`px-5 py-2.5 transition-colors relative whitespace-nowrap z-10 ${activeTab === tabId
+                    ? "text-black dark:text-white"
+                    : "text-black/50 dark:text-white/50 hover:text-black/80 dark:hover:text-white/80"
+                  }`}
+              >
+                {item.label}
+              </button>
+            );
+          })}
+          <div
+            ref={indicatorRef}
+            className={`absolute bottom-0 left-0 h-[2px] z-20 pointer-events-none transition-colors ${theme === 'dark' ? 'bg-white' : 'bg-black'}`}
+            style={{ width: 0 }}
+          />
         </nav>
       )}
     </header>

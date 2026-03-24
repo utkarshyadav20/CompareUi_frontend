@@ -12,6 +12,12 @@ import {
   Plus,
   Minus,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "./ui/dropdown-menu";
 import { ProjectHeader } from "./ProjectHeader";
 import { Theme } from "../types";
 import { usePDF } from '@react-pdf/renderer';
@@ -71,7 +77,7 @@ export function DetailedResult({
   const [isDownloading, setIsDownloading] = useState(false);
   const [generatePdf, setGeneratePdf] = useState(false);
   const [status, setStatus] = useState<string>("UNKNOWN");
-  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  // Removed manual status dropdown state
 
   const [finalVerdict, setFinalVerdict] = useState<"approve" | "reject" | null>(
     null
@@ -180,8 +186,7 @@ export function DetailedResult({
   };
 
 
-  // Build Dropdown State
-  const [isBuildDropdownOpen, setIsBuildDropdownOpen] = useState(false);
+  // Removed manual Build Dropdown state
 
   const testStatus = resultData?.resultStatus === 0 ? "FAILED" : "PASSED";
   const differentPercentage = resultData?.diffPercent ?? 0;
@@ -432,7 +437,6 @@ export function DetailedResult({
 
   const handleStatusSelect = async (newStatus: string) => {
     setStatus(newStatus);
-    setIsStatusDropdownOpen(false);
 
     try {
       const buildIdToUse = typeof buildVersion === 'string' ? buildVersion : (buildVersion as any).buildId;
@@ -471,68 +475,63 @@ export function DetailedResult({
           <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-row items-center gap-3">
             <span className="font-mono text-zinc-400 text-sm">Status</span>
             <div className="relative">
-              <button
-                onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
-                className="focus:outline-none"
-              >
-                {(() => {
-                  const s = status.toLowerCase();
-                  let bgColor = "bg-zinc-800";
-                  let borderColor = "border-zinc-700";
-                  let dotColor = "bg-zinc-500";
-                  let textColor = "text-zinc-400";
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button className="focus:outline-none">
+                    {(() => {
+                      const s = status.toLowerCase();
+                      let bgColor = "bg-zinc-800";
+                      let borderColor = "border-zinc-700";
+                      let dotColor = "bg-zinc-500";
+                      let textColor = "text-zinc-400";
 
-                  if (s === 'pass' || s === 'passed') {
-                    bgColor = "bg-green-950/30";
-                    borderColor = "border-green-900/50";
-                    dotColor = "bg-green-500";
-                    textColor = "text-green-400";
-                  } else if (s === 'fail' || s === 'failed' || s === 'error') {
-                    bgColor = "bg-red-950/30";
-                    borderColor = "border-red-900/50";
-                    dotColor = "bg-red-500";
-                    textColor = "text-red-400";
-                  } else if (s === 'inprogress') {
-                    bgColor = "bg-yellow-950/30";
-                    borderColor = "border-yellow-900/50";
-                    dotColor = "bg-yellow-500";
-                    textColor = "text-yellow-400";
-                  }
+                      if (s === 'pass' || s === 'passed') {
+                        bgColor = "bg-green-950/30";
+                        borderColor = "border-green-900/50";
+                        dotColor = "bg-green-500";
+                        textColor = "text-green-400";
+                      } else if (s === 'fail' || s === 'failed' || s === 'error') {
+                        bgColor = "bg-red-950/30";
+                        borderColor = "border-red-900/50";
+                        dotColor = "bg-red-500";
+                        textColor = "text-red-400";
+                      } else if (s === 'inprogress') {
+                        bgColor = "bg-yellow-950/30";
+                        borderColor = "border-yellow-900/50";
+                        dotColor = "bg-yellow-500";
+                        textColor = "text-yellow-400";
+                      }
 
-                  return (
-                    <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${bgColor} ${borderColor} hover:bg-white/5 transition-colors cursor-pointer`}>
-                      <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
-                      <span className={`font-mono text-xs font-bold ${textColor}`}>
-                        {loading ? "LOADING..." : status.toUpperCase()}
-                      </span>
-                      <ChevronDown className={`w-3 h-3 ${textColor}`} />
-                    </div>
-                  );
-                })()}
-              </button>
-
-              {isStatusDropdownOpen && (
-                <>
-                  <div className="fixed inset-0 z-40" onClick={() => setIsStatusDropdownOpen(false)} />
-                  <div className="absolute left-1/2 -translate-x-1/2 top-[40px] w-[150px] bg-[#1a1a1a] rounded-md shadow-2xl z-50 border border-zinc-700 overflow-hidden py-1">
-                    {["PASSED", "FAILED", "INPROGRESS", "ON HOLD"].map((opt) => (
-                      <button
-                        key={opt}
-                        onClick={() => handleStatusSelect(opt)}
-                        className="w-full text-left px-4 py-2 hover:bg-white/10 text-xs font-mono font-bold text-zinc-400 hover:text-white transition-colors flex items-center gap-2"
-                      >
-                        <div className={`w-1.5 h-1.5 rounded-full ${opt === 'PASSED' ? 'bg-green-500' :
-                          opt === 'FAILED' ? 'bg-red-500' :
-                            opt === 'INPROGRESS' ? 'bg-yellow-500' :
-                              'bg-zinc-500'
-                          }`}></div>
-                        {opt}
-                        {status === opt && <Check className="w-3 h-3 ml-auto text-white" />}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
+                      return (
+                        <div className={`border px-2.5 py-1 rounded flex items-center gap-2 ${bgColor} ${borderColor} hover:bg-white/5 transition-colors cursor-pointer`}>
+                          <div className={`w-2 h-2 rounded-full ${dotColor}`}></div>
+                          <span className={`font-mono text-xs font-bold ${textColor}`}>
+                            {loading ? "LOADING..." : status.toUpperCase()}
+                          </span>
+                          <ChevronDown className={`w-3 h-3 ${textColor}`} />
+                        </div>
+                      );
+                    })()}
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="center" sideOffset={8} className="w-[150px]">
+                  {["PASSED", "FAILED", "INPROGRESS", "ON HOLD"].map((opt) => (
+                    <DropdownMenuItem
+                      key={opt}
+                      onSelect={() => handleStatusSelect(opt)}
+                      className="gap-2"
+                    >
+                      <div className={`w-1.5 h-1.5 rounded-full ${opt === 'PASSED' ? 'bg-green-500' :
+                        opt === 'FAILED' ? 'bg-red-500' :
+                          opt === 'INPROGRESS' ? 'bg-yellow-500' :
+                            'bg-zinc-500'
+                        }`}></div>
+                      <span className="font-mono text-xs font-bold">{opt}</span>
+                      {status === opt && <Check className="w-3 h-3 ml-auto text-white" />}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 
@@ -544,56 +543,37 @@ export function DetailedResult({
                 Build
               </p>
               <div className="relative">
-                <button
-                  onClick={() => setIsBuildDropdownOpen(!isBuildDropdownOpen)}
-                  className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors"
-                >
-                  <p className="font-mono text-[14px] text-[#6bdf95]">
-                    {(() => {
-                      if (!buildVersion) return 'Select Build';
-                      // buildVersion is typically a string ID here based on usage in AndroidTVDetailFigma
-                      const found = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
-                      if (found && typeof found !== 'string') return found.buildName || found.buildId;
-                      return buildVersion;
-                    })()}
-                  </p>
-                  <ChevronDown className="w-[14px] h-[14px] text-[#6bdf95]" />
-                </button>
-                {isBuildDropdownOpen && (
-                  <>
-                    <div
-                      className="fixed inset-0 z-[40]"
-                      onClick={() => setIsBuildDropdownOpen(false)}
-                    />
-                    <div className="absolute right-0 top-[45px] w-[130px] bg-[#1e1e1e] rounded-[8px] shadow-2xl z-[50] border border-white/20 overflow-hidden">
-                      {buildVersions.map((version) => {
-                        const buildId = typeof version === 'string' ? version : version.buildId;
-                        const buildName = typeof version === 'string' ? version : (version.buildName || `Build ${version.buildId}`);
-                        const isSelected = buildVersion === buildId;
-
-                        return (
-                          <button
-                            key={buildId}
-                            onClick={() => {
-                              if (onBuildChange) {
-                                onBuildChange(version);
-                              }
-                              setIsBuildDropdownOpen(false);
-                            }}
-                            className={`w-full px-[16px] py-[12px] hover:bg-white/10 transition-colors text-left ${isSelected
-                              ? "bg-white/5"
-                              : ""
-                              }`}
-                          >
-                            <span className="text-white text-[14px] font-DMSans">
-                              {buildName}
-                            </span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </>
-                )}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="h-[41px] border border-[rgba(107,223,149,0.3)] rounded-[4px] flex items-center gap-[10px] px-[10px] hover:bg-white/5 transition-colors outline-none"
+                    >
+                      <p className="font-mono text-[14px] text-[#6bdf95]">
+                        {(() => {
+                          if (!buildVersion) return 'Select Build';
+                          const found = buildVersions.find(v => (typeof v === 'string' ? v === buildVersion : v.buildId === buildVersion));
+                          if (found && typeof found !== 'string') return found.buildName || found.buildId;
+                          return buildVersion;
+                        })()}
+                      </p>
+                      <ChevronDown className="w-[14px] h-[14px] text-[#6bdf95]" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" sideOffset={8} className="min-w-[130px]">
+                    {buildVersions.map((version) => {
+                      const buildId = typeof version === 'string' ? version : version.buildId;
+                      const buildName = typeof version === 'string' ? version : (version.buildName || `Build ${version.buildId}`);
+                      return (
+                        <DropdownMenuItem
+                          key={buildId}
+                          onSelect={() => onBuildChange?.(version)}
+                        >
+                          {buildName}
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 

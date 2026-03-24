@@ -12,6 +12,19 @@ import {
   GripVertical,
 } from "lucide-react";
 import React, { useState } from "react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "./dropdown-menu";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+  TooltipProvider,
+} from "../animate-ui/components/radix/tooltip";
 
 export interface BaselineImage {
   id: string;
@@ -136,7 +149,8 @@ export function BaselineImageInput({
   }, [selectedImageId, images]);
 
   return (
-    <div className="w-full h-full flex flex-col gap-5 p-4">
+    <TooltipProvider>
+      <div className="w-full h-full flex flex-col gap-5 p-4">
       {/* Header with title and action buttons */}
       <div className="flex items-center justify-between shrink-0 pb-3 border-b border-black/10 dark:border-white/10">
         <div className="flex items-center gap-2">
@@ -147,50 +161,53 @@ export function BaselineImageInput({
         <div className="flex items-center gap-3">
           {/* Upload Toggle Button - Only visible when hasImages is true */}
           {hasImages && (
-            <div className="relative group/upload">
-              <button
-                onClick={() => setIsUploadVisible(!isUploadVisible)}
-                className={`flex items-center justify-center hover:opacity-70 transition-opacity ${isUploadVisible ? "text-blue-500" : "text-black dark:text-white"
-                  }`}
-              >
-                <div className="p-1 rounded bg-black/5 dark:bg-white/5">
-                  <Upload className="w-[18px] h-[18px]" />
-                </div>
-              </button>
-              {/* Tooltip */}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/upload:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[999]">
-                {isUploadVisible ? "Hide Upload" : "Upload New"}
-              </div>
-            </div>
+            <Tooltip delayDuration={0}>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={() => setIsUploadVisible(!isUploadVisible)}
+                  className={`flex items-center justify-center hover:opacity-70 transition-opacity ${isUploadVisible ? "text-blue-500" : "text-black dark:text-white"
+                    }`}
+                >
+                  <div className="p-1 rounded bg-black/5 dark:bg-white/5">
+                    <Upload className="w-[18px] h-[18px]" />
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" sideOffset={10} align="center">
+                <p>{isUploadVisible ? "Hide Upload" : "Upload New"}</p>
+              </TooltipContent>
+            </Tooltip>
           )}
 
           {/* Refresh All Button with Tooltip */}
-          <div className="relative group/refresh">
-            <button
-              onClick={onRefreshAll}
-              className="flex items-center justify-center hover:opacity-70 transition-opacity"
-            >
-              <RefreshCw className="w-[18px] h-[18px] text-black dark:text-white" />
-            </button>
-            {/* Tooltip */}
-            <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 px-2 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/refresh:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[999]">
-              Refresh All
-            </div>
-          </div>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onRefreshAll}
+                className="flex items-center justify-center hover:opacity-70 transition-opacity"
+              >
+                <RefreshCw className="w-[18px] h-[18px] text-black dark:text-white" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={10} align="center">
+              <p>Refresh All</p>
+            </TooltipContent>
+          </Tooltip>
 
           {/* Remove All Button with Tooltip */}
-          <div className="relative group/remove">
-            <button
-              onClick={onRemoveAll}
-              className="flex items-center justify-center hover:opacity-70 transition-opacity"
-            >
-              <Trash2 className="w-[18px] h-[18px] text-[#EF4444]" />
-            </button>
-            {/* Tooltip */}
-            <div className="absolute top-full right-0 mt-2 px-2 bg-black dark:bg-[#2a2a2a] text-white text-xs rounded opacity-0 group-hover/remove:opacity-100 pointer-events-none transition-opacity whitespace-nowrap z-[999]">
-              Remove All
-            </div>
-          </div>
+          <Tooltip delayDuration={0}>
+            <TooltipTrigger asChild>
+              <button
+                onClick={onRemoveAll}
+                className="flex items-center justify-center hover:opacity-70 transition-opacity"
+              >
+                <Trash2 className="w-[18px] h-[18px] text-[#EF4444]" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom" sideOffset={10} align="end">
+              <p>Remove All</p>
+            </TooltipContent>
+          </Tooltip>
         </div>
       </div>
 
@@ -321,63 +338,41 @@ export function BaselineImageInput({
                         />
                       </div>
 
-                      {/* 3-Dot Menu - Shown on hover */}
-                      <div className="relative hidden group-hover:block ml-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenImageMenuId(
-                              openImageMenuId === image.id ? null : image.id
-                            );
-                          }}
-                          className="w-4 h-4 bg-black/15 dark:bg-white/15 flex items-center justify-center rounded-[3px] hover:bg-black/25 dark:hover:bg-white/25 transition-colors"
-                        >
-                          <MoreVertical className="w-3 h-3 text-black dark:text-white" />
-                        </button>
-
-                        {/* Dropdown Menu */}
-                        {openImageMenuId === image.id && (
-                          <>
-                            <div
-                              className="fixed inset-0 z-30"
-                              onClick={() => setOpenImageMenuId(null)}
-                            />
-                            <div className="absolute right-0 top-full mt-1 w-[160px] bg-white dark:bg-[#191919] border border-black/20 dark:border-white/30 rounded-md shadow-lg z-40 overflow-hidden">
-                              <div className="p-1">
-                                <button
-                                  onClick={() => {
-                                    onRefreshImage?.(image.id);
-                                    setOpenImageMenuId(null);
-                                  }}
-                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
-                                >
-                                  <RefreshCw className="w-3.5 h-3.5" />
-                                  <span>Refresh image</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    onReplaceImage?.(image.id);
-                                    setOpenImageMenuId(null);
-                                  }}
-                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-black dark:text-white text-xs hover:bg-black/10 dark:hover:bg-white/10 transition-colors rounded"
-                                >
-                                  <Upload className="w-3.5 h-3.5" />
-                                  <span>Replace image</span>
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    onRemoveImage(image.id);
-                                    setOpenImageMenuId(null);
-                                  }}
-                                  className="w-full px-2 py-1.5 flex items-center gap-2 text-red-500 text-xs hover:bg-red-500/20 transition-colors rounded bg-red-500/10 dark:bg-[#2d1414]"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>Remove screen</span>
-                                </button>
-                              </div>
-                            </div>
-                          </>
-                        )}
+                      <div className="relative ml-2">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="w-4 h-4 bg-black/15 dark:bg-white/15 flex items-center justify-center rounded-[3px] hover:bg-black/25 dark:hover:bg-white/25 transition-colors group-hover:flex hidden outline-none"
+                            >
+                              <MoreVertical className="w-3 h-3 text-black dark:text-white" />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" sideOffset={8}>
+                            <DropdownMenuItem
+                              onSelect={() => onRefreshImage?.(image.id)}
+                              className="gap-2"
+                            >
+                              <RefreshCw className="w-3.5 h-3.5" />
+                              <span>Refresh image</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onSelect={() => onReplaceImage?.(image.id)}
+                              className="gap-2"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                              <span>Replace image</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              onSelect={() => onRemoveImage(image.id)}
+                              className="text-red-500 focus:text-red-500 gap-2"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Remove screen</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </div>
                     </div>
 
@@ -427,6 +422,7 @@ ${selectedImageId === image.id
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

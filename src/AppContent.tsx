@@ -16,14 +16,20 @@ import apiClient from "./api/client";
 import { mapBackendProjectToFrontend, BackendProjectDto, getProjectUrl } from "./utils/projectUtils";
 import { TestComparisonToast } from "./components/TestComparisonToast";
 import { ToastOptions, showToast } from "./utils/toast";
+import { useGSAP } from "@gsap/react";
+import gsap from "gsap";
+import { useRef } from "react";
+import { Preloader } from "./components/Preloader";
 
 export const AppContent = () => {
     const [theme, setTheme] = useState<Theme>("dark");
     const [projects, setProjects] = useState<Project[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isPreloading, setIsPreloading] = useState(true);
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const [toastOptions, setToastOptions] = useState<ToastOptions | null>(null);
+    const appRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const handleShowToast = (e: CustomEvent<ToastOptions>) => {
@@ -32,6 +38,15 @@ export const AppContent = () => {
         window.addEventListener('show-toast', handleShowToast as EventListener);
         return () => window.removeEventListener('show-toast', handleShowToast as EventListener);
     }, []);
+
+    useEffect(() => {
+        if (!isPreloading && appRef.current) {
+            gsap.fromTo(appRef.current,
+                { opacity: 0 },
+                { opacity: 1, duration: 1, ease: "power2.out" }
+            );
+        }
+    }, [isPreloading]);
 
     useEffect(() => {
         // Apply theme to document
@@ -142,6 +157,14 @@ export const AppContent = () => {
 
     return (
         <>
+            {isPreloading && (
+                <Preloader 
+                   isLoading={isLoading} 
+                   theme={theme}
+                   onComplete={() => setIsPreloading(false)} 
+                />
+            )}
+            <div ref={appRef} className={isPreloading ? "invisible opacity-0" : "visible"}>
             <Routes>
                 {/* Protected Routes */}
                 <Route element={<ProtectedRoute />}>
@@ -218,6 +241,7 @@ export const AppContent = () => {
                     onClose={() => setToastOptions(null)}
                 />
             )}
+        </div>
         </>
     );
 }
