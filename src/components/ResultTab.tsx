@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Search, Grid2X2, List, ChevronDown, Eye, Download } from 'lucide-react';
+import { Search, Grid2X2, List, ChevronDown, Eye, Download, Trash2 } from 'lucide-react';
 import apiClient from '../api/client';
+import { ConfirmationModal } from './common/ConfirmationModal';
 import LoaderGif from '../assets/Loader.gif';
 import { generateAndHandleFullReport } from '../utils/projectUtils';
 import Spinner from '@/assets/spiner.svg';
@@ -42,16 +43,21 @@ export function ResultTab({
   const [loadedTests, setLoadedTests] = useState(10);
   const [tests, setTests] = useState<Result[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    screenName: string;
+  }>({
+    isOpen: false,
+    screenName: '',
+  });
 
   useEffect(() => {
     const fetchResults = async () => {
       // Need a valid build ID to fetch results
       let buildId = '';
       if (typeof selectedBuild === 'string') {
-        // If it's a string, maybe it's the ID? Or name? 
-        // Previous code assumed it could be string. 
-        // Let's assume matches logic in AndroidTVDetailFigma
         buildId = selectedBuild;
       } else if (selectedBuild && selectedBuild.buildId) {
         buildId = selectedBuild.buildId;
@@ -145,6 +151,39 @@ export function ResultTab({
       setIsDownloading(false);
     }
   };
+
+  const handleDeleteResult = async () => {
+    if (!confirmModal.screenName) return;
+
+    setIsDeleting(true);
+    try {
+      let buildId = '';
+      if (typeof selectedBuild === 'string') {
+        buildId = selectedBuild;
+      } else if (selectedBuild && selectedBuild.buildId) {
+        buildId = selectedBuild.buildId;
+      }
+
+      await apiClient.delete('/result', {
+        params: {
+          projectId,
+          buildId,
+          screenName: confirmModal.screenName,
+          projectType
+        }
+      });
+
+      // Update local state
+      setTests(prev => prev.filter(t => t.imageName !== confirmModal.screenName));
+      setConfirmModal({ isOpen: false, screenName: '' });
+    } catch (error) {
+      console.error('Failed to delete result:', error);
+      alert('Failed to delete result. Please try again.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="w-full">
       {/* Search and Controls Bar */}
@@ -303,18 +342,6 @@ export function ResultTab({
             </div>
           </div>
         </div>
-
-        {/* Errors */}
-        {/* <div className="bg-[#1d1d1d] rounded-[8px] border border-white/10 px-[12px] py-[19px] flex flex-col gap-[22px] min-w-[190px] basis-0 grow">
-          <p className="text-white text-[18px]">Errors</p>
-          <div className="flex items-end gap-[3px]">
-            <p className="text-white text-[24px] font-bold">{errors}</p>
-            <div className="flex items-center gap-[2px] h-[12px]">
-              <AlertTriangle className="w-[10px] h-[11.215px] text-[#ff383c]" />
-              <span className="text-[#ff383c] text-[12px] font-medium">13.4%</span>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Test Case Section */}
@@ -339,9 +366,6 @@ export function ResultTab({
             <div className="w-[137px] shrink-0 px-[10px]">
               <p className="text-white/70 text-[18px] font-semibold">Mismatch %</p>
             </div>
-            {/* <div className="w-[219px] shrink-0 px-[10px]">
-              <p className="text-white/70 text-[18px] font-semibold">Duration</p>
-            </div> */}
             <div className="w-[125px] shrink-0 px-[10px]">
               <p className="text-white/70 text-[18px] font-semibold">Action</p>
             </div>
@@ -415,26 +439,27 @@ export function ResultTab({
                 <div className="w-[137px] shrink-0 px-[10px] py-[10px]">
                   <p className="text-white/50 text-[16px] font-mono">{test.diffPercent}%</p>
                 </div>
-                {/* <div className="w-[219px] shrink-0 px-[10px] py-[10px]">
-                  <p className="text-white/50 text-[16px] font-mono">--:--</p>
-                </div> */}
-                <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[20px]">
+                <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[15px]">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       onViewTest(test.id);
                     }}
-                    className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors"
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-white/5 hover:bg-white/20 border border-white/10 rounded-[8px] transition-all duration-300 group"
+                    title="View Comparison"
                   >
-                    <Eye className="w-[16px] h-[16px] text-white/50" />
+                    <Eye className="w-[18px] h-[18px] text-white/90 group-hover:text-white transition-colors" />
                   </button>
-                  {/* <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors">
-                    <Download className="w-[16px] h-[16px] text-white/50" />
-                  </button> */}
-                  {/* {(test.resultStatus === 0) && (
-                    <button className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors">
-                      <AlertTriangle className="w-[16px] h-[16px] text-white/50" />
-                    </button>
-                  )} */}
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmModal({ isOpen: true, screenName: test.imageName });
+                    }}
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-red-500/5 hover:bg-red-500/20 border border-red-500/20 rounded-[8px] transition-all duration-300 group"
+                    title="Delete Result"
+                  >
+                    <Trash2 className="w-[18px] h-[18px] text-red-400/80 group-hover:text-red-500 transition-colors" />
+                  </button>
                 </div>
               </div>
             </div>
@@ -454,6 +479,20 @@ export function ResultTab({
           </div>
         )}
       </div>
+
+      <ConfirmationModal
+        isOpen={confirmModal.isOpen}
+        onClose={() => !isDeleting && setConfirmModal({ isOpen: false, screenName: '' })}
+        onConfirm={handleDeleteResult}
+        title="Remove Result and Baseline"
+        description={
+          <p className="text-[#a1a1a1] leading-relaxed">
+            Are you sure you want to remove the result for <span className="text-white font-bold">{confirmModal.screenName}</span>?
+          </p>
+        }
+        variant="danger"
+        loading={isDeleting}
+      />
     </div>
   );
 }

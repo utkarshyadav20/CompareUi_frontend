@@ -28,6 +28,7 @@ import { ActivityTab } from "./ActivityTab";
 import { SettingsTab } from "./SettingsTab";
 import { BaselineImage, BaselineImageInput } from "./ui/BaselineImageInput";
 import { ControlBar } from "./ui/ControlBar";
+import { ConfirmationModal } from "./common/ConfirmationModal";
 
 import { ProjectHeader } from "./ProjectHeader";
 import { Project, Theme } from "../types";
@@ -108,6 +109,18 @@ export function AndroidTVDetailFigma({
         { id: 6, name: 'ADB_PATH', value: '' },
         { id: 7, name: 'APPIUM_JS_PATH', value: '' }
     ]);
+
+    const [confirmModal, setConfirmModal] = useState<{
+        isOpen: boolean;
+        title: string;
+        description: React.ReactNode;
+        onConfirm: () => void;
+    }>({
+        isOpen: false,
+        title: "",
+        description: "",
+        onConfirm: () => { },
+    });
 
     const [theme, setTheme] = useState<Theme>("dark");
 
@@ -662,31 +675,51 @@ export function AndroidTVDetailFigma({
     const filterInputRef = useRef<HTMLInputElement>(null); // For future use if needed
 
     const handleDeleteOne = async (screenName: string) => {
-        if (!confirm(`Are you sure you want to delete screen: ${screenName}?`)) return;
-
-        try {
-            const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
-            const apiProjectType = getApiProjectType(platformType);
-            await figmaApi.figmaControllerDeleteScreen(projectId, apiProjectType, screenName);
-            setBaselineImages(prev => prev.filter(img => img.name !== screenName));
-        } catch (error) {
-            console.error(`Failed to delete screen ${screenName}:`, error);
-            showToast({ type: 'error', title: 'Error', message: `Failed to delete screen ${screenName}` });
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete Screen",
+            description: (
+                <span>
+                    Are you sure you want to delete screen named <span className="text-white font-bold text-base">{screenName}</span>? Removing this screen will also delete it from the <span className="text-white font-bold text-base">result tab</span>.
+                </span>
+            ),
+            onConfirm: async () => {
+                try {
+                    const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
+                    const apiProjectType = getApiProjectType(platformType);
+                    await figmaApi.figmaControllerDeleteScreen(projectId, apiProjectType, screenName);
+                    setBaselineImages(prev => prev.filter(img => img.name !== screenName));
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                } catch (error) {
+                    console.error(`Failed to delete screen ${screenName}:`, error);
+                    showToast({ type: 'error', title: 'Error', message: `Failed to delete screen ${screenName}` });
+                }
+            }
+        });
     };
 
     const handleDeleteAll = async () => {
-        if (!confirm("Are you sure you want to delete all baseline images? This cannot be undone.")) return;
-
-        try {
-            const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
-            const apiProjectType = getApiProjectType(platformType);
-            await figmaApi.figmaControllerDeleteAllScreens(projectId, apiProjectType);
-            setBaselineImages([]);
-        } catch (error) {
-            console.error('Failed to delete all screens:', error);
-            showToast({ type: 'error', title: 'Error', message: 'Failed to delete all screens' });
-        }
+        setConfirmModal({
+            isOpen: true,
+            title: "Delete All Screens",
+            description: (
+                <span>
+                    Are you sure you want to delete all baseline images? This cannot be undone and will affect all comparison results in the <span className="text-white font-bold text-base">result tab</span>.
+                </span>
+            ),
+            onConfirm: async () => {
+                try {
+                    const figmaApi = new FigmaApi(undefined, API_BASE_URL, apiClient);
+                    const apiProjectType = getApiProjectType(platformType);
+                    await figmaApi.figmaControllerDeleteAllScreens(projectId, apiProjectType);
+                    setBaselineImages([]);
+                    setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                } catch (error) {
+                    console.error('Failed to delete all screens:', error);
+                    showToast({ type: 'error', title: 'Error', message: 'Failed to delete all screens' });
+                }
+            }
+        });
     };
 
     const handleCSVUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -1325,6 +1358,15 @@ export function AndroidTVDetailFigma({
                     </p>
                 </div>
             )}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                description={confirmModal.description}
+                confirmText="Confirm"
+                variant="danger"
+            />
         </div>
     );
 }
