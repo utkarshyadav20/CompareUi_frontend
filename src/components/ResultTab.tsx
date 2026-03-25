@@ -439,24 +439,26 @@ export function ResultTab({
                 <div className="w-[137px] shrink-0 px-[10px] py-[10px]">
                   <p className="text-white/50 text-[16px] font-mono">{test.diffPercent}%</p>
                 </div>
-                <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[20px]">
+                <div className="w-[125px] shrink-0 px-[10px] py-0 flex items-center gap-[15px]">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       onViewTest(test.id);
                     }}
-                    className="w-[30px] h-[30px] flex items-center justify-center hover:bg-white/10 rounded-[6px] transition-colors"
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-white/5 hover:bg-white/20 border border-white/10 rounded-[8px] transition-all duration-300 group"
+                    title="View Comparison"
                   >
-                    <Eye className="w-[16px] h-[16px] text-white/50" />
+                    <Eye className="w-[18px] h-[18px] text-white/90 group-hover:text-white transition-colors" />
                   </button>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       setConfirmModal({ isOpen: true, screenName: test.imageName });
                     }}
-                    className="w-[30px] h-[30px] flex items-center justify-center hover:bg-red-500/10 rounded-[6px] transition-colors group"
+                    className="w-[32px] h-[32px] flex items-center justify-center bg-red-500/5 hover:bg-red-500/20 border border-red-500/20 rounded-[8px] transition-all duration-300 group"
+                    title="Delete Result"
                   >
-                    <Trash2 className="w-[16px] h-[16px] text-white/50 group-hover:text-red-500" />
+                    <Trash2 className="w-[18px] h-[18px] text-red-400/80 group-hover:text-red-500 transition-colors" />
                   </button>
                 </div>
               </div>
